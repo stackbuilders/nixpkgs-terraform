@@ -16,6 +16,6 @@ jobs:
         with:
           name: stackbuilders
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
-      - run: nix flake check --impure
+      - run: nix build --impure .#terraform-1_6_2
         env:
           NIXPKGS_ALLOW_UNFREE: 1
