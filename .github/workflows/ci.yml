@@ -38,9 +38,8 @@ jobs:
         with:
           name: nixpkgs-terraform
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
-      - run: echo "out-paths=$(nix build --impure .#${{ matrix.package.name }})" >> "$GITHUB_OUTPUT"
+      - run: echo "out-paths=$(nix build --impure .#${{ matrix.package.name }} --print-out-paths)" >> "$GITHUB_OUTPUT"
         id: nix-build
         env:
           NIXPKGS_ALLOW_UNFREE: ${{ matrix.package.allow_unfree }}
       - run: cachix pin nixpkgs-terraform v${{ matrix.package.version }}-${{ matrix.runner.system }} ${{ steps.nix-build.outputs.out-paths }} --keep-revisions 1
-        if: ${{ steps.nix-build.outputs.out-paths != '' }}
