@@ -31,6 +31,6 @@ jobs:
         with:
           name: nixpkgs-terraform
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
-      - run: nix build --impure .#${{ matrix.package.name }}
+      - run: nix build --impure .\#${{ matrix.package.name }}
         env:
           NIXPKGS_ALLOW_UNFREE: ${{ matrix.package.allow_unfree }}
