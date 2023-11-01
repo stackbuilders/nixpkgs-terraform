@@ -11,7 +11,8 @@ jobs:
     strategy:
       matrix:
         runner:
-          # - macos-latest
+          - os: macos-latest
+            system: x86_64-darwin
           - os: ubuntu-latest
             system: x86_64-linux
         package:
