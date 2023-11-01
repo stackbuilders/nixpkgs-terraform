@@ -36,10 +36,10 @@
                 };
               })
               (builtins.attrNames versions));
-          templates.default = {
-            description = "TODO";
-            path = ./templates/default;
-          };
+          # templates.default = {
+          #   description = "TODO";
+          #   path = ./templates/default;
+          # };
         }) // {
       lib.packageFromVersion = { system, version }: self.packages.${system}.${mkPackageName version};
     };
