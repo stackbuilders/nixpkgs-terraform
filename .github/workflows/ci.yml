@@ -40,4 +40,4 @@ jobs:
         id: nix-build
         env:
           NIXPKGS_ALLOW_UNFREE: ${{ matrix.package.allow_unfree }}
-      - run: cachix pin nixpkgs-terraform v${{ matrix.package.version }}-${{ matrix.runner.system }} ${{ steps.nix-build.outputs.out-paths }}
+      - run: cachix pin nixpkgs-terraform v${{ matrix.package.version }}-${{ matrix.runner.system }} ${{ steps.nix-build.outputs.out-paths }} --keep-revisions 1
