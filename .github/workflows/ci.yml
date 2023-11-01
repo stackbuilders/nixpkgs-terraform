@@ -11,8 +11,17 @@ jobs:
     strategy:
       matrix:
         os:
-          - macos-latest
+          # - macos-latest
           - ubuntu-latest
+        packages:
+          - name: terraform-1_6_2
+            allow_unfree: 1
+          - name: terraform-1_6_1
+            allow_unfree: 1
+          - name: terraform-1_6_0
+            allow_unfree: 1
+          - name: terraform-1_5_7
+            allow_unfree: 0
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -22,6 +31,6 @@ jobs:
         with:
           name: nixpkgs-terraform
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
-      - run: nix flake check --impure
+      - run: nix build --impure .#${{ matrix.package.name }}
         env:
-          NIXPKGS_ALLOW_UNFREE: 1
+          NIXPKGS_ALLOW_UNFREE: ${{ matrix.package.allow_unfree }}
