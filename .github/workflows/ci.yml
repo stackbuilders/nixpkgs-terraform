@@ -9,6 +9,7 @@ concurrency:
 jobs:
   build:
     strategy:
+      # TODO: Create a dynamic matrix
       matrix:
         runner:
           - os: macos-latest
