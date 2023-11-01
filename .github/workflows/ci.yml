@@ -17,19 +17,19 @@ jobs:
           - os: ubuntu-latest
             system: x86_64-linux
         package:
-          - name: terraform-1_6_2
-            version: 1.6.2
+          - name: terraform-1_6_3
+            version: 1.6.3
             allow_unfree: 1
-          - name: terraform-1_6_1
-            version: 1.6.1
-            allow_unfree: 1
-          - name: terraform-1_6_0
-            version: 1.6.0
-            allow_unfree: 1
-          - name: terraform-1_5_7
-            version: 1.5.7
-            allow_unfree: 0
-
+          # - name: terraform-1_6_1
+          #   version: 1.6.1
+          #   allow_unfree: 1
+          # - name: terraform-1_6_0
+          #   version: 1.6.0
+          #   allow_unfree: 1
+          # - name: terraform-1_5_7
+          #   version: 1.5.7
+          #   allow_unfree: 0
+          #
     runs-on: ${{ matrix.runner.os }}
     steps:
       - uses: actions/checkout@v4
