@@ -9,37 +9,19 @@ concurrency:
 jobs:
   build:
     strategy:
-      # TODO: Create a dynamic matrix
       matrix:
-        runner:
-          - os: macos-latest
-            system: x86_64-darwin
-          - os: ubuntu-latest
-            system: x86_64-linux
-        package:
-          - name: terraform-1_6_3
-            version: 1.6.3
-            allow_unfree: 1
-          # - name: terraform-1_6_1
-          #   version: 1.6.1
-          #   allow_unfree: 1
-          # - name: terraform-1_6_0
-          #   version: 1.6.0
-          #   allow_unfree: 1
-          # - name: terraform-1_5_7
-          #   version: 1.5.7
-          #   allow_unfree: 0
-          #
-    runs-on: ${{ matrix.runner.os }}
+        os:
+          # - macos-latest
+          - ubuntu-latest
+
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - uses: cachix/install-nix-action@v22
+      - uses: cachix/install-nix-action@v23
       - uses: cachix/cachix-action@v12
         with:
           name: nixpkgs-terraform
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
-      - run: echo "out-paths=$(nix build --impure .#${{ matrix.package.name }} --print-out-paths)" >> "$GITHUB_OUTPUT"
-        id: nix-build
+      - run: nix flake check --impure
         env:
-          NIXPKGS_ALLOW_UNFREE: ${{ matrix.package.allow_unfree }}
-      - run: cachix pin nixpkgs-terraform v${{ matrix.package.version }}-${{ matrix.runner.system }} ${{ steps.nix-build.outputs.out-paths }} --keep-revisions 1
+          NIXPKGS_ALLOW_UNFREE: 1

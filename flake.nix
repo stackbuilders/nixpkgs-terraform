@@ -10,16 +10,13 @@
   };
 
   outputs = { self, flake-utils, nixpkgs-23_05, nixpkgs-unstable, ... }:
-    let
-      mkPackageName = version: "terraform-${builtins.concatStringsSep "_" (builtins.splitVersion version)}";
-    in
     flake-utils.lib.eachDefaultSystem
       (system:
         let
           pkgs-23_05 = nixpkgs-23_05.legacyPackages.${system};
           pkgs-unstable = nixpkgs-unstable.legacyPackages.${system};
           versions = builtins.fromJSON (builtins.readFile ./versions.json);
-          mkTerraform = { version, hash, vendorHash }:
+          buildTerraform = { version, hash, vendorHash }:
             # https://www.hashicorp.com/blog/hashicorp-adopts-business-source-license
             if builtins.compareVersions version "1.6.0" >= 0
             then
@@ -42,14 +39,14 @@
           packages = builtins.listToAttrs
             (builtins.map
               (version: {
-                name = mkPackageName version;
-                value = mkTerraform {
+                name = version;
+                value = buildTerraform {
                   inherit version;
                   inherit (versions.${version}) hash vendorHash;
                 };
               })
               (builtins.attrNames versions));
         }) // {
-      lib.packageFromVersion = { system, version }: self.packages.${system}.${mkPackageName version};
+      lib.packageFromVersion = { system, version }: self.packages.${system}.${version};
     };
 }
