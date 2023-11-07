@@ -1,5 +1,4 @@
-#!/usr/bin/env nix-shell
-#!nix-shell -i python3 -p python3Packages.pygithub -p python3Packages.semver
+#!/usr/bin/env python3
 
 # vi: ft=python
 
@@ -17,14 +16,14 @@ def read_versions():
 current_versions = read_versions().keys()
 
 def is_stable(release):
-    version = release.title.removeprefix("v")
+    version = release.tag_name.removeprefix("v")
     return semver.compare(version, "1.5.0") >= 0 and not (release.draft or release.prerelease)
 
 def by_version(release):
-    return release.title.removeprefix("v").split(".")
+    return release.tag_name.removeprefix("v").split(".")
 
 def to_version(versions, release):
-    version = release.title.removeprefix("v")
+    version = release.tag_name.removeprefix("v")
     print(f"Calculating hash for {version}")
     # TODO: Use `nix-prefetch` to calculate the hash
     hash_output = subprocess.check_output(["nix-prefetch-git", "--quiet", "https://github.com/hashicorp/terraform", release.title])
@@ -35,7 +34,7 @@ def to_version(versions, release):
         "extra-experimental-features",
         "flakes",
         "--file",
-        "vendor_hash.nix",
+        "../vendor_hash.nix",
         "--argstr",
         "version",
         version
