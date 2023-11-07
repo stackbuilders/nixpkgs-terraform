@@ -46,6 +46,15 @@
                 };
               })
               (builtins.attrNames versions));
+          devShell = pkgs-23_05.mkShell {
+            buildInputs = [
+              pkgs-23_05.python3
+              pkgs-23_05.python3Packages.pygithub
+              pkgs-23_05.python3Packages.semver
+              pkgs-23_05.nix-prefetch
+              pkgs-23_05.nix-prefetch-git
+            ];
+          };
         }) // {
       lib.packageFromVersion = { system, version }: self.packages.${system}.${version};
     };
