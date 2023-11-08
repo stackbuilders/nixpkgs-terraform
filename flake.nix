@@ -14,6 +14,7 @@
       (system:
         let
           pkgs = nixpkgs.legacyPackages.${system};
+          pkgs-unstable = nixpkgs-unstable.legacyPackages.${system};
           versions = builtins.fromJSON (builtins.readFile ./versions.json);
         in
         {
@@ -31,11 +32,11 @@
               (builtins.attrNames versions));
           devShell = pkgs.mkShell {
             buildInputs = [
-              pkgs.python3
-              pkgs.python3Packages.pygithub
-              pkgs.python3Packages.semver
-              pkgs.nix-prefetch
-              pkgs.nix-prefetch-git
+              pkgs-unstable.python3
+              pkgs-unstable.python3Packages.pygithub
+              pkgs-unstable.python3Packages.semver
+              pkgs-unstable.nix-prefetch
+              pkgs-unstable.nix-prefetch-git
             ];
           };
         }) // {
