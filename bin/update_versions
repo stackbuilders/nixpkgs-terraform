@@ -10,14 +10,14 @@ import semver
 import subprocess
 
 def read_versions():
-    with open("versions.json") as f:
+    with open("versions.json", "r") as f:
         return json.load(f)
 
 current_versions = read_versions()
 
 def is_stable(release):
     version = release.tag_name.removeprefix("v")
-    return semver.compare(version, "1.5.0") >= 0 and not (release.draft or release.prerelease)
+    return semver.compare(version, "1.5.6") >= 0 and not (release.draft or release.prerelease)
 
 def by_version(release):
     return release.tag_name.removeprefix("v").split(".")
@@ -83,4 +83,5 @@ repo = g.get_repo("hashicorp/terraform")
 releases = list(filter(is_stable, repo.get_releases().get_page(0)))
 releases.sort(reverse=True,key=by_version)
 versions = functools.reduce(to_version, releases, {})
-print(versions)
+with open("versions.json", "w") as f:
+    json.dump(versions, f, indent=2)
