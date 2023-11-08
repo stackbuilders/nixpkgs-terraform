@@ -24,7 +24,7 @@ def by_version(release):
 
 def to_version(versions, release):
     version = release.tag_name.removeprefix("v")
-    calculated_hash = calculate_hash(version),
+    calculated_hash = calculate_hash(version)
     versions[version] = {
         "hash": calculated_hash,
         "vendorHash": calculate_vendor_hash(version, calculated_hash)
@@ -69,7 +69,7 @@ def calculate_vendor_hash(version, calculated_hash):
 def nix_prefetch(args):
     return subprocess.check_output([
         "nix-prefetch",
-        # "--silent",
+        "--silent",
         "--option",
         "extra-experimental-features",
         "flakes",
