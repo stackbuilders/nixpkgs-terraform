@@ -4,16 +4,16 @@
   inputs = {
     flake-utils.inputs.systems.follows = "systems";
     flake-utils.url = "github:numtide/flake-utils";
-    nixpkgs-23_05.url = "github:nixos/nixpkgs/nixos-23.05";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-23.05";
     systems.url = "github:nix-systems/default";
   };
 
-  outputs = { self, flake-utils, nixpkgs-23_05, nixpkgs-unstable, ... }:
+  outputs = { self, flake-utils, nixpkgs-unstable, nixpkgs, ... }:
     flake-utils.lib.eachDefaultSystem
       (system:
         let
-          pkgs-23_05 = nixpkgs-23_05.legacyPackages.${system};
+          pkgs = nixpkgs.legacyPackages.${system};
           pkgs-unstable = nixpkgs-unstable.legacyPackages.${system};
           versions = builtins.fromJSON (builtins.readFile ./versions.json);
           buildTerraform = { version, hash, vendorHash }:
@@ -28,9 +28,9 @@
                 }
             else
             # https://github.com/NixOS/nixpkgs/blob/nixos-23.05/pkgs/applications/networking/cluster/terraform/default.nix
-              pkgs-23_05.mkTerraform {
+              pkgs.mkTerraform {
                 inherit version hash vendorHash;
-                patches = [ "${nixpkgs-23_05}/pkgs/applications/networking/cluster/terraform/provider-path-0_15.patch" ];
+                patches = [ "${nixpkgs}/pkgs/applications/networking/cluster/terraform/provider-path-0_15.patch" ];
               };
         in
         {
@@ -46,13 +46,13 @@
                 };
               })
               (builtins.attrNames versions));
-          devShell = pkgs-23_05.mkShell {
+          devShell = pkgs.mkShell {
             buildInputs = [
-              pkgs-23_05.python3
-              pkgs-23_05.python3Packages.pygithub
-              pkgs-23_05.python3Packages.semver
-              pkgs-23_05.nix-prefetch
-              pkgs-23_05.nix-prefetch-git
+              pkgs.python3
+              pkgs.python3Packages.pygithub
+              pkgs.python3Packages.semver
+              pkgs.nix-prefetch
+              pkgs.nix-prefetch-git
             ];
           };
         }) // {
