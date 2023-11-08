@@ -1,3 +1,4 @@
-templates/*/flake.lock
-result
+.direnv
 .env
+result
+templates/*/flake.lock
