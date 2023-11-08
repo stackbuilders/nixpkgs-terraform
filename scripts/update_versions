@@ -25,9 +25,21 @@ def by_version(release):
 def to_version(versions, release):
     version = release.tag_name.removeprefix("v")
     print(f"Calculating hash for {version}")
-    # TODO: Use `nix-prefetch` to calculate the hash
-    hash_output = subprocess.check_output(["nix-prefetch-git", "--quiet", "https://github.com/hashicorp/terraform", release.title])
-    vendor_hash_output = subprocess.check_output([
+    calculated_hash = subprocess.check_output([
+        "nix-prefetch",
+        "fetchFromGitHub",
+        "--silent",
+        "--option",
+        "extra-experimental-features",
+        "--owner",
+        "hashicorp",
+        "--repo",
+        "terraform",
+        "--rev",
+        release.title
+    ]).decode("utf-8")
+    print(f"Calculating vendorHash for {version}")
+    calculated_vendor_hash = subprocess.check_output([
         "nix-prefetch",
         "--silent",
         "--option",
@@ -37,11 +49,14 @@ def to_version(versions, release):
         "../vendor_hash.nix",
         "--argstr",
         "version",
-        version
-    ])
+        version,
+        "--argstr",
+        "hash",
+        calculated_hash
+    ]).decode("utf-8")
     versions[version] = {
-        "hash": json.loads(hash_output.decode("utf-8"))["hash"],
-        "vendorHash": vendor_hash_output.decode("utf-8")
+        "hash": calculated_hash,
+        "vendorHash": calculated_vendor_hash
     }
     return versions
 
