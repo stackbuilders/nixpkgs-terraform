@@ -32,6 +32,7 @@
               (builtins.attrNames versions));
           devShell = pkgs.mkShell {
             buildInputs = [
+              pkgs-unstable.black
               (pkgs-unstable.python3.withPackages
                 (ps: [
                   ps.pygithub

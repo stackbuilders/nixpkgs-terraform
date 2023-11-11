@@ -8,18 +8,25 @@ import pathlib
 import semver
 import subprocess
 
+
 def read_versions():
     with open("versions.json", "r") as f:
         return json.load(f)
 
+
 current_versions = read_versions()
+
 
 def is_stable(release):
     version = release.tag_name.removeprefix("v")
-    return semver.compare(version, "1.5.5") >= 0 and not (release.draft or release.prerelease)
+    return semver.compare(version, "1.5.5") >= 0 and not (
+        release.draft or release.prerelease
+    )
+
 
 def by_version(release):
     return release.tag_name.removeprefix("v").split(".")
+
 
 def to_version(vendor_hash_file):
     def add_version(versions, release):
@@ -27,11 +34,14 @@ def to_version(vendor_hash_file):
         calculated_hash = calculate_hash(version)
         versions[version] = {
             "hash": calculated_hash,
-            "vendorHash": calculate_vendor_hash(vendor_hash_file, version, calculated_hash)
+            "vendorHash": calculate_vendor_hash(
+                vendor_hash_file, version, calculated_hash
+            ),
         }
         return versions
 
     return add_version
+
 
 def calculate_hash(version):
     current_hash = current_versions.get(version, {}).get("hash")
@@ -40,15 +50,18 @@ def calculate_hash(version):
         return current_hash
     else:
         print(f"Calculating hash for {version}")
-        return nix_prefetch([
-            "fetchFromGitHub",
-            "--owner",
-            "hashicorp",
-            "--repo",
-            "terraform",
-            "--rev",
-            f"v{version}"
-        ])
+        return nix_prefetch(
+            [
+                "fetchFromGitHub",
+                "--owner",
+                "hashicorp",
+                "--repo",
+                "terraform",
+                "--rev",
+                f"v{version}",
+            ]
+        )
+
 
 def calculate_vendor_hash(vendor_hash_file, version, calculated_hash):
     current_vendor_hash = current_versions.get(version, {}).get("vendorHash")
@@ -57,27 +70,35 @@ def calculate_vendor_hash(vendor_hash_file, version, calculated_hash):
         return current_vendor_hash
     else:
         print(f"Calculating vendorHash for {version}")
-        return nix_prefetch([
-            "--file",
-            vendor_hash_file.resolve(),
-            "--argstr",
-            "version",
-            version,
-            "--argstr",
-            "hash",
-            calculated_hash
-        ])
+        return nix_prefetch(
+            [
+                "--file",
+                vendor_hash_file.resolve(),
+                "--argstr",
+                "version",
+                version,
+                "--argstr",
+                "hash",
+                calculated_hash,
+            ]
+        )
+
 
 def nix_prefetch(args):
-    return subprocess.check_output([
-        "nix-prefetch",
-        "--silent",
-        "--option",
-        "extra-experimental-features",
-        "flakes",
-    ] + args, text=True).strip()
+    return subprocess.check_output(
+        [
+            "nix-prefetch",
+            "--silent",
+            "--option",
+            "extra-experimental-features",
+            "flakes",
+        ]
+        + args,
+        text=True,
+    ).strip()
 
-parser = argparse.ArgumentParser(description='Update versions.json file')
+
+parser = argparse.ArgumentParser(description="Update versions.json file")
 parser.add_argument("vendor_hash_file", type=pathlib.Path)
 args = parser.parse_args()
 
@@ -90,7 +111,7 @@ repo = g.get_repo("hashicorp/terraform")
 # https://api.github.com/repos/hashicorp/terraform/tags
 # https://endoflife.date/api/terraform.json
 releases = list(filter(is_stable, repo.get_releases().get_page(0)))
-releases.sort(reverse=True,key=by_version)
+releases.sort(reverse=True, key=by_version)
 versions = functools.reduce(to_version(args.vendor_hash_file), releases, {})
 with open("versions.json", "w") as f:
     json.dump(versions, f, indent=2)
