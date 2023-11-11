@@ -18,24 +18,6 @@
           versions = builtins.fromJSON (builtins.readFile ./versions.json);
         in
         {
-          apps.update-versions = {
-            type = "app";
-            program =
-              let
-                python3 = pkgs-unstable.python3.withPackages (ps: [
-                  ps.pygithub
-                  ps.semver
-                ]);
-                script = pkgs-unstable.writeShellApplication {
-                  name = "update-versions";
-                  runtimeInputs = [ pkgs-unstable.nix-prefetch ];
-                  text = ''
-                    ${python3}/bin/python3 ${./update-versions.py} ${./vendor-hash.nix}
-                  '';
-                };
-              in
-              "${script}/bin/update-versions";
-          };
           # https://github.com/NixOS/nix/issues/7165
           checks = self.packages.${system};
           packages = builtins.listToAttrs
