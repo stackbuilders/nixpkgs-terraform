@@ -27,15 +27,13 @@ def by_version(release):
     return release.tag_name.removeprefix("v").split(".")
 
 
-def to_version(vendor_hash_file):
+def to_version(vendor_hash):
     def add_version(versions, release):
         version = release.tag_name.removeprefix("v")
         calculated_hash = calculate_hash(version)
         versions[version] = {
             "hash": calculated_hash,
-            "vendorHash": calculate_vendor_hash(
-                vendor_hash_file, version, calculated_hash
-            ),
+            "vendorHash": calculate_vendor_hash(vendor_hash, version, calculated_hash),
         }
         return versions
 
@@ -62,7 +60,7 @@ def calculate_hash(version):
         )
 
 
-def calculate_vendor_hash(vendor_hash_file, version, calculated_hash):
+def calculate_vendor_hash(vendor_hash, version, calculated_hash):
     current_vendor_hash = current_versions.get(version, {}).get("vendorHash")
     if current_vendor_hash:
         print(f"Using existing vendorHash for {version}")
@@ -72,7 +70,7 @@ def calculate_vendor_hash(vendor_hash_file, version, calculated_hash):
         return nix_prefetch(
             [
                 "--file",
-                vendor_hash_file.resolve(),
+                vendor_hash.resolve(),
                 "--argstr",
                 "version",
                 version,
@@ -98,7 +96,7 @@ def nix_prefetch(args):
 
 
 parser = argparse.ArgumentParser(description="Update versions.json file")
-parser.add_argument("vendor_hash_file", type=pathlib.Path)
+parser.add_argument("vendor_hash", type=pathlib.Path)
 args = parser.parse_args()
 
 auth = github.Auth.Token(os.environ["GITHUB_TOKEN"])
@@ -111,6 +109,6 @@ repo = g.get_repo("hashicorp/terraform")
 # https://endoflife.date/api/terraform.json
 releases = list(filter(is_stable, repo.get_releases().get_page(0)))
 releases.sort(reverse=True, key=by_version)
-versions = functools.reduce(to_version(args.vendor_hash_file), releases, {})
+versions = functools.reduce(to_version(args.vendor_hash), releases, {})
 with open("versions.json", "w") as f:
     json.dump(versions, f, indent=2)
