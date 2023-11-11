@@ -1,4 +1,5 @@
 import argparse
+import collections
 import functools
 import github
 import json
@@ -11,9 +12,6 @@ import subprocess
 def read_versions():
     with open("versions.json", "r") as f:
         return json.load(f)
-
-
-current_versions = read_versions()
 
 
 def is_stable(release):
@@ -30,18 +28,20 @@ def by_version(release):
 def to_version(vendor_hash):
     def add_version(versions, release):
         version = release.tag_name.removeprefix("v")
-        calculated_hash = calculate_hash(version)
+        calculated_hash = calculate_hash(versions, version)
         versions[version] = {
             "hash": calculated_hash,
-            "vendorHash": calculate_vendor_hash(vendor_hash, version, calculated_hash),
+            "vendorHash": calculate_vendor_hash(
+                versions, version, calculated_hash, vendor_hash
+            ),
         }
         return versions
 
     return add_version
 
 
-def calculate_hash(version):
-    current_hash = current_versions.get(version, {}).get("hash")
+def calculate_hash(versions, version):
+    current_hash = versions.get(version, {}).get("hash")
     if current_hash:
         print(f"Using existing hash for {version}")
         return current_hash
@@ -60,8 +60,8 @@ def calculate_hash(version):
         )
 
 
-def calculate_vendor_hash(vendor_hash, version, calculated_hash):
-    current_vendor_hash = current_versions.get(version, {}).get("vendorHash")
+def calculate_vendor_hash(versions, version, calculated_hash, vendor_hash):
+    current_vendor_hash = versions.get(version, {}).get("vendorHash")
     if current_vendor_hash:
         print(f"Using existing vendorHash for {version}")
         return current_vendor_hash
@@ -109,6 +109,14 @@ repo = g.get_repo("hashicorp/terraform")
 # https://endoflife.date/api/terraform.json
 releases = list(filter(is_stable, repo.get_releases().get_page(0)))
 releases.sort(reverse=True, key=by_version)
-versions = functools.reduce(to_version(args.vendor_hash), releases, {})
+current_versions = read_versions()
+versions = collections.OrderedDict(
+    sorted(
+        functools.reduce(
+            to_version(args.vendor_hash), releases, current_versions
+        ).items(),
+        reverse=True,
+    )
+)
 with open("versions.json", "w") as f:
     json.dump(versions, f, indent=2)
