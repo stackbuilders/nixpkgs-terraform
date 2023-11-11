@@ -107,8 +107,7 @@ repo = g.get_repo("hashicorp/terraform")
 # versions
 # https://api.github.com/repos/hashicorp/terraform/tags
 # https://endoflife.date/api/terraform.json
-releases = list(filter(is_stable, repo.get_releases().get_page(0)))
-releases.sort(reverse=True, key=by_version)
+releases = list(filter(is_stable, repo.get_releases()))
 current_versions = read_versions()
 versions = collections.OrderedDict(
     sorted(
