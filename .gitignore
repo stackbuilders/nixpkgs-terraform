@@ -1,2 +1,4 @@
-templates/*/flake.lock
+.direnv
+.env
 result
+templates/*/flake.lock
