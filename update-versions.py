@@ -71,7 +71,7 @@ def calculate_vendor_hash(vendor_hash_file, version, calculated_hash):
 def nix_prefetch(args):
     return subprocess.check_output([
         "nix-prefetch",
-        # "--silent",
+        "--silent",
         "--option",
         "extra-experimental-features",
         "flakes",
