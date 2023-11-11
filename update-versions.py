@@ -1,6 +1,5 @@
 import argparse
 import functools
-from re import sub
 import github
 import json
 import os
