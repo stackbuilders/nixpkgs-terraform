@@ -2,9 +2,8 @@
 name: Update versions
 
 on: push
-# on:
-#     schedule:
-#         - cron: "5 * * * *"
+    # schedule:
+    #     - cron: "0 0 * * 0"
 
 concurrency:
     group: update
@@ -31,6 +30,7 @@ jobs:
           id: create-pull-request
           uses: peter-evans/create-pull-request@v5
           with:
+            author: GitHub <noreply@github.com>
             commit-message: Update Terraform versions
             title: Update Terraform versions
             body: |
