@@ -23,7 +23,7 @@ jobs:
           uses: DeterminateSystems/nix-installer-action@v6
         - name: Install tools via Nix
           run: nix develop --impure --check
-        - name: Check code format
+        - name: Update versions
           run: nix develop --impure --command python3 update-versions.py vendor-hash.nix
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
