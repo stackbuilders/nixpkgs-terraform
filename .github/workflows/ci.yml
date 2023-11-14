@@ -16,9 +16,14 @@ jobs:
 
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: cachix/install-nix-action@v23
-      - uses: cachix/cachix-action@v12
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Check Nix flake inputs
+        uses: DeterminateSystems/flake-checker-action@v4
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v6
+      - name: Setup Cachix
+        uses: cachix/cachix-action@v12
         with:
           name: nixpkgs-terraform
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
