@@ -3,6 +3,8 @@
 [![CI](https://github.com/stackbuilders/nixpkgs-terraform/actions/workflows/ci.yml/badge.svg)](https://github.com/stackbuilders/nixpkgs-terraform/actions/workflows/ci.yml)
 [![Update](https://github.com/stackbuilders/nixpkgs-terraform/actions/workflows/update.yml/badge.svg)](https://github.com/stackbuilders/nixpkgs-terraform/actions/workflows/update.yml)
 
+A collection of Terraform versions that are automatically updated.
+
 ## How it works
 
 TODO: Quick overview of `nixpkgs-terraform.packages.${system}.${version}`
@@ -10,7 +12,7 @@ TODO: Quick overview of `nixpkgs-terraform.packages.${system}.${version}`
 **Available versions**
 
 Terraform versions greater than 1.5.0 are kept up to date via a weekly
-scheduled [CI workflow](.github/workflows/update.yaml).
+scheduled [CI workflow](.github/workflows/update.yml).
 
 **Inspired by**
 
