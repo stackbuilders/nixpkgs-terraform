@@ -8,15 +8,9 @@ concurrency:
 
 jobs:
   build:
-    strategy:
-      matrix:
-        os:
-          - macos-latest
-          - ubuntu-latest
-
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
       - name: Check Nix flake inputs
         uses: DeterminateSystems/flake-checker-action@v4
@@ -27,6 +21,7 @@ jobs:
         with:
           name: nixpkgs-terraform
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
-      - run: nix flake check --impure
+      - name: Build all packages
+        run: nix flake check --impure
         env:
           NIXPKGS_ALLOW_UNFREE: 1
