@@ -40,10 +40,6 @@
                 };
               })
               (builtins.attrNames versions));
-          templates.default = {
-            description = "";
-            path = ./templates/default;
-          };
         }) // {
       lib.buildTerraform = { system, version, hash, vendorHash }:
         let
@@ -65,5 +61,9 @@
             inherit version hash vendorHash;
             patches = [ "${nixpkgs}/pkgs/applications/networking/cluster/terraform/provider-path-0_15.patch" ];
           };
+      templates.default = {
+        description = "Simple nix-shell with Terraform installed via nixpkgs-terraform";
+        path = ./templates/default;
+      };
     };
 }
