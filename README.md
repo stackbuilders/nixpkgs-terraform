@@ -7,14 +7,14 @@ A collection of Terraform versions that are automatically updated.
 
 ## How it works
 
-TODO: Quick overview of `nixpkgs-terraform.packages.${system}.${version}`
+This flake provides a set of Terraform versions in the form of: 
 
-**Available versions**
+```nix
+nixpkgs-terraform.packages.${system}.${version}
+```
 
-Terraform versions greater than 1.5.0 are kept up to date via a weekly
-scheduled [CI workflow](.github/workflows/update.yml).
-
-**Inspired by**
+Terraform versions >= 1.5.0 are kept up to date via a weekly scheduled [CI
+workflow](.github/workflows/update.yml).
 
 The current project structure as well as some components of the CI workflow are
 heavily inspired by the following projects:
