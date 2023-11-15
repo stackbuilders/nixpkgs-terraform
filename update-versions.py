@@ -96,7 +96,7 @@ def nix_prefetch(args):
 
 
 parser = argparse.ArgumentParser(description="Update versions.json file")
-parser.add_argument("vendor_hash", type=pathlib.Path)
+parser.add_argument("--vendor_hash", type=pathlib.Path, default="vendor-hash.nix")
 args = parser.parse_args()
 
 auth = github.Auth.Token(os.environ["GITHUB_TOKEN"])

@@ -1,0 +1,45 @@
+---
+name: Update
+
+on:
+  schedule:
+    - cron: "0 0 * * 0"
+
+concurrency:
+  group: update
+  cancel-in-progress: true
+
+jobs:
+  check:
+    permissions:
+      pull-requests: write
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v6
+      - name: Install tools via Nix
+        run: nix develop --impure --check
+      - name: Update versions
+        run: nix develop --impure --command python3 update-versions.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          author: GitHub <noreply@github.com>
+          commit-message: Update Terraform versions
+          title: Update Terraform versions
+          body: |
+            Automatically created pull-request to update Terraform versions.
+
+            This is the result of running:
+
+            ```
+            env GITHUB_TOKEN=<token> nix develop --impure --command python3 update-versions.py
+            ```
+          delete-branch: true
