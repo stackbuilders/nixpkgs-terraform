@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  check:
+  update:
     permissions:
       pull-requests: write
       contents: write
