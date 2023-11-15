@@ -1,6 +1,7 @@
 # nixpkgs-terraform
 
 [![CI](https://github.com/stackbuilders/nixpkgs-terraform/actions/workflows/ci.yml/badge.svg)](https://github.com/stackbuilders/nixpkgs-terraform/actions/workflows/ci.yml)
+[![Update](https://github.com/stackbuilders/nixpkgs-terraform/actions/workflows/update.yaml/badge.svg)](https://github.com/stackbuilders/nixpkgs-terraform/actions/workflows/update.yaml)
 
 ## Available Versions
 
