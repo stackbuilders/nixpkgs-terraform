@@ -1,6 +1,4 @@
 {
-  description = "TODO";
-
   inputs = {
     flake-utils.inputs.systems.follows = "systems";
     flake-utils.url = "github:numtide/flake-utils";
@@ -18,6 +16,18 @@
           versions = builtins.fromJSON (builtins.readFile ./versions.json);
         in
         {
+          devShell = pkgs.mkShell {
+            buildInputs = [
+              pkgs-unstable.black
+              (pkgs-unstable.python3.withPackages
+                (ps: [
+                  ps.pygithub
+                  ps.semver
+                ])
+              )
+              pkgs-unstable.nix-prefetch
+            ];
+          };
           # https://github.com/NixOS/nix/issues/7165
           checks = self.packages.${system};
           packages = builtins.listToAttrs
@@ -30,17 +40,9 @@
                 };
               })
               (builtins.attrNames versions));
-          devShell = pkgs.mkShell {
-            buildInputs = [
-              pkgs-unstable.black
-              (pkgs-unstable.python3.withPackages
-                (ps: [
-                  ps.pygithub
-                  ps.semver
-                ])
-              )
-              pkgs-unstable.nix-prefetch
-            ];
+          templates.default = {
+            description = "";
+            path = ./templates/default;
           };
         }) // {
       lib.buildTerraform = { system, version, hash, vendorHash }:

@@ -24,18 +24,25 @@ heavily inspired by the following projects:
 
 ## Install
 
-Add the following input to `flake.nix`:
+The quickest way to get started with an empty project is to scaffold a new
+project using the [default](templates/default) template:
+
+```sh
+nix flake init -t github:stackbuilders/nixpkgs-terraform
+```
+
+Alternatively, add the following input to an existing `flake.nix` file:
 
 ```nix
 inputs.nixpkgs-terraform.url = "github:stackbuilders/nixpkgs-terraform";
 ```
 
-Additionally, some extra inputs are required for the example provided in the
-[Usage](#usage) section:
+Some extra inputs are required for the example provided in the [Usage](#usage)
+section:
 
 ```nix
+inputs.flake-utils.url = "github:numtide/flake-utils";
 inputs.nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
-inputs.systems.url = "github:nix-systems/default";
 ```
 
 **Binary Cache**
@@ -49,7 +56,7 @@ file:
 ```nix
 nixConfig = {
   extra-substituters = "https://nixpkgs-terraform.cachix.org";
-  extra-trusted-public-keys = "";
+  extra-trusted-public-keys = "nixpkgs-terraform.cachix.org-1:8Sit092rIdAVENA3ZVeH9hzSiqI/jng6JiCrQ1Dmusw=";
 };
 ```
 
@@ -61,20 +68,17 @@ version, which could be accomplished by extracting the desired version from
 `nixpkgs-terraform.packages` as follows:
 
 ```nix
-outputs = { self, nixpkgs-terraform, nixpkgs, systems, ... }:
-  let
-    forEachSystem = nixpkgs.lib.genAttrs (import systems);
-  in {
-    devShell = forEachSystem (system:
-      let
-        pkgs = nixpkgs.legacyPackages.${system};
-        terraform = nixpkgs-terraform.packages.${system}."1.6.3";
-      in {
-        default = pkgs.mkShell {
-          buildInputs = [ terraform ];
-        };
-      });
-  };
+outputs = { self, flake-utils, nixpkgs-terraform, nixpkgs }:
+  flake-utils.lib.eachDefaultSystem (system:
+    let
+      pkgs = nixpkgs.legacyPackages.${system};
+      terraform = nixpkgs-terraform.packages.${system}."1.6.3";
+    in
+    {
+      devShells.default = pkgs.mkShell {
+        buildInputs = [ terraform ];
+      };
+    });
 ```
 
 Start a new [nix-shell] with Terraform installed by running the following
