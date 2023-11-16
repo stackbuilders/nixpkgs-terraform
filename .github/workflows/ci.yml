@@ -25,3 +25,31 @@ jobs:
         run: nix flake check --impure
         env:
           NIXPKGS_ALLOW_UNFREE: 1
+
+  templates:
+    strategy:
+      matrix:
+        template:
+          - name: default
+            test: env NIXPKGS_ALLOW_UNFREE=1 nix develop --impure -c terraform --version
+          - name: devenv
+            test: env NIXPKGS_ALLOW_UNFREE=1 nix develop --impure -c terraform --version
+      fail-fast: true
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v6
+      - name: Replace inputs on templates
+        run: sed -i 's/github:stackbuilders\/nixpkgs-terraform/github:stackbuilders\/nixpkgs-terraform\/${{ github.sha }}/g' templates/*/flake.nix
+      - name: Create a temporary directory
+        run: echo "tmpdir=$(mktemp -d)" >> "$GITHUB_OUTPUT"
+        id: mktemp
+      - name: Scaffold a new project
+        run: nix flake init -t ${{ github.workspace }}#${{ matrix.template.name }}
+        working-directory: ${{ steps.mktemp.outputs.tmpdir }}
+      - name: Run smoke test
+        run: ${{ matrix.template.test }}
+        working-directory: ${{ steps.mktemp.outputs.tmpdir }}
