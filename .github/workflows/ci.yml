@@ -49,6 +49,6 @@ jobs:
         working-directory: ${{ steps.mktemp.outputs.tmpdir }}
       - name: Run smoke test
         run: nix develop --impure -c terraform --version
-        working-directory: ${{ steps.mktemp.outputs.tmpdir }}
         env:
           NIXPKGS_ALLOW_UNFREE: 1
+        working-directory: ${{ steps.mktemp.outputs.tmpdir }}
