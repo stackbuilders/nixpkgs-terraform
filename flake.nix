@@ -16,7 +16,7 @@
           versions = builtins.fromJSON (builtins.readFile ./versions.json);
         in
         {
-          devShells = pkgs.mkShell {
+          devShell = pkgs.mkShell {
             buildInputs = [
               pkgs-unstable.black
               (pkgs-unstable.python3.withPackages
