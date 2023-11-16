@@ -1,6 +1,4 @@
 {
-  description = "TODO";
-
   inputs = {
     flake-utils.inputs.systems.follows = "systems";
     flake-utils.url = "github:numtide/flake-utils";
@@ -18,18 +16,6 @@
           versions = builtins.fromJSON (builtins.readFile ./versions.json);
         in
         {
-          # https://github.com/NixOS/nix/issues/7165
-          checks = self.packages.${system};
-          packages = builtins.listToAttrs
-            (builtins.map
-              (version: {
-                name = version;
-                value = self.lib.buildTerraform {
-                  inherit system version;
-                  inherit (versions.${version}) hash vendorHash;
-                };
-              })
-              (builtins.attrNames versions));
           devShell = pkgs.mkShell {
             buildInputs = [
               pkgs-unstable.black
@@ -42,6 +28,18 @@
               pkgs-unstable.nix-prefetch
             ];
           };
+          # https://github.com/NixOS/nix/issues/7165
+          checks = self.packages.${system};
+          packages = builtins.listToAttrs
+            (builtins.map
+              (version: {
+                name = version;
+                value = self.lib.buildTerraform {
+                  inherit system version;
+                  inherit (versions.${version}) hash vendorHash;
+                };
+              })
+              (builtins.attrNames versions));
         }) // {
       lib.buildTerraform = { system, version, hash, vendorHash }:
         let
@@ -63,5 +61,9 @@
             inherit version hash vendorHash;
             patches = [ "${nixpkgs}/pkgs/applications/networking/cluster/terraform/provider-path-0_15.patch" ];
           };
+      templates.default = {
+        description = "Simple nix-shell with Terraform installed via nixpkgs-terraform";
+        path = ./templates/default;
+      };
     };
 }
