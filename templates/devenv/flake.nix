@@ -22,8 +22,8 @@
           inherit inputs pkgs;
           modules = [
             ({ pkgs, config, ... }: {
-              languages.python.enable = true;
-              languages.python.package = packages.python;
+              languages.terraform.enable = true;
+              languages.terraform.package = terraform;
             })
           ];
         };
