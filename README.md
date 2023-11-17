@@ -39,7 +39,7 @@ inputs.flake-utils.url = "github:numtide/flake-utils";
 inputs.nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
 ```
 
-**Binary Cache**
+### Binary Cache
 
 It is highly recommended to set up the
 [nixpkgs-terraform](https://nixpkgs-terraform.cachix.org) binary cache to
