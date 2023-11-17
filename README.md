@@ -87,10 +87,21 @@ change](https://www.hashicorp.com/blog/hashicorp-adopts-business-source-license)
 the `NIXPKGS_ALLOW_UNFREE` flag is required for Terraform versions `>= 1.6.0`,
 `nix develop` should work out of the box for older versions.
 
-Check out the [default template](templates/default) for a complete example of
-the steps described in this section. This flake also includes a [devenv
-template](templates/devenv) that demonstrates how to use `nixpkgs-terraform`
-with [devenv](https://devenv.sh).
+### Templates
+
+This flake provides the following templates:
+
+- [default](templates/default) - Simple nix-shell with Terraform installed via
+  nixpkgs-terraform.
+- [devenv](templates/devenv) - Using nixpkgs-terraform with devenv.
+
+Run the following command to scaffold a new project using a template:
+
+```sh
+nix flake init -t github:stackbuilders/nixpkgs-terraform#<template>
+```
+
+**Note:** Replace `<template>` with one of the templates listed above.
 
 ## Inspired By
 
