@@ -13,14 +13,8 @@ This flake provides a set of Terraform versions in the form of:
 nixpkgs-terraform.packages.${system}.${version}
 ```
 
-Terraform versions >= 1.5.0 are kept up to date via a weekly scheduled [CI
+Terraform versions `>= 1.5.0` are kept up to date via a weekly scheduled [CI
 workflow](.github/workflows/update.yml).
-
-The current project structure as well as some components of the CI workflow are
-heavily inspired by the following projects:
-
-- [nixpkgs-python](https://github.com/cachix/nixpkgs-python)
-- [nixpkgs-ruby](https://github.com/bobvanderlinden/nixpkgs-ruby)
 
 ## Install
 
@@ -90,8 +84,23 @@ env NIXPKGS_ALLOW_UNFREE=1 nix develop --impure
 
 **Note:** Due to Hashicorp’s most recent [license
 change](https://www.hashicorp.com/blog/hashicorp-adopts-business-source-license),
-the `NIXPKGS_ALLOW_UNFREE` flag is required for Terraform versions >= 1.6.0,
+the `NIXPKGS_ALLOW_UNFREE` flag is required for Terraform versions `>= 1.6.0`,
 `nix develop` should work out of the box for older versions.
+
+Check out the [default template](templates/default) for a complete example of
+the steps described in this section. This flake also includes a [devenv
+template](templates/devenv) that demonstrates how to use `nixpkgs-terraform`
+with [devenv](https://devenv.sh).
+
+## Inspired By
+
+The current project structure as well as some components of the CI workflow are
+heavily inspired by the following projects:
+
+- [nixpkgs-python](https://github.com/cachix/nixpkgs-python) - All Python
+  versions, kept up-to-date on hourly basis using Nix.
+- [nixpkgs-ruby](https://github.com/bobvanderlinden/nixpkgs-ruby) - A Nix
+  repository with all Ruby versions being kept up-to-date automatically.
 
 ## License
 
