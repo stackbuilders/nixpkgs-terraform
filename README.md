@@ -13,14 +13,8 @@ This flake provides a set of Terraform versions in the form of:
 nixpkgs-terraform.packages.${system}.${version}
 ```
 
-Terraform versions >= 1.5.0 are kept up to date via a weekly scheduled [CI
+Terraform versions `>= 1.5.0` are kept up to date via a weekly scheduled [CI
 workflow](.github/workflows/update.yml).
-
-The current project structure as well as some components of the CI workflow are
-heavily inspired by the following projects:
-
-- [nixpkgs-python](https://github.com/cachix/nixpkgs-python)
-- [nixpkgs-ruby](https://github.com/bobvanderlinden/nixpkgs-ruby)
 
 ## Install
 
@@ -45,7 +39,7 @@ inputs.flake-utils.url = "github:numtide/flake-utils";
 inputs.nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
 ```
 
-**Binary Cache**
+### Binary Cache
 
 It is highly recommended to set up the
 [nixpkgs-terraform](https://nixpkgs-terraform.cachix.org) binary cache to
@@ -90,8 +84,34 @@ env NIXPKGS_ALLOW_UNFREE=1 nix develop --impure
 
 **Note:** Due to Hashicorp’s most recent [license
 change](https://www.hashicorp.com/blog/hashicorp-adopts-business-source-license),
-the `NIXPKGS_ALLOW_UNFREE` flag is required for Terraform versions >= 1.6.0,
+the `NIXPKGS_ALLOW_UNFREE` flag is required for Terraform versions `>= 1.6.0`,
 `nix develop` should work out of the box for older versions.
+
+### Templates
+
+This flake provides the following templates:
+
+- [default](templates/default) - Simple nix-shell with Terraform installed via
+  nixpkgs-terraform.
+- [devenv](templates/devenv) - Using nixpkgs-terraform with devenv.
+
+Run the following command to scaffold a new project using a template:
+
+```sh
+nix flake init -t github:stackbuilders/nixpkgs-terraform#<template>
+```
+
+**Note:** Replace `<template>` with one of the templates listed above.
+
+## Inspired By
+
+The current project structure as well as some components of the CI workflow are
+heavily inspired by the following projects:
+
+- [nixpkgs-python](https://github.com/cachix/nixpkgs-python) - All Python
+  versions, kept up-to-date on hourly basis using Nix.
+- [nixpkgs-ruby](https://github.com/bobvanderlinden/nixpkgs-ruby) - A Nix
+  repository with all Ruby versions being kept up-to-date automatically.
 
 ## License
 
