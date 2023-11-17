@@ -61,9 +61,15 @@
             inherit version hash vendorHash;
             patches = [ "${nixpkgs}/pkgs/applications/networking/cluster/terraform/provider-path-0_15.patch" ];
           };
-      templates.default = {
-        description = "Simple nix-shell with Terraform installed via nixpkgs-terraform";
-        path = ./templates/default;
+      templates = {
+        default = {
+          description = "Simple nix-shell with Terraform installed via nixpkgs-terraform";
+          path = ./templates/default;
+        };
+        devenv = {
+          description = "Using nixpkgs-terraform with devenv";
+          path = ./templates/devenv;
+        };
       };
     };
 }
