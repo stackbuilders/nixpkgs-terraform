@@ -1,17 +1,13 @@
-name: "Publish tags to FlakeHub"
+name: "Publish flake"
 on:
   push:
     tags:
-      - "v?[0-9]+.[0-9]+.[0-9]+*"
-  workflow_dispatch:
-    inputs:
-      tag:
-        description: "The existing tag to publish to FlakeHub"
-        type: "string"
-        required: true
+      - "v?[0-9]+.[0-9]+.[0-9]+"
+      - "v?[0-9]+.[0-9]+"
+
 jobs:
   flakehub-publish:
-    runs-on: "ubuntu-latest"
+    runs-on: ubuntu-latest
     permissions:
       id-token: "write"
       contents: "read"
@@ -19,7 +15,7 @@ jobs:
       - name: Checkout code
         uses: "actions/checkout@v4"
         with:
-          ref: "${{ (inputs.tag != null) && format('refs/tags/{0}', inputs.tag) || '' }}"
+          ref: "${{ github.ref_name }}"
       - name: Install Nix
         uses: "DeterminateSystems/nix-installer-action@v6"
       - name: Push to FlakeHub
@@ -27,4 +23,14 @@ jobs:
         with:
           visibility: "public"
           name: "stackbuilders/nixpkgs-terraform"
-          tag: "${{ inputs.tag }}"
+          tag: "${{ github.ref_name }}"
+
+  flakestry-publish:
+    runs-on: ubuntu-latest
+    permissions:
+        id-token: "write"
+        contents: "read"
+    steps:
+        - uses: flakestry/flakestry-publish@main
+          with:
+            version: "${{ github.ref_name }}"
