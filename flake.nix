@@ -26,20 +26,16 @@
                 ])
               )
               pkgs-unstable.nix-prefetch
+              pkgs.nodejs
             ];
           };
           # https://github.com/NixOS/nix/issues/7165
           checks = self.packages.${system};
-          packages = builtins.listToAttrs
-            (builtins.map
-              (version: {
-                name = version;
-                value = self.lib.buildTerraform {
-                  inherit system version;
-                  inherit (versions.${version}) hash vendorHash;
-                };
-              })
-              (builtins.attrNames versions));
+          packages = builtins.mapAttrs
+            (version: { hash, vendorHash }: self.lib.buildTerraform {
+              inherit system version hash vendorHash;
+            })
+            versions;
         }) // {
       lib.buildTerraform = { system, version, hash, vendorHash }:
         let

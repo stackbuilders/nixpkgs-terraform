@@ -1,0 +1,6 @@
+{
+  "name": "nixpkgs-terraform",
+  "dependencies": {
+    "semantic-release": "^22.0.8"
+  }
+}
