@@ -34,7 +34,7 @@ jobs:
         template: [default, devenv]
       fail-fast: true
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    timeout-minutes: 4
     needs: [build]
     steps:
       - name: Checkout code
