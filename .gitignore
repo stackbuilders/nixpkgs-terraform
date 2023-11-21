@@ -3,3 +3,4 @@
 node_modules
 result
 templates/*/flake.lock
+__pycache__

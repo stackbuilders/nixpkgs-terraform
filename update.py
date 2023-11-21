@@ -95,27 +95,28 @@ def nix_prefetch(args):
     ).strip()
 
 
-parser = argparse.ArgumentParser(description="Update versions.json file")
-parser.add_argument("--vendor_hash", type=pathlib.Path, default="vendor-hash.nix")
-args = parser.parse_args()
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Update versions.json file")
+    parser.add_argument("--vendor_hash", type=pathlib.Path, default="vendor-hash.nix")
+    args = parser.parse_args()
 
-auth = github.Auth.Token(os.environ["GITHUB_TOKEN"])
-g = github.Github(auth=auth)
-repo = g.get_repo("hashicorp/terraform")
-# TODO: Drop "v" prefix first
-# TODO: Combine the output of the following endpoints to get a list of active
-# versions
-# https://api.github.com/repos/hashicorp/terraform/tags
-# https://endoflife.date/api/terraform.json
-releases = list(filter(is_stable, repo.get_releases()))
-current_versions = read_versions()
-versions = collections.OrderedDict(
-    sorted(
-        functools.reduce(
-            to_version(args.vendor_hash), releases, current_versions
-        ).items(),
-        reverse=True,
+    auth = github.Auth.Token(os.environ["GITHUB_TOKEN"])
+    g = github.Github(auth=auth)
+    repo = g.get_repo("hashicorp/terraform")
+    # TODO: Drop "v" prefix first
+    # TODO: Combine the output of the following endpoints to get a list of active
+    # versions
+    # https://api.github.com/repos/hashicorp/terraform/tags
+    # https://endoflife.date/api/terraform.json
+    releases = list(filter(is_stable, repo.get_releases()))
+    current_versions = read_versions()
+    versions = collections.OrderedDict(
+        sorted(
+            functools.reduce(
+                to_version(args.vendor_hash), releases, current_versions
+            ).items(),
+            reverse=True,
+        )
     )
-)
-with open("versions.json", "w") as f:
-    json.dump(versions, f, indent=2)
+    with open("versions.json", "w") as f:
+        json.dump(versions, f, indent=2)
