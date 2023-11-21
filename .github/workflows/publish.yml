@@ -6,6 +6,7 @@ on:
 
 jobs:
   flakehub-publish:
+    name: "Publish to `flakehub.com`"
     runs-on: ubuntu-latest
     permissions:
       id-token: "write"
@@ -21,15 +22,15 @@ jobs:
         uses: "DeterminateSystems/flakehub-push@v3"
         with:
           visibility: "public"
-          name: "stackbuilders/nixpkgs-terraform"
           tag: "${{ github.ref_name }}"
 
   flakestry-publish:
+    name: "Publish to `flakestry.dev`"
     runs-on: ubuntu-latest
     permissions:
         id-token: "write"
         contents: "read"
     steps:
-        - uses: flakestry/flakestry-publish@645c2ab3c99b97f5f1abc383370ae5e72c9e7d9b
-          with:
-            version: "${{ github.ref_name }}"
+      - uses: flakestry/flakestry-publish@645c2ab3c99b97f5f1abc383370ae5e72c9e7d9b
+        with:
+          version: "${{ github.ref_name }}"
