@@ -56,23 +56,3 @@ jobs:
           NIXPKGS_ALLOW_UNFREE: 1
         working-directory: ${{ steps.mktemp.outputs.tmpdir }}
 
-  release:
-    runs-on: ubuntu-latest
-    # needs: [templates]
-    permissions:
-      contents: write
-      issues: write
-      pull-requests: write
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v6
-      - name: Install tools via Nix
-        run: nix develop --check
-      - name: Install dependencies
-        run: nix develop -c npm ci
-      - name: Run semantic-release
-        run: nix develop -c npx semantic-release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
