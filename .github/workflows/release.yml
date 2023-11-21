@@ -1,9 +1,9 @@
 name: Release
 
-on:
-  workflow_run:
-    workflows: [Build]
-    types: [completed]
+on: push
+  # workflow_run:
+    # workflows: [setup_semantic_release]
+    # types: [completed]
 
 concurrency:
   group: release
@@ -11,7 +11,7 @@ concurrency:
 
 jobs:
   release:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    # if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
