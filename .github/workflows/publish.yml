@@ -17,9 +17,9 @@ jobs:
         with:
           ref: "${{ github.ref_name }}"
       - name: Install Nix
-        uses: "DeterminateSystems/nix-installer-action@v6"
+        uses: "DeterminateSystems/nix-installer-action@v7"
       - name: Push to FlakeHub
-        uses: "DeterminateSystems/flakehub-push@v3"
+        uses: "DeterminateSystems/flakehub-push@main"
         with:
           visibility: "public"
           name: "stackbuilders/nixpkgs-terraform"
