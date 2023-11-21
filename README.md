@@ -124,6 +124,12 @@ Do you want to contribute to this project? Please take a look at our
 [contributing guideline](docs/CONTRIBUTING.md) to know how you can help us
 build it.
 
+Aside from the contribution guidelines outlined above, this project uses
+[semantic-release] to automate version management; thus, we encourage
+contributors to follow the commit conventions outlined
+[here](https://semantic-release.gitbook.io/semantic-release/#commit-message-format)
+to make it easier for maintainers to release new changes.
+
 ---
 <img src="https://www.stackbuilders.com/media/images/Sb-supports.original.png"
 alt="Stack Builders" width="50%"></img>  
@@ -131,3 +137,4 @@ alt="Stack Builders" width="50%"></img>
 team](https://www.stackbuilders.com/join-us/)
 
 [nix-shell]: https://nixos.wiki/wiki/Development_environment_with_nix-shell
+[semantic-release]: https://semantic-release.gitbook.io/semantic-release/
