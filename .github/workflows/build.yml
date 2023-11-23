@@ -16,7 +16,7 @@ jobs:
       - name: Check Nix flake inputs
         uses: DeterminateSystems/flake-checker-action@v5
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v7
+        uses: DeterminateSystems/nix-installer-action@v8
       - name: Setup Cachix
         uses: cachix/cachix-action@v12
         with:
@@ -40,7 +40,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v7
+        uses: DeterminateSystems/nix-installer-action@v8
       - name: Replace inputs on templates
         run: sed -i 's/github:stackbuilders\/nixpkgs-terraform/github:stackbuilders\/nixpkgs-terraform\/${{ github.sha }}/g' templates/*/flake.nix
       - name: Create a temporary directory
