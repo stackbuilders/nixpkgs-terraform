@@ -1,36 +1,34 @@
-name: "Publish flake"
+name: Publish
+
 on:
   push:
     tags:
-      - "v?[0-9]+.[0-9]+.[0-9]+"
+      - v[0-9]+.[0-9]+.[0-9]+
+
+permissions:
+  id-token: write
+  contents: read
 
 jobs:
-  flakehub-publish:
-    name: "Publish to `flakehub.com`"
+  flakehub:
     runs-on: ubuntu-latest
-    permissions:
-      id-token: "write"
-      contents: "read"
     steps:
       - name: Checkout code
-        uses: "actions/checkout@v4"
+        uses: actions/checkout@v4
         with:
-          ref: "${{ github.ref_name }}"
+          ref: ${{ github.ref_name }}
       - name: Install Nix
-        uses: "DeterminateSystems/nix-installer-action@v7"
-      - name: Push to FlakeHub
-        uses: "DeterminateSystems/flakehub-push@v3"
+        uses: DeterminateSystems/nix-installer-action@v7
+      - name: Publish to FlakeHub
+        uses: DeterminateSystems/flakehub-push@v3
         with:
-          visibility: "public"
-          tag: "${{ github.ref_name }}"
+          visibility: public
+          tag: ${{ github.ref_name }}
 
-  flakestry-publish:
-    name: "Publish to `flakestry.dev`"
+  flakestry:
     runs-on: ubuntu-latest
-    permissions:
-        id-token: "write"
-        contents: "read"
     steps:
-      - uses: flakestry/flakestry-publish@645c2ab3c99b97f5f1abc383370ae5e72c9e7d9b
+      - name: Publish to Flakestry
+        uses: flakestry/flakestry-publish@645c2ab3c99b97f5f1abc383370ae5e72c9e7d9b
         with:
-          version: "${{ github.ref_name }}"
+          version: ${{ github.ref_name }}
