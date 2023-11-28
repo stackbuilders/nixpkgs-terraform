@@ -3,6 +3,10 @@
 [![Build](https://github.com/stackbuilders/nixpkgs-terraform/actions/workflows/build.yml/badge.svg)](https://github.com/stackbuilders/nixpkgs-terraform/actions/workflows/build.yml)
 [![Update](https://github.com/stackbuilders/nixpkgs-terraform/actions/workflows/update.yml/badge.svg)](https://github.com/stackbuilders/nixpkgs-terraform/actions/workflows/update.yml)
 [![Release](https://github.com/stackbuilders/nixpkgs-terraform/actions/workflows/release.yml/badge.svg)](https://github.com/stackbuilders/nixpkgs-terraform/actions/workflows/release.yml)
+[![Publish](https://github.com/stackbuilders/nixpkgs-terraform/actions/workflows/publish.yml/badge.svg)](https://github.com/stackbuilders/nixpkgs-terraform/actions/workflows/publish.yml)
+
+[![FlakeHub](https://img.shields.io/endpoint?url=https://flakehub.com/f/stackbuilders/nixpkgs-terraform/badge)](https://flakehub.com/flake/stackbuilders/nixpkgs-terraform)
+[![flakestry.dev](https://flakestry.dev/api/badge/flake/github/stackbuilders/nixpkgs-terraform)](https://flakestry.dev/flake/github/stackbuilders/nixpkgs-terraform)
 
 A collection of Terraform versions that are automatically updated.
 
