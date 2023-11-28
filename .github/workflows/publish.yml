@@ -2,8 +2,17 @@ name: Publish
 
 on:
   push:
-    tags:
-      - v[0-9]+.[0-9]+.[0-9]+
+    tags: ["v[0-9]+.[0-9]+.[0-9]+"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: The existing tag to publish
+        type: string
+        required: true
+
+concurrency:
+  group: publish
+  cancel-in-progress: true
 
 permissions:
   id-token: write
@@ -16,19 +25,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref_name }}
+          ref: ${{ inputs.tag || github.ref_name }}
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@v8
-      - name: Publish to FlakeHub
+      - name: Publish flake
         uses: DeterminateSystems/flakehub-push@v3
         with:
-          visibility: public
-          tag: ${{ github.ref_name }}
+          tag: ${{ inputs.tag || github.ref_name }}
 
   flakestry:
     runs-on: ubuntu-latest
     steps:
-      - name: Publish to Flakestry
+      - name: Publish flake
         uses: flakestry/flakestry-publish@645c2ab3c99b97f5f1abc383370ae5e72c9e7d9b
         with:
-          version: ${{ github.ref_name }}
+          version: ${{ inputs.tag || github.ref_name }}
