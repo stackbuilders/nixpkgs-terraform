@@ -27,7 +27,7 @@ jobs:
         with:
           ref: ${{ inputs.tag || github.ref_name }}
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v8
+        uses: DeterminateSystems/nix-installer-action@v9
       - name: Publish flake
         uses: DeterminateSystems/flakehub-push@v3
         with:
