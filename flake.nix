@@ -27,6 +27,7 @@
               )
               pkgs-unstable.nix-prefetch
               pkgs.nodejs
+              pkgs.rubyPackages.dotenv
             ];
           };
           # https://github.com/NixOS/nix/issues/7165
