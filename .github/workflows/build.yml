@@ -20,11 +20,11 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    # timeout-minutes: 2
+    timeout-minutes: 5
     needs: [setup]
     strategy:
       matrix:
-        version: ['1.6.6', '1.5.0']
+        version: ['1.6.6', '1.6.5', '1.5.0']
         # version: ${{ fromJSON(needs.setup.outputs.versions) }}
     steps:
       - name: Checkout code
