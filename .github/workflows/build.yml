@@ -10,8 +10,12 @@ jobs:
   setup:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - run: |
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Check Nix flake inputs
+        uses: DeterminateSystems/flake-checker-action@v5
+      - name: Output versions
+        run: |
           VERSIONS=$(jq -c keys_unsorted versions.json)
           echo "versions=$VERSIONS" >> $GITHUB_OUTPUT
         id: generate
@@ -24,15 +28,11 @@ jobs:
     needs: [setup]
     strategy:
       matrix:
-        version: ['1.6.6', '1.6.5', '1.5.0']
-        # version: ${{ fromJSON(needs.setup.outputs.versions) }}
+        version: ${{ fromJSON(needs.setup.outputs.versions) }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      # - name: Check Nix flake inputs
-      #   uses: DeterminateSystems/flake-checker-action@v5
       - name: Install Nix
-        # uses: DeterminateSystems/nix-installer-action@v9
         uses: cachix/install-nix-action@v24
       - name: Setup Cachix
         uses: cachix/cachix-action@v13
