@@ -48,7 +48,7 @@ jobs:
 
   template:
     runs-on: ubuntu-latest
-    timeout-minutes: 4
+    timeout-minutes: 2
     needs: [build]
     strategy:
       matrix:
