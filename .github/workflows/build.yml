@@ -18,34 +18,30 @@ jobs:
     outputs:
       versions: ${{ steps.generate.outputs.versions }}
 
-  test:
+  build:
     runs-on: ubuntu-latest
+    timeout-minutes: 2
     needs: [setup]
     strategy:
       matrix:
-        version: ${{ fromJSON(needs.setup.outputs.versions) }}
-    steps:
-      - run: echo ${{ matrix.version }}
-
-  build:
-    if: false
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
+        version: ['1.6.6', '1.5.0']
+        # version: ${{ fromJSON(needs.setup.outputs.versions) }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Check Nix flake inputs
-        uses: DeterminateSystems/flake-checker-action@v5
+      # - name: Check Nix flake inputs
+      #   uses: DeterminateSystems/flake-checker-action@v5
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v9
+        # uses: DeterminateSystems/nix-installer-action@v9
+        uses: cachix/install-nix-action@v24
       - name: Setup Cachix
         uses: cachix/cachix-action@v13
         with:
           name: nixpkgs-terraform
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
-          skipPush: ${{ github.ref_name != 'main' }}
-      - name: Build all packages
-        run: nix flake check --impure
+          # skipPush: ${{ github.ref_name != 'main' }}
+      - name: Build package
+        run: nix build --impure .#"${{ matrix.version }}"
         env:
           NIXPKGS_ALLOW_UNFREE: 1
 
