@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: |
-          VERSIONS=$(jq keys_unsorted versions.json)
+          VERSIONS=$(jq -c keys_unsorted versions.json)
           echo "versions=$VERSIONS" >> $GITHUB_OUTPUT
         id: generate
     outputs:
