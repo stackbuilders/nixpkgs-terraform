@@ -7,7 +7,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  foo:
+  setup:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,10 +20,10 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
-    needs: [foo]
+    needs: [setup]
     strategy:
       matrix:
-        version: ${{ fromJSON(foo.outputs.versions) }}
+        version: ${{ fromJSON(needs.setup.outputs.versions) }}
     steps:
       - run: echo ${{ matrix.version }}
 
