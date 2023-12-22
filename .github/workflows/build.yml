@@ -41,7 +41,7 @@ jobs:
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
           # skipPush: ${{ github.ref_name != 'main' }}
       - name: Build package
-        run: nix build --impure .#"${{ matrix.version }}"
+        run: nix build --impure '.#"${{ matrix.version }}"'
         env:
           NIXPKGS_ALLOW_UNFREE: 1
 
