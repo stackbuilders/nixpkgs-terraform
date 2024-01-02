@@ -24,7 +24,7 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
     # needs: [setup]
     # strategy:
     #   matrix:
@@ -43,13 +43,7 @@ jobs:
           skipPush: false
       - name: Build package
         run: |
-          # jq keys_unsorted[] versions.json | while read -r VERSION
-          for VERSION in "1.6.6" "1.5.6"  
-          do
-            echo "::group::Building Terraform version $VERSION"
-            cachix watch-exec nixpkgs-terraform -- nix build --impure ".#\"$VERSION\""
-            echo "::endgroup::"
-          done
+          cachix watch-exec nixpkgs-terraform -- nix flake check --impure --max-jobs $(nproc) --cores 1 --keep-going
         env:
           NIXPKGS_ALLOW_UNFREE: 1
 
