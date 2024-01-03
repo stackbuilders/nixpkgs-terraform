@@ -7,29 +7,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # setup:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v4
-  #     - name: Check Nix flake inputs
-  #       uses: DeterminateSystems/flake-checker-action@v5
-  #     - name: Output versions
-  #       run: |
-  #         VERSIONS=$(jq -c keys_unsorted versions.json)
-  #         echo "versions=$VERSIONS" >> $GITHUB_OUTPUT
-  #       id: generate
-  #   outputs:
-  #     versions: ${{ steps.generate.outputs.versions }}
-
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    # needs: [setup]
-    # strategy:
-    #   matrix:
-    #     version: ${{ fromJSON(needs.setup.outputs.versions) }}
-    #   fail-fast: false
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -41,9 +21,8 @@ jobs:
           name: nixpkgs-terraform
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
           skipPush: false
-      - name: Build package
-        run: |
-          cachix watch-exec nixpkgs-terraform -- nix flake check --impure --max-jobs $(nproc) --cores 1 --keep-going
+      - name: Build packages
+        run: cachix watch-exec nixpkgs-terraform -- nix flake check --impure --max-jobs auto --cores 0 --keep-going
         env:
           NIXPKGS_ALLOW_UNFREE: 1
 
