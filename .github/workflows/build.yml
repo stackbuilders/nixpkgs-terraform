@@ -9,38 +9,35 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Check Nix flake inputs
-        uses: DeterminateSystems/flake-checker-action@v5
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v9
+        uses: cachix/install-nix-action@v24
       - name: Setup Cachix
         uses: cachix/cachix-action@v13
         with:
           name: nixpkgs-terraform
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
-          skipPush: ${{ github.ref_name != 'main' }}
-      - name: Build all packages
-        run: nix flake check --impure
+          skipPush: false
+      - name: Build packages
+        run: cachix watch-exec nixpkgs-terraform -- nix flake check --impure --max-jobs auto --cores 0 --keep-going
         env:
           NIXPKGS_ALLOW_UNFREE: 1
 
-  templates:
+  template:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    needs: [build]
     strategy:
       matrix:
         template: [default, devenv]
-      fail-fast: true
-    runs-on: ubuntu-latest
-    timeout-minutes: 4
-    needs: [build]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v9
+        uses: cachix/install-nix-action@v24
       - name: Replace inputs on templates
         run: sed -i 's/github:stackbuilders\/nixpkgs-terraform/github:stackbuilders\/nixpkgs-terraform\/${{ github.sha }}/g' templates/*/flake.nix
       - name: Create a temporary directory
@@ -51,6 +48,6 @@ jobs:
         working-directory: ${{ steps.mktemp.outputs.tmpdir }}
       - name: Run smoke test
         run: nix develop --accept-flake-config --impure -c terraform --version
+        working-directory: ${{ steps.mktemp.outputs.tmpdir }}
         env:
           NIXPKGS_ALLOW_UNFREE: 1
-        working-directory: ${{ steps.mktemp.outputs.tmpdir }}

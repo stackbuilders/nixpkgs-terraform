@@ -70,7 +70,7 @@ def calculate_vendor_hash(versions, version, calculated_hash, vendor_hash):
         return nix_prefetch(
             [
                 "--file",
-                vendor_hash.resolve(),
+                str(vendor_hash.resolve()),
                 "--argstr",
                 "version",
                 version,
