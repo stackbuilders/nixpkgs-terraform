@@ -11,9 +11,6 @@ concurrency:
 
 jobs:
   update:
-    permissions:
-      pull-requests: write
-      contents: write
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -27,7 +24,7 @@ jobs:
       - name: Update versions
         run: nix develop --impure --command python3 update-versions.py
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
       - name: Create pull request
         uses: peter-evans/create-pull-request@v5
         with:
@@ -46,3 +43,4 @@ jobs:
           reviewers: |
             oscar-izval
             sestrella
+          token: ${{ secrets.BOT_TOKEN }}
