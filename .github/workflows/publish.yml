@@ -32,6 +32,7 @@ jobs:
         uses: DeterminateSystems/flakehub-push@v3
         with:
           tag: ${{ inputs.tag || github.ref_name }}
+          visibility: public
 
   flakestry:
     runs-on: ubuntu-latest
