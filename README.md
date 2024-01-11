@@ -10,7 +10,7 @@
 
 This [flake](https://nixos.wiki/wiki/Flakes) exposes a collection of Terraform
 [active versions](https://endoflife.date/terraform) as Nix packages, which
-could be utilized used for creating reproducible development environments using
+can be used for creating reproducible development environments using a
 [nix-shell] or [devenv](https://devenv.sh).
 
 ## How it works
