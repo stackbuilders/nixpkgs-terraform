@@ -8,7 +8,10 @@
 [![FlakeHub](https://img.shields.io/endpoint?url=https://flakehub.com/f/stackbuilders/nixpkgs-terraform/badge)](https://flakehub.com/flake/stackbuilders/nixpkgs-terraform)
 [![flakestry.dev](https://flakestry.dev/api/badge/flake/github/stackbuilders/nixpkgs-terraform)](https://flakestry.dev/flake/github/stackbuilders/nixpkgs-terraform)
 
-A collection of Terraform versions that are automatically updated.
+This [flake](https://nixos.wiki/wiki/Flakes) exposes a collection of Terraform
+[active versions](https://endoflife.date/terraform) as Nix packages, which
+could be utilized used for creating reproducible development environments using
+[nix-shell] or [devenv](https://devenv.sh).
 
 ## How it works
 
