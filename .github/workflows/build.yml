@@ -14,7 +14,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Install Nix
-        uses: cachix/install-nix-action@v24
+        uses: cachix/install-nix-action@v25
       - name: Setup Cachix
         uses: cachix/cachix-action@v13
         with:
@@ -37,7 +37,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Install Nix
-        uses: cachix/install-nix-action@v24
+        uses: cachix/install-nix-action@v25
       - name: Replace inputs on templates
         run: sed -i 's/github:stackbuilders\/nixpkgs-terraform/github:stackbuilders\/nixpkgs-terraform\/${{ github.sha }}/g' templates/*/flake.nix
       - name: Create a temporary directory
