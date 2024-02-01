@@ -9,6 +9,11 @@ import requests
 import subprocess
 
 
+def get_maintained_cycles():
+  eol_data = requests.get("https://endoflife.date/api/terraform.json").json()
+  return [cycle['cycle'] for cycle in eol_data if not cycle['eol']]
+
+
 def read_versions():
     with open("versions.json", "r") as f:
         return json.load(f)
@@ -106,21 +111,9 @@ repo = g.get_repo("hashicorp/terraform")
 # TODO: Drop "v" prefix first
 
 # Craft list of maintaned releases by filtering the release list with the EOL data
-eol_data = requests.get("https://endoflife.date/api/terraform.json").json()
-maintained_cycles = [cycle['cycle'] for cycle in eol_data if not cycle['eol']]
-maintained_releases = list(filter(lambda version: is_stable(version, maintained_cycles), repo.get_releases()))
+maintained_releases = list(filter(lambda version: is_stable(version, get_maintained_cycles()), repo.get_releases()))
 
-# Read the current versions and drop unmaintaned ones
 current_versions = read_versions()
-maintained_versions = set(release.title.lstrip('v') for release in maintained_releases)
-filtered_versions = {}
-for k, v in current_versions.items():
-    if k in maintained_versions:
-        filtered_versions[k] = v
-    else:
-        print(f"Dropping support for {k}, it is no longer maintaned")
-current_versions = filtered_versions
-
 versions = collections.OrderedDict(
     sorted(
         functools.reduce(
