@@ -5,8 +5,13 @@ import github
 import json
 import os
 import pathlib
-import semver
+import requests
 import subprocess
+
+
+def get_maintained_cycles():
+  eol_data = requests.get("https://endoflife.date/api/terraform.json").json()
+  return [cycle['cycle'] for cycle in eol_data if not cycle['eol']]
 
 
 def read_versions():
@@ -14,9 +19,10 @@ def read_versions():
         return json.load(f)
 
 
-def is_stable(release):
+def is_stable(release, maintained_cycles):
     version = release.tag_name.removeprefix("v")
-    return semver.compare(version, "1.6.0") >= 0 and not (
+    version_major_minor = '.'.join(version.split('.')[:2])
+    return version_major_minor in maintained_cycles and not (
         release.draft or release.prerelease
     )
 
@@ -103,16 +109,15 @@ auth = github.Auth.Token(os.environ["GITHUB_TOKEN"])
 g = github.Github(auth=auth)
 repo = g.get_repo("hashicorp/terraform")
 # TODO: Drop "v" prefix first
-# TODO: Combine the output of the following endpoints to get a list of active
-# versions
-# https://api.github.com/repos/hashicorp/terraform/tags
-# https://endoflife.date/api/terraform.json
-releases = list(filter(is_stable, repo.get_releases()))
+
+# Craft list of maintaned releases by filtering the release list with the EOL data
+maintained_releases = list(filter(lambda version: is_stable(version, get_maintained_cycles()), repo.get_releases()))
+
 current_versions = read_versions()
 versions = collections.OrderedDict(
     sorted(
         functools.reduce(
-            to_version(args.vendor_hash), releases, current_versions
+            to_version(args.vendor_hash), maintained_releases, current_versions
         ).items(),
         reverse=True,
     )
