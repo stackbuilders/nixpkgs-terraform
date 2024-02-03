@@ -1,5 +1,8 @@
-branches: [{ name: main, prerelease: true }]
+---
+# Note: master branch is not used for releases, but we need it to be there to
+# overcome https://github.com/semantic-release/semantic-release/issues/2503
+branches: [master, {name: 'main', prerelease: true}]
 plugins:
   - "@semantic-release/commit-analyzer"
   - "@semantic-release/release-notes-generator"
-  - ["@semantic-release/github", { successComment: false }]
+  - ["@semantic-release/github", {successComment: false}]
