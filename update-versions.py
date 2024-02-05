@@ -124,4 +124,3 @@ versions = collections.OrderedDict(
 )
 with open("versions.json", "w") as f:
     json.dump(versions, f, indent=2)
-    f.write("\n")
