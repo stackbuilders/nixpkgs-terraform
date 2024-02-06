@@ -90,5 +90,9 @@
   "1.0.11": {
     "hash": "sha256-Z2qFetJZgylRbf75oKEr8blPhQcABxcE1nObUD/RBUw=",
     "vendorHash": "sha256-4oSL7QT6KjZlt3NKkjNWcrZA8yCkx6aI2kYsdyh8L68="
+  },
+  "0.15.5": {
+    "hash": "sha256-zXQv9svJXx341PFzgrApEaQ2Y38KkPlO9WxoIqhRxKE=",
+    "vendorHash": "sha256-oFvoEsDunJR4IULdGwS6nHBKWEgUehgT+nNM41W/GYo="
   }
 }
