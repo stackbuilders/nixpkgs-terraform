@@ -1,4 +1,6 @@
 {
+  description = "A collection of Terraform versions that are automatically updated";
+
   inputs = {
     flake-utils.inputs.systems.follows = "systems";
     flake-utils.url = "github:numtide/flake-utils";
