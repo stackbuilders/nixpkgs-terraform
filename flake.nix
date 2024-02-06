@@ -1,6 +1,4 @@
 {
-  description = "A collection of Terraform versions that are automatically updated";
-
   inputs = {
     flake-utils.inputs.systems.follows = "systems";
     flake-utils.url = "github:numtide/flake-utils";
@@ -42,12 +40,12 @@
         let
           pkgs = nixpkgs.legacyPackages.${system};
         in
-        # https://github.com/NixOS/nixpkgs/blob/nixpkgs-unstable/pkgs/applications/networking/cluster/terraform/default.nix
-        pkgs.mkTerraform
-          {
-            inherit version hash vendorHash;
-            patches = [ "${nixpkgs}/pkgs/applications/networking/cluster/terraform/provider-path-0_15.patch" ];
-          };
+          # https://github.com/NixOS/nixpkgs/blob/nixpkgs-unstable/pkgs/applications/networking/cluster/terraform/default.nix
+          pkgs.mkTerraform
+            {
+              inherit version hash vendorHash;
+              patches = [ "${nixpkgs}/pkgs/applications/networking/cluster/terraform/provider-path-0_15.patch" ];
+            };
       templates = {
         default = {
           description = "Simple nix-shell with Terraform installed via nixpkgs-terraform";
