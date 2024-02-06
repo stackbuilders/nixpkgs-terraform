@@ -16,7 +16,7 @@ def read_versions():
 
 def is_stable(release):
     version = release.tag_name.removeprefix("v")
-    return semver.compare(version, "1.5.0") >= 0 and not (
+    return semver.compare(version, "1.4.0") >= 0 and not (
         release.draft or release.prerelease
     )
 
@@ -103,10 +103,6 @@ auth = github.Auth.Token(os.environ["GITHUB_TOKEN"])
 g = github.Github(auth=auth)
 repo = g.get_repo("hashicorp/terraform")
 # TODO: Drop "v" prefix first
-# TODO: Combine the output of the following endpoints to get a list of active
-# versions
-# https://api.github.com/repos/hashicorp/terraform/tags
-# https://endoflife.date/api/terraform.json
 releases = list(filter(is_stable, repo.get_releases()))
 current_versions = read_versions()
 versions = collections.OrderedDict(
