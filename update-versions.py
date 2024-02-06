@@ -9,9 +9,16 @@ import requests
 import subprocess
 
 
-def get_maintained_cycles():
+def get_maintained_versions():
+    eol_data = requests.get("https://endoflife.date/api/terraform.json").json()
+    maintained_cycles = [cycle['cycle'] for cycle in eol_data if not cycle['eol']]
+    maintained_releases = list(filter(lambda version: is_stable(version, maintained_cycles), repo.get_releases()))
+    return [release.tag_name.removeprefix("v") for release in maintained_releases]
+
+
+def get_unmaintained_latest_versions():
   eol_data = requests.get("https://endoflife.date/api/terraform.json").json()
-  return [cycle['cycle'] for cycle in eol_data if not cycle['eol']]
+  return [cycle['latest'] for cycle in eol_data if cycle['eol']]
 
 
 def read_versions():
@@ -32,8 +39,7 @@ def by_version(release):
 
 
 def to_version(vendor_hash):
-    def add_version(versions, release):
-        version = release.tag_name.removeprefix("v")
+    def add_version(versions, version):
         calculated_hash = calculate_hash(versions, version)
         versions[version] = {
             "hash": calculated_hash,
@@ -110,14 +116,11 @@ g = github.Github(auth=auth)
 repo = g.get_repo("hashicorp/terraform")
 # TODO: Drop "v" prefix first
 
-# Craft list of maintaned releases by filtering the release list with the EOL data
-maintained_releases = list(filter(lambda version: is_stable(version, get_maintained_cycles()), repo.get_releases()))
-
 current_versions = read_versions()
 versions = collections.OrderedDict(
     sorted(
         functools.reduce(
-            to_version(args.vendor_hash), maintained_releases, current_versions
+            to_version(args.vendor_hash), get_maintained_versions() + get_unmaintained_latest_versions(), current_versions
         ).items(),
         reverse=True,
     )
