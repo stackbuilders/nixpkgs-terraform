@@ -21,7 +21,7 @@ This flake provides a set of Terraform versions in the form of:
 nixpkgs-terraform.packages.${system}.${version}
 ```
 
-Terraform versions `>= 1.5.0` are kept up to date via a weekly scheduled [CI
+Terraform versions `>= 1.4.0` are kept up to date via a weekly scheduled [CI
 workflow](.github/workflows/update.yml).
 
 ## Install
