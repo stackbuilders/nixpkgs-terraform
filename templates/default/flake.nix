@@ -14,7 +14,7 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
-        terraform = nixpkgs-terraform.packages.${system}."1.7.1";
+        terraform = nixpkgs-terraform.packages.${system}."1.6.3";
       in
       {
         devShells.default = pkgs.mkShell {

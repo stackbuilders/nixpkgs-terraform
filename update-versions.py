@@ -16,7 +16,7 @@ def read_versions():
 
 def is_stable(release):
     version = release.tag_name.removeprefix("v")
-    return semver.compare(version, "1.6.0") >= 0 and not (
+    return semver.compare(version, "1.5.0") >= 0 and not (
         release.draft or release.prerelease
     )
 
@@ -119,4 +119,3 @@ versions = collections.OrderedDict(
 )
 with open("versions.json", "w") as f:
     json.dump(versions, f, indent=2)
-    f.write("\n")
