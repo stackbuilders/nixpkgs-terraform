@@ -2,7 +2,7 @@ name: Publish
 
 on:
   release:
-    types: [released]
+    types: [published]
 
 concurrency:
   group: publish
@@ -14,26 +14,24 @@ permissions:
 
 jobs:
   flakehub:
-    if: false
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.tag || github.ref_name }}
+          ref: ${{ github.ref_name }}
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@v9
       - name: Publish flake
         uses: DeterminateSystems/flakehub-push@v3
         with:
-          tag: ${{ inputs.tag || github.ref_name }}
+          tag: ${{ github.ref_name }}
           visibility: public
 
   flakestry:
-    if: false
     runs-on: ubuntu-latest
     steps:
       - name: Publish flake
         uses: flakestry/flakestry-publish@645c2ab3c99b97f5f1abc383370ae5e72c9e7d9b
         with:
-          version: ${{ inputs.tag || github.ref_name }}
+          version: ${{ github.ref_name }}
