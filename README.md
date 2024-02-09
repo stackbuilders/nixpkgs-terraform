@@ -8,10 +8,11 @@
 [![FlakeHub](https://img.shields.io/endpoint?url=https://flakehub.com/f/stackbuilders/nixpkgs-terraform/badge)](https://flakehub.com/flake/stackbuilders/nixpkgs-terraform)
 [![flakestry.dev](https://flakestry.dev/api/badge/flake/github/stackbuilders/nixpkgs-terraform)](https://flakestry.dev/flake/github/stackbuilders/nixpkgs-terraform)
 
-This [flake](https://nixos.wiki/wiki/Flakes) exposes a collection of Terraform
-[active versions](https://endoflife.date/terraform) as Nix packages, which
-can be used for creating reproducible development environments using a
-[nix-shell] or [devenv](https://devenv.sh).
+This [flake](https://nixos.wiki/wiki/Flakes) exposes a collection of
+[Terraform](https://github.com/hashicorp/terraform) versions as Nix packages,
+starting with version 1.0.0. The packages provided can be used for creating
+reproducible development environments using a [nix-shell] or
+[devenv](https://devenv.sh).
 
 ## How it works
 
@@ -21,7 +22,7 @@ This flake provides a set of Terraform versions in the form of:
 nixpkgs-terraform.packages.${system}.${version}
 ```
 
-Terraform versions `>= 1.4.0` are kept up to date via a weekly scheduled [CI
+Terraform versions are kept up to date via a weekly scheduled [CI
 workflow](.github/workflows/update.yml).
 
 ## Install
