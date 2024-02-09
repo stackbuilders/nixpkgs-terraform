@@ -2,7 +2,7 @@
 
 [![Build](https://github.com/stackbuilders/nixpkgs-terraform/actions/workflows/build.yml/badge.svg)](https://github.com/stackbuilders/nixpkgs-terraform/actions/workflows/build.yml)
 [![Update](https://github.com/stackbuilders/nixpkgs-terraform/actions/workflows/update.yml/badge.svg)](https://github.com/stackbuilders/nixpkgs-terraform/actions/workflows/update.yml)
-[![Prerelease](https://github.com/stackbuilders/nixpkgs-terraform/actions/workflows/prerelease.yml/badge.svg)](https://github.com/stackbuilders/nixpkgs-terraform/actions/workflows/prerelease.yml)
+[![Release](https://github.com/stackbuilders/nixpkgs-terraform/actions/workflows/release.yml/badge.svg)](https://github.com/stackbuilders/nixpkgs-terraform/actions/workflows/release.yml)
 [![Publish](https://github.com/stackbuilders/nixpkgs-terraform/actions/workflows/publish.yml/badge.svg)](https://github.com/stackbuilders/nixpkgs-terraform/actions/workflows/publish.yml)
 
 [![FlakeHub](https://img.shields.io/endpoint?url=https://flakehub.com/f/stackbuilders/nixpkgs-terraform/badge)](https://flakehub.com/flake/stackbuilders/nixpkgs-terraform)

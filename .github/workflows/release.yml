@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 concurrency:
-  group: prerelease
+  group: release
   cancel-in-progress: true
 
 jobs:
