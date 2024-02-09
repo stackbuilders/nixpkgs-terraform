@@ -1,4 +1,4 @@
-branches: [main]
+branches: [fix_release_workflow]
 plugins:
   - "@semantic-release/commit-analyzer"
   - "@semantic-release/release-notes-generator"

@@ -1,14 +1,8 @@
 name: Publish
 
 on:
-  push:
-    tags: ["v[0-9]+.[0-9]+.[0-9]+"]
-  workflow_dispatch:
-    inputs:
-      tag:
-        description: The existing tag to publish
-        type: string
-        required: true
+  release:
+    types: [released]
 
 concurrency:
   group: publish
@@ -20,6 +14,7 @@ permissions:
 
 jobs:
   flakehub:
+    if: false
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -35,6 +30,7 @@ jobs:
           visibility: public
 
   flakestry:
+    if: false
     runs-on: ubuntu-latest
     steps:
       - name: Publish flake
