@@ -28,6 +28,6 @@ jobs:
       - name: Install dependencies
         run: nix develop -c npm ci
       - name: Run semantic-release
-        run: nix develop -c npx semantic-release --dry-run
+        run: nix develop -c npx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
