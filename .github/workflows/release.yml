@@ -7,17 +7,13 @@ on:
     branches: [main]
 
 concurrency:
-  group: prerelease
+  group: release
   cancel-in-progress: true
 
 jobs:
   release:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      issues: write
-      pull-requests: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -30,4 +26,4 @@ jobs:
       - name: Run semantic-release
         run: nix develop -c npx semantic-release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
