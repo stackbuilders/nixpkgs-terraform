@@ -4,7 +4,7 @@ on:
   workflow_run:
     workflows: [Build]
     types: [completed]
-    branches: [main]
+    # branches: [main]
 
 concurrency:
   group: release
@@ -24,6 +24,6 @@ jobs:
       - name: Install dependencies
         run: nix develop -c npm ci
       - name: Run semantic-release
-        run: nix develop -c npx semantic-release
+        run: nix develop -c npx semantic-release --dry-run
         env:
-          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
