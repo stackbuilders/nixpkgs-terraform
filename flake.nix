@@ -10,6 +10,9 @@
   };
 
   outputs = { self, flake-parts, ... }@inputs: flake-parts.lib.mkFlake { inherit inputs; } {
+    imports = [
+      inputs.flake-parts.flakeModules.easyOverlay
+    ];
     systems = import inputs.systems;
 
     perSystem = { config, pkgs, pkgs-unstable, system, ... }: {
@@ -24,6 +27,10 @@
       };
 
       packages = import ./packages.nix { inherit pkgs pkgs-unstable; custom-lib = self.lib; };
+
+      overlayAttrs = {
+        terraform-versions = config.packages;
+      };
 
       devShells.default = pkgs.mkShell {
         buildInputs = [
