@@ -3,8 +3,8 @@ let
   flake = builtins.getFlake (toString ./.);
   system = builtins.currentSystem;
 
-  pkgs = import flake.inputs.nixpkgs { inherit system; };
-  pkgs-unstable = import flake.inputs.nixpkgs-unstable { inherit system; };
+  pkgs = flake.inputs.nixpkgs.legacyPackages.${system};
+  pkgs-unstable = flake.inputs.nixpkgs-unstable.legacyPackages.${system};
 
   terraform = flake.lib.buildTerraform {
     inherit pkgs pkgs-unstable version hash;
