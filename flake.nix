@@ -26,7 +26,7 @@
         };
       };
 
-      packages = import ./packages.nix { inherit pkgs pkgs-unstable; custom-lib = self.lib; };
+      packages = import ./lib/packages.nix { inherit pkgs pkgs-unstable; custom-lib = self.lib; };
 
       overlayAttrs = {
         terraform-versions = config.packages;
@@ -58,7 +58,7 @@
         };
       };
 
-      lib = import ./lib.nix;
+      lib = import ./lib;
     };
   };
 }

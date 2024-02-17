@@ -1,6 +1,6 @@
 { custom-lib, pkgs, pkgs-unstable }:
 let
-  versions = builtins.fromJSON (builtins.readFile ./versions.json);
+  versions = builtins.fromJSON (builtins.readFile ../versions.json);
 in
 builtins.mapAttrs
   (version: { hash, vendorHash }: custom-lib.buildTerraform {
