@@ -20,7 +20,7 @@ jobs:
       - name: Install Nix
         uses: cachix/install-nix-action@v24
       - name: Setup Cachix
-        uses: cachix/cachix-action@v13
+        uses: cachix/cachix-action@v14
         with:
           name: nixpkgs-terraform
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
