@@ -2,64 +2,45 @@
   description = "A collection of Terraform versions that are automatically updated";
 
   inputs = {
-    flake-utils.inputs.systems.follows = "systems";
-    flake-utils.url = "github:numtide/flake-utils";
-    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     nixpkgs.url = "github:nixos/nixpkgs/nixos-23.05";
+    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+
     systems.url = "github:nix-systems/default";
+    flake-parts.url = "github:hercules-ci/flake-parts";
   };
 
-  outputs = { self, flake-utils, nixpkgs-unstable, nixpkgs, ... }:
-    flake-utils.lib.eachDefaultSystem
-      (system:
-        let
-          pkgs = nixpkgs.legacyPackages.${system};
-          pkgs-unstable = nixpkgs-unstable.legacyPackages.${system};
-          versions = builtins.fromJSON (builtins.readFile ./versions.json);
-        in
-        {
-          devShells.default = pkgs.mkShell {
-            buildInputs = [
-              pkgs-unstable.black
-              (pkgs-unstable.python3.withPackages
-                (ps: [
-                  ps.pygithub
-                  ps.semver
-                ])
-              )
-              pkgs-unstable.nix-prefetch
-              pkgs.nodejs
-              pkgs.rubyPackages.dotenv
-            ];
-          };
-          # https://github.com/NixOS/nix/issues/7165
-          checks = self.packages.${system};
-          packages = builtins.mapAttrs
-            (version: { hash, vendorHash }: self.lib.buildTerraform {
-              inherit system version hash vendorHash;
-            })
-            versions;
-        }) // {
-      lib.buildTerraform = { system, version, hash, vendorHash }:
-        let
-          pkgs = nixpkgs.legacyPackages.${system};
-          pkgs-unstable = nixpkgs-unstable.legacyPackages.${system};
-        in
-        # https://www.hashicorp.com/blog/hashicorp-adopts-business-source-license
-        if builtins.compareVersions version "1.6.0" >= 0
-        then
-        # https://github.com/NixOS/nixpkgs/blob/nixpkgs-unstable/pkgs/applications/networking/cluster/terraform/default.nix
-          pkgs-unstable.mkTerraform
-            {
-              inherit version hash vendorHash;
-              patches = [ "${nixpkgs-unstable}/pkgs/applications/networking/cluster/terraform/provider-path-0_15.patch" ];
-            }
-        else
-        # https://github.com/NixOS/nixpkgs/blob/nixos-23.05/pkgs/applications/networking/cluster/terraform/default.nix
-          pkgs.mkTerraform {
-            inherit version hash vendorHash;
-            patches = [ "${nixpkgs}/pkgs/applications/networking/cluster/terraform/provider-path-0_15.patch" ];
-          };
+  outputs = { self, flake-parts, ... }@inputs: flake-parts.lib.mkFlake { inherit inputs; } {
+    imports = [
+      inputs.flake-parts.flakeModules.easyOverlay
+    ];
+    systems = import inputs.systems;
+
+    perSystem = { config, pkgs, pkgs-unstable, system, ... }: {
+      _module.args = {
+        pkgs-unstable = inputs.nixpkgs-unstable.legacyPackages.${system};
+      };
+
+      packages = import ./lib/packages.nix { inherit pkgs pkgs-unstable; custom-lib = self.lib; };
+
+      overlayAttrs = {
+        terraform-versions = config.packages;
+      };
+
+      devShells.default = pkgs.mkShell {
+        buildInputs = [
+          pkgs-unstable.black
+          (pkgs-unstable.python3.withPackages (ps: [
+            ps.pygithub
+            ps.semver
+          ]))
+          pkgs-unstable.nix-prefetch
+          pkgs.nodejs
+          pkgs.rubyPackages.dotenv
+        ];
+      };
+    };
+
+    flake = {
       templates = {
         default = {
           description = "Simple nix-shell with Terraform installed via nixpkgs-terraform";
@@ -70,5 +51,8 @@
           path = ./templates/devenv;
         };
       };
+
+      lib = import ./lib;
     };
+  };
 }

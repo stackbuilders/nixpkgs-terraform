@@ -15,7 +15,7 @@ environments using a [nix-shell] or [devenv](https://devenv.sh).
 
 ## How it works
 
-This flake provides a set of Terraform versions in the form of: 
+This flake provides a set of Terraform versions in the form of:
 
 ```nix
 nixpkgs-terraform.packages.${system}.${version}
@@ -67,7 +67,9 @@ nixConfig = {
 After configuring the inputs from the [Install](#install) section, a common use
 case for this flake could be spawning a [nix-shell] with a specific Terraform
 version, which could be accomplished by extracting the desired version from
-`nixpkgs-terraform.packages` as follows:
+`nixpkgs-terraform.packages` or by using an overlay as follows:
+
+#### As a package
 
 ```nix
 outputs = { self, flake-utils, nixpkgs-terraform, nixpkgs }:
@@ -83,7 +85,25 @@ outputs = { self, flake-utils, nixpkgs-terraform, nixpkgs }:
     });
 ```
 
-Start a new [nix-shell] with Terraform installed by running the following
+#### As an overlay
+
+```nix
+outputs = { self, flake-utils, nixpkgs-terraform, nixpkgs }:
+  flake-utils.lib.eachDefaultSystem (system:
+    let
+      pkgs = import nixpkgs {
+        inherit system;
+        overlays = [ nixpkgs-terraform.overlays.default ];
+      };
+    in
+    {
+      devShells.default = pkgs.mkShell {
+        buildInputs = [ pkgs.terraform-versions."1.6.3" ];
+      };
+    });
+```
+
+Start a new [nix-shell] with Terraform in scope by running the following
 command:
 
 ```sh
@@ -138,6 +158,7 @@ contributors to follow the commit conventions outlined
 to make it easier for maintainers to release new changes.
 
 ---
+
 <img src="https://www.stackbuilders.com/media/images/Sb-supports.original.png"
 alt="Stack Builders" width="50%"></img>  
 [Check out our libraries](https://github.com/stackbuilders/) | [Join our
