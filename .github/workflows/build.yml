@@ -1,7 +1,7 @@
 name: Build
 
-on: 
-  pull_request: 
+on:
+  pull_request:
     branches: [main]
   push:
     branches: [main]
@@ -32,7 +32,7 @@ jobs:
 
   template:
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    timeout-minutes: 5
     needs: [build]
     strategy:
       matrix:
