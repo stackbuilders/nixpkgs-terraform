@@ -76,7 +76,7 @@ outputs = { self, flake-utils, nixpkgs-terraform, nixpkgs }:
   flake-utils.lib.eachDefaultSystem (system:
     let
       pkgs = nixpkgs.legacyPackages.${system};
-      terraform = nixpkgs-terraform.packages.${system}."1.6.3";
+      terraform = nixpkgs-terraform.packages.${system}."1.7.3";
     in
     {
       devShells.default = pkgs.mkShell {
@@ -98,7 +98,7 @@ outputs = { self, flake-utils, nixpkgs-terraform, nixpkgs }:
     in
     {
       devShells.default = pkgs.mkShell {
-        buildInputs = [ pkgs.terraform-versions."1.6.3" ];
+        buildInputs = [ pkgs.terraform-versions."1.7.3" ];
       };
     });
 ```
@@ -122,6 +122,7 @@ This flake provides the following templates:
 - [default](templates/default) - Simple nix-shell with Terraform installed via
   nixpkgs-terraform.
 - [devenv](templates/devenv) - Using nixpkgs-terraform with devenv.
+- [terranix](templates/terranix) - Using nixpkgs-terraform with terranix.
 
 Run the following command to scaffold a new project using a template:
 
