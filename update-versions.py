@@ -1,50 +1,90 @@
 import argparse
 import collections
 import functools
-import github
 import json
 import os
 import pathlib
-import semver
 import subprocess
+from dataclasses import dataclass
+from pathlib import Path
+from typing import (
+    Callable,
+    Iterable,
+    List,
+    Optional,
+    OrderedDict,
+)
+
+import github
+import semver
+from github.GitRelease import GitRelease
 
 
-def read_versions():
-    with open("versions.json", "r") as f:
-        return json.load(f)
+@dataclass
+class NixHashes:
+    hash: str
+    vendorHash: str
 
 
-def is_stable(release):
-    version = release.tag_name.removeprefix("v")
-    return semver.compare(version, "1.0.0") >= 0 and not (
-        release.draft or release.prerelease
-    )
+Versions = OrderedDict[semver.Version, NixHashes]
 
 
-def by_version(release):
-    return release.tag_name.removeprefix("v").split(".")
+def parse_semver(input: str) -> semver.Version:
+    return semver.Version.parse(input.removeprefix("v"))
 
 
-def to_version(vendor_hash):
-    def add_version(versions, release):
-        version = release.tag_name.removeprefix("v")
-        calculated_hash = calculate_hash(versions, version)
-        versions[version] = {
-            "hash": calculated_hash,
-            "vendorHash": calculate_vendor_hash(
-                versions, version, calculated_hash, vendor_hash
-            ),
-        }
-        return versions
+def read_current_versions(file: Path) -> Versions:
+    with open(file, "r") as f:
+        versions = json.load(f)
+
+    result: OrderedDict[semver.Version, NixHashes] = OrderedDict()
+    for key_raw, value_raw in versions.items():
+        key = parse_semver(key_raw)
+        result[key] = NixHashes(
+            hash=value_raw["hash"], vendorHash=value_raw["vendorHash"]
+        )
+
+    return result
+
+
+def get_stable_github_versions(releases: Iterable[GitRelease]) -> List[semver.Version]:
+    stable_version = semver.Version(1, 0, 0)
+
+    result: List[semver.Version] = []
+    for release in releases:
+        version = parse_semver(release.tag_name)
+        if version >= stable_version and not (release.draft or release.prerelease):
+            result.append(version)
+
+    return result
+
+
+def get_or_calculate_hashes(
+    vendor_hash_nix: Path,
+) -> Callable[[Versions, semver.Version], Versions]:
+    def add_version(
+        current_versions: Versions,
+        new_version: semver.Version,
+    ) -> Versions:
+        maybe_current_hashes = current_versions.get(new_version)
+        calculated_hash = calculate_hash(new_version, maybe_current_hashes)
+        calculated_vendor_hash = calculate_vendor_hash(
+            new_version, maybe_current_hashes, calculated_hash, vendor_hash_nix
+        )
+
+        to_upsert = NixHashes(hash=calculated_hash, vendorHash=calculated_vendor_hash)
+        current_versions[new_version] = to_upsert
+        return current_versions
 
     return add_version
 
 
-def calculate_hash(versions, version):
-    current_hash = versions.get(version, {}).get("hash")
-    if current_hash:
+def calculate_hash(
+    version: semver.Version, maybe_current_hashes: Optional[NixHashes]
+) -> str:
+    if maybe_current_hashes:
         print(f"Using existing hash for {version}")
-        return current_hash
+        return maybe_current_hashes.hash
     else:
         print(f"Calculating hash for {version}")
         return nix_prefetch(
@@ -60,20 +100,24 @@ def calculate_hash(versions, version):
         )
 
 
-def calculate_vendor_hash(versions, version, calculated_hash, vendor_hash):
-    current_vendor_hash = versions.get(version, {}).get("vendorHash")
-    if current_vendor_hash:
+def calculate_vendor_hash(
+    version: semver.Version,
+    maybe_current_hashes: Optional[NixHashes],
+    calculated_hash: str,
+    vendor_hash_nix: Path,
+) -> str:
+    if maybe_current_hashes:
         print(f"Using existing vendorHash for {version}")
-        return current_vendor_hash
+        return maybe_current_hashes.vendorHash
     else:
         print(f"Calculating vendorHash for {version}")
         return nix_prefetch(
             [
                 "--file",
-                str(vendor_hash.resolve()),
+                str(vendor_hash_nix.resolve()),
                 "--argstr",
                 "version",
-                version,
+                str(version),
                 "--argstr",
                 "hash",
                 calculated_hash,
@@ -81,7 +125,7 @@ def calculate_vendor_hash(versions, version, calculated_hash, vendor_hash):
         )
 
 
-def nix_prefetch(args):
+def nix_prefetch(args: Iterable[str]) -> str:
     return subprocess.check_output(
         [
             "nix-prefetch",
@@ -89,29 +133,50 @@ def nix_prefetch(args):
             "--option",
             "extra-experimental-features",
             "flakes",
-        ]
-        + args,
+            *args,
+        ],
         text=True,
     ).strip()
 
 
-parser = argparse.ArgumentParser(description="Update versions.json file")
-parser.add_argument("--vendor_hash", type=pathlib.Path, default="vendor-hash.nix")
-args = parser.parse_args()
-
-auth = github.Auth.Token(os.environ["GITHUB_TOKEN"])
-g = github.Github(auth=auth)
-repo = g.get_repo("hashicorp/terraform")
-# TODO: Drop "v" prefix first
-releases = list(filter(is_stable, repo.get_releases()))
-current_versions = read_versions()
-versions = collections.OrderedDict(
-    sorted(
-        functools.reduce(
-            to_version(args.vendor_hash), releases, current_versions
-        ).items(),
-        reverse=True,
+def main():
+    parser = argparse.ArgumentParser(description="Update versions.json file")
+    parser.add_argument(
+        "--vendor_hash",
+        type=pathlib.Path,
+        default="vendor-hash.nix",
+        help="Path to vendor-hash.nix file",
     )
-)
-with open("versions.json", "w") as f:
-    json.dump(versions, f, indent=2)
+    args = parser.parse_args()
+
+    gh_token = github.Auth.Token(os.environ["GITHUB_TOKEN"])
+    gh = github.Github(auth=gh_token)
+    repo = gh.get_repo("hashicorp/terraform")
+
+    versions_file = Path("versions.json")
+
+    gh_releases = repo.get_releases()
+    stable_gh_versions = get_stable_github_versions(gh_releases)
+    current_versions = read_current_versions(versions_file)
+
+    versions = collections.OrderedDict(
+        sorted(
+            functools.reduce(
+                get_or_calculate_hashes(args.vendor_hash),
+                stable_gh_versions,
+                current_versions,
+            ).items(),
+            reverse=True,
+        )
+    )
+
+    versions_jsonified = OrderedDict(
+        (str(version), hashes.__dict__) for version, hashes in versions.items()
+    )
+
+    with open(versions_file, "w") as f:
+        json.dump(versions_jsonified, f, indent=2)
+
+
+if __name__ == "__main__":
+    main()
