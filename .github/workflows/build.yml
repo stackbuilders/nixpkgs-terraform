@@ -26,7 +26,13 @@ jobs:
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
           skipPush: false
       - name: Build packages
-        run: cachix watch-exec nixpkgs-terraform -- nix flake check --impure --max-jobs auto --cores 0 --keep-going
+        run: |
+          build_command="nix flake check --impure --max-jobs auto --cores 0 --keep-going"
+          if [ -z "${CACHIX_AUTH_TOKEN}" ]; then
+            $build_command
+          else
+            cachix watch-exec nixpkgs-terraform -- $build_command
+          fi
         env:
           NIXPKGS_ALLOW_UNFREE: 1
 
