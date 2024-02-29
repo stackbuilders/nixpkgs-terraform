@@ -61,7 +61,7 @@ jobs:
           - macos-latest # Intel
       fail-fast: true
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
