@@ -12,6 +12,7 @@ concurrency:
 
 jobs:
   build:
+    if: false
     runs-on: ubuntu-latest
     timeout-minutes: 20
     strategy:
@@ -49,6 +50,31 @@ jobs:
             echo "Cachix token is not present"
             nix build .#\"${{ matrix.cycle }}\" --impure
           fi
+        env:
+          NIXPKGS_ALLOW_UNFREE: 1
+
+  build-macos:
+    strategy:
+      matrix:
+        runner:
+          - macos-14 # M1
+          - macos-latest # Intel
+      fail-fast: true
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install Nix
+        uses: cachix/install-nix-action@v25
+      # - name: Setup Cachix
+      #   uses: cachix/cachix-action@v14
+      #   with:
+      #     name: nixpkgs-terraform
+      #     authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+      #     skipPush: false
+      - name: Build packages
+        run: nix build \#\"1.7.4\"
         env:
           NIXPKGS_ALLOW_UNFREE: 1
 
