@@ -29,8 +29,10 @@ jobs:
         run: |
           build_command="nix flake check --impure --max-jobs auto --cores 0 --keep-going"
           if [ -z "${CACHIX_AUTH_TOKEN}" ]; then
+            echo "Cachix token is not present"
             $build_command
           else
+            echo "Cachix token is present"
             cachix watch-exec nixpkgs-terraform -- $build_command
           fi
         env:
