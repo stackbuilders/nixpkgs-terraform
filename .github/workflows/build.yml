@@ -74,7 +74,7 @@ jobs:
       #     authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
       #     skipPush: false
       - name: Build packages
-        run: nix build \#\"1.7.4\"
+        run: nix build --impure \#\"1.7.4\"
         env:
           NIXPKGS_ALLOW_UNFREE: 1
 
