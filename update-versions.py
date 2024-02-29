@@ -16,8 +16,8 @@ from typing import (
 )
 
 import github
-import semver
 from github.GitRelease import GitRelease
+from semver import Version as SemVer
 
 
 @dataclass
@@ -26,18 +26,18 @@ class NixHashes:
     vendorHash: str
 
 
-Versions = OrderedDict[semver.Version, NixHashes]
+Versions = OrderedDict[SemVer, NixHashes]
 
 
-def parse_semver(input: str) -> semver.Version:
-    return semver.Version.parse(input.removeprefix("v"))
+def parse_semver(input: str) -> SemVer:
+    return SemVer.parse(input.removeprefix("v"))
 
 
 def read_current_versions(file: Path) -> Versions:
     with open(file, "r") as f:
         versions = json.load(f)
 
-    result: OrderedDict[semver.Version, NixHashes] = OrderedDict()
+    result: OrderedDict[SemVer, NixHashes] = OrderedDict()
     for key_raw, value_raw in versions.items():
         key = parse_semver(key_raw)
         result[key] = NixHashes(
@@ -47,24 +47,26 @@ def read_current_versions(file: Path) -> Versions:
     return result
 
 
-def get_stable_github_versions(releases: Iterable[GitRelease]) -> List[semver.Version]:
-    stable_version = semver.Version(1, 0, 0)
+def get_stable_github_versions(releases: Iterable[GitRelease]) -> List[SemVer]:
+    stable_version = SemVer(1, 0, 0)
 
-    result: List[semver.Version] = []
-    for release in releases:
-        version = parse_semver(release.tag_name)
-        if version >= stable_version and not (release.draft or release.prerelease):
-            result.append(version)
+    def to_semver(release: GitRelease) -> SemVer:
+        return parse_semver(release.tag_name)
 
-    return result
+    def is_stable(release: GitRelease) -> bool:
+        return to_semver(release) >= stable_version and not (
+            release.draft or release.prerelease
+        )
+
+    return list(map(to_semver, filter(is_stable, releases)))
 
 
 def get_or_calculate_hashes(
     vendor_hash_nix: Path,
-) -> Callable[[Versions, semver.Version], Versions]:
+) -> Callable[[Versions, SemVer], Versions]:
     def add_version(
         current_versions: Versions,
-        new_version: semver.Version,
+        new_version: SemVer,
     ) -> Versions:
         maybe_current_hashes = current_versions.get(new_version)
         calculated_hash = calculate_hash(new_version, maybe_current_hashes)
@@ -79,9 +81,7 @@ def get_or_calculate_hashes(
     return add_version
 
 
-def calculate_hash(
-    version: semver.Version, maybe_current_hashes: Optional[NixHashes]
-) -> str:
+def calculate_hash(version: SemVer, maybe_current_hashes: Optional[NixHashes]) -> str:
     if maybe_current_hashes:
         print(f"Using existing hash for {version}")
         return maybe_current_hashes.hash
@@ -101,7 +101,7 @@ def calculate_hash(
 
 
 def calculate_vendor_hash(
-    version: semver.Version,
+    version: SemVer,
     maybe_current_hashes: Optional[NixHashes],
     calculated_hash: str,
     vendor_hash_nix: Path,
