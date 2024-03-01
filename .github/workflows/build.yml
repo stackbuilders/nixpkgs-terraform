@@ -13,7 +13,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # timeout-minutes: 30
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -25,19 +25,14 @@ jobs:
           name: nixpkgs-terraform
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
           skipPush: false
-      - name: Setup Dhall
-        uses: dhall-lang/setup-dhall@v4
-        with:
-          version: '1.42.0'
       - name: Build packages
         run: |
-          build_command="nix flake check --impure --max-jobs auto --cores 0 --keep-going"
-          if dhall resolve --file /home/runner/.config/cachix/cachix.dhall | grep -q authToken; then
+          if grep authToken ~/.config/cachix/cachix.dhall; then
             echo "Cachix token is present"
-            cachix watch-exec nixpkgs-terraform -- $build_command
+            cachix watch-exec nixpkgs-terraform nix -- flake check --impure
           else
             echo "Cachix token is not present"
-            $build_command
+            nix flake check --impure
           fi
         env:
           NIXPKGS_ALLOW_UNFREE: 1
