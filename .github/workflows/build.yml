@@ -42,7 +42,7 @@ jobs:
           skipPush: false
       - name: Build packages
         run: |
-          if grep authToken ~/.config/cachix/cachix.dhall; then
+          if [ $(grep -c authToken ~/.config/cachix/cachix.dhall) -eq 1 ]; then
             echo "Cachix token is present"
             cachix watch-exec nixpkgs-terraform nix -- build .#\"${{ matrix.cycle }}\" --impure
           else
