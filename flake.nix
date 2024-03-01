@@ -20,10 +20,26 @@
         pkgs-unstable = inputs.nixpkgs-unstable.legacyPackages.${system};
       };
 
-      checks = config.packages;
-
-      packages = import ./lib/packages.nix { inherit pkgs pkgs-unstable; custom-lib = self.lib; };
-
+      packages =
+        let
+          versions = import ./lib/packages.nix { inherit pkgs pkgs-unstable; custom-lib = self.lib; };
+          cycles = self.lib.groupByCycle pkgs.symlinkJoin versions;
+        in
+        versions // cycles;
+        #   "1.0" = pkgs.symlinkJoin
+        #     {
+        #       name = "all-terraform-1.0";
+        #       paths = [
+        #         versions."1.0.1"
+        #         versions."1.0.2"
+        #       ];
+        #     };
+        #   "1.7" = pkgs.linkFarm [
+        #     versions."1.7.1"
+        #     versions."1.7.2"
+        #   ];
+        # };
+        #
       overlayAttrs = {
         terraform-versions = config.packages;
       };
@@ -54,7 +70,26 @@
         };
       };
 
-      lib = import ./lib;
+      lib = import ./lib // rec {
+        # TODO: move this helper functions to another place
+        groupByCycle = symlinkJoin: versions: builtins.mapAttrs
+          (cycle: cycleVersions: symlinkJoin {
+            name = "terraform-all-${cycle}";
+            paths = builtins.map (version: versions.${version}) cycleVersions;
+          })
+          (cycleVersions versions);
+        cycleVersions = versions: builtins.groupBy
+          (version:
+            let
+              splittedVersion = builtins.splitVersion version;
+            in
+            builtins.concatStringsSep "." [
+              (builtins.elemAt splittedVersion 0)
+              (builtins.elemAt splittedVersion 1)
+            ]
+          )
+          (builtins.attrNames versions);
+      };
     };
   };
 }
