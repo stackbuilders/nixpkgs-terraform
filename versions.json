@@ -111,6 +111,10 @@
     "hash": "sha256-jt+axusOYbJmGJpim8i76Yfb/QgWduUmZMIiIs0CJoA=",
     "vendorHash": "sha256-M22VONnPs0vv2L3q/2RjE0+Jna/Kv95xubVNthp5bMc="
   },
+  "1.3.10": {
+    "hash": "sha256-XOuhPZEb4CkynIRYIpg4zdlngym+1urndVYkoZGbeQ8=",
+    "vendorHash": "sha256-CE6jNBvM0980+R0e5brK5lMrkad+91qTt9mp2h3NZyY="
+  },
   "1.3.9": {
     "hash": "sha256-gwuUdO9m4Q2tFRLSVTbcsclOq9jcbQU4JV9nIElTkQ4=",
     "vendorHash": "sha256-CE6jNBvM0980+R0e5brK5lMrkad+91qTt9mp2h3NZyY="
@@ -142,10 +146,6 @@
   "1.3.2": {
     "hash": "sha256-Xr6ZmKE7BoMh2gZcvcZgWwb8WuAb3Xb8vV9gZVjDZFE=",
     "vendorHash": "sha256-+m7e49yN7OkiQQVvqimF0Tvz5wUr2M5bxs3yBU2lt7Y="
-  },
-  "1.3.10": {
-    "hash": "sha256-XOuhPZEb4CkynIRYIpg4zdlngym+1urndVYkoZGbeQ8=",
-    "vendorHash": "sha256-CE6jNBvM0980+R0e5brK5lMrkad+91qTt9mp2h3NZyY="
   },
   "1.3.1": {
     "hash": "sha256-ugdMpp/YTCyXaUY6NTrIa9r/+C4bYLYqQEic4cvgoVo=",
@@ -235,6 +235,14 @@
     "hash": "sha256-nnYMoQitqFbOjI8twDh9hWDb1qxMNNVy6wldxkyDKY0=",
     "vendorHash": "sha256-Rk2hHtJfaS553MJIea6n51irMas3qcBrWAD+adzTi1Y="
   },
+  "1.0.11": {
+    "hash": "sha256-Z2qFetJZgylRbf75oKEr8blPhQcABxcE1nObUD/RBUw=",
+    "vendorHash": "sha256-4oSL7QT6KjZlt3NKkjNWcrZA8yCkx6aI2kYsdyh8L68="
+  },
+  "1.0.10": {
+    "hash": "sha256-qxqtWAAS1yh4gd7eplB5o7Wxjvo3knIKqgWdlHC6j8k=",
+    "vendorHash": "sha256-grh8DzTzEFfBbkIbr1SnBwpX7nbN8wQaTlH/GrgglAE="
+  },
   "1.0.9": {
     "hash": "sha256-A+rN9rzJFKPSkCXTWOyKTSlFMJHRxvJ/lk6x3EehJz0=",
     "vendorHash": "sha256-grh8DzTzEFfBbkIbr1SnBwpX7nbN8wQaTlH/GrgglAE="
@@ -266,14 +274,6 @@
   "1.0.2": {
     "hash": "sha256-KmSkHJ5RB2cP4z/IT/p+LHm658soM0IS0TPYKxU02z4=",
     "vendorHash": "sha256-s5HFBPWv7OEvgMBkAVZNivk6tD1T3QjUDqsIU9TPLmA="
-  },
-  "1.0.11": {
-    "hash": "sha256-Z2qFetJZgylRbf75oKEr8blPhQcABxcE1nObUD/RBUw=",
-    "vendorHash": "sha256-4oSL7QT6KjZlt3NKkjNWcrZA8yCkx6aI2kYsdyh8L68="
-  },
-  "1.0.10": {
-    "hash": "sha256-qxqtWAAS1yh4gd7eplB5o7Wxjvo3knIKqgWdlHC6j8k=",
-    "vendorHash": "sha256-grh8DzTzEFfBbkIbr1SnBwpX7nbN8wQaTlH/GrgglAE="
   },
   "1.0.1": {
     "hash": "sha256-QPrUWojUHwTP3mNnC2aOiAcT2VHU16pLXh5KLhwfw2s=",
