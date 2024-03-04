@@ -13,7 +13,22 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
+    strategy:
+      matrix:
+        # INFO: This is only a workaround to avoid timeout issues with the CI;
+        # whether it becomes a definitive solution or not will require a
+        # separate discussion with Oscar.
+        cycle:
+          - "all-1.7"
+          - "all-1.6"
+          - "all-1.5"
+          - "all-1.4"
+          - "all-1.3"
+          - "all-1.2"
+          - "all-1.1"
+          - "all-1.0"
+      fail-fast: false
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -25,19 +40,14 @@ jobs:
           name: nixpkgs-terraform
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
           skipPush: false
-      - name: Setup Dhall
-        uses: dhall-lang/setup-dhall@v4
-        with:
-          version: '1.42.0'
       - name: Build packages
         run: |
-          build_command="nix flake check --impure --max-jobs auto --cores 0 --keep-going"
-          if dhall resolve --file /home/runner/.config/cachix/cachix.dhall | grep -q authToken; then
+          if grep -q authToken ~/.config/cachix/cachix.dhall; then
             echo "Cachix token is present"
-            cachix watch-exec nixpkgs-terraform -- $build_command 
+            cachix watch-exec nixpkgs-terraform nix -- build .#\"${{ matrix.cycle }}\" --impure
           else
             echo "Cachix token is not present"
-            $build_command
+            nix build .#\"${{ matrix.cycle }}\" --impure
           fi
         env:
           NIXPKGS_ALLOW_UNFREE: 1
