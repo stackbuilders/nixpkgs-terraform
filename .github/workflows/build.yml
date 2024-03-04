@@ -20,14 +20,14 @@ jobs:
         # whether it becomes a definitive solution or not will require a
         # separate discussion with Oscar.
         cycle:
-          - "1.7"
-          - "1.6"
-          - "1.5"
-          - "1.4"
-          - "1.3"
-          - "1.2"
-          - "1.1"
-          - "1.0"
+          - "all-1.7"
+          - "all-1.6"
+          - "all-1.5"
+          - "all-1.4"
+          - "all-1.3"
+          - "all-1.2"
+          - "all-1.1"
+          - "all-1.0"
       fail-fast: false
     steps:
       - name: Checkout code
