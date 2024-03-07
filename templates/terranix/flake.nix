@@ -3,6 +3,7 @@
     nixpkgs-terraform.url = "github:stackbuilders/nixpkgs-terraform";
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     systems.url = "github:nix-systems/default";
+    terranix.url = "github:terranix/terranix";
   };
 
   nixConfig = {
@@ -10,11 +11,17 @@
     extra-trusted-public-keys = "nixpkgs-terraform.cachix.org-1:8Sit092rIdAVENA3ZVeH9hzSiqI/jng6JiCrQ1Dmusw=";
   };
 
-  outputs = { self, nixpkgs-terraform, nixpkgs, systems }:
+  outputs = { self, nixpkgs-terraform, nixpkgs, systems, terranix }:
     let
       forEachSystem = nixpkgs.lib.genAttrs (import systems);
     in
     {
+      packages = forEachSystem (system: {
+        default = terranix.lib.terranixConfiguration {
+        inherit system;
+        modules = [ ./config.nix ];
+      };
+      });
       devShells = forEachSystem
         (system:
           let
@@ -23,7 +30,7 @@
           in
           {
             default = pkgs.mkShell {
-              buildInputs = [ terraform ];
+              buildInputs = [ terraform pkgs.terranix];
             };
           });
     };

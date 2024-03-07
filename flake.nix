@@ -72,6 +72,10 @@
           description = "Using nixpkgs-terraform with devenv";
           path = ./templates/devenv;
         };
+        terranix = {
+          description = "Using nixpkgs-terraform with terranix";
+          path = ./templates/terranix;
+        };
       };
 
       lib = import ./lib;
