@@ -6,7 +6,7 @@
 [![Publish](https://github.com/stackbuilders/nixpkgs-terraform/actions/workflows/publish.yml/badge.svg)](https://github.com/stackbuilders/nixpkgs-terraform/actions/workflows/publish.yml)
 
 [![FlakeHub](https://img.shields.io/endpoint?url=https://flakehub.com/f/stackbuilders/nixpkgs-terraform/badge)](https://flakehub.com/flake/stackbuilders/nixpkgs-terraform)
-[![flakestry.dev](https://flakestry.dev/flake/github/stackbuilders/nixpkgs-terraform/)](https://flakestry.dev/api/badge/flake/github/stackbuilders/nixpkgs-terraform)
+[![flakestry.dev](https://flakestry.dev/api/badge/flake/github/stackbuilders/nixpkgs-terraform)](https://flakestry.dev/flake/github/stackbuilders/nixpkgs-terraform/)
 
 This [flake](https://nixos.wiki/wiki/Flakes) exposes a collection of Terraform
 [versions](versions.json) as Nix packages, starting with version 1.0.0. The
