@@ -11,6 +11,18 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  plan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - id: plan
+        run:
+          PACKAGES=$(./build_plan)
+          echo "packages=$PACKGES" >> $GITHUB_OUTPUT
+    outputs:
+      packages: ${{ steps.plan.outputs.packages }}
+
   build:
     if: false
     strategy:
