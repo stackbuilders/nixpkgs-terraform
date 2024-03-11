@@ -42,7 +42,12 @@
             (builtins.attrNames versions);
           cycles = linkPackagesByCycle (groupVersionsByCycle versions);
         in
-        versions // cycles;
+        versions // cycles // ({
+          default = pkgs.symlinkJoin {
+            name = "all";
+            paths = builtins.attrValues versions;
+          };
+        });
 
       overlayAttrs = {
         terraform-versions = config.packages;

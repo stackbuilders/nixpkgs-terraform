@@ -1,0 +1,35 @@
+#!/usr/bin/env python3
+
+import json
+import re
+import semver
+import subprocess
+
+result = subprocess.run(
+  ["env", "NIXPKGS_ALLOW_UNFREE=1", "nix", "build", "--impure", "--dry-run"],
+  capture_output=True,
+  text=True
+)
+
+versions = []
+
+for line in result.stderr.splitlines():
+  if "warning" in line or "will be built:" in line:
+    continue
+
+  matches = re.findall("terraform-([0-9]+\\.[0-9]+\\.[0-9]+)\\.drv", line)
+
+  if len(matches) > 0:
+    versions.append(semver.VersionInfo.parse(matches[0]))
+  else:
+    break
+
+versions_per_group = 10
+
+if len(versions) > versions_per_group:
+  versions.sort()
+  string_versions = list(map(lambda version: f".#\\\"{version}\\\"", versions))
+  installables = [" ".join(string_versions[i:i + versions_per_group]) for i in range(0, len(string_versions), versions_per_group)]
+  print(json.dumps(installables))
+else:
+  print(json.dumps(["all"]))
