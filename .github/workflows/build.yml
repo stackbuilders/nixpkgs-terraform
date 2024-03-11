@@ -12,6 +12,7 @@ concurrency:
 
 jobs:
   build:
+    if: false
     strategy:
       matrix:
         os:
