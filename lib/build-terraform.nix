@@ -11,5 +11,5 @@ else
 # https://github.com/NixOS/nixpkgs/blob/nixos-23.05/pkgs/applications/networking/cluster/terraform/default.nix
   (pkgs.mkTerraform {
     inherit version hash vendorHash;
-    patches = [ ../patches/provider-path-0_15.patch ];
+    # patches = [ ../patches/provider-path-0_15.patch ];
   })

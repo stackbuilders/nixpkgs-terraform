@@ -24,6 +24,7 @@ for line in result.stderr.splitlines():
   else:
     break
 
+# Group versions by the number of workers
 versions_per_group = 10
 
 if len(versions) > versions_per_group:
