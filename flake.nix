@@ -20,6 +20,8 @@
         pkgs-unstable = inputs.nixpkgs-unstable.legacyPackages.${system};
       };
 
+      checks = config.packages;
+
       packages =
         let
           versions = import ./lib/packages.nix { inherit pkgs pkgs-unstable; custom-lib = self.lib; };
@@ -42,12 +44,7 @@
             (builtins.attrNames versions);
           cycles = linkPackagesByCycle (groupVersionsByCycle versions);
         in
-        versions // cycles // ({
-          all = pkgs.symlinkJoin {
-            name = "terraform-all";
-            paths = builtins.attrValues versions;
-          };
-        });
+        versions // cycles;
 
       overlayAttrs = {
         terraform-versions = config.packages;
