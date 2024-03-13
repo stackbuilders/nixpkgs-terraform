@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 
 import json
+import numpy
 import re
 import semver
 import subprocess
 
+MAX_WORKERS = 4
+
 result = subprocess.run(
-  ["env", "NIXPKGS_ALLOW_UNFREE=1", "nix", "build", "--impure", "--dry-run"],
+  ["env", "NIXPKGS_ALLOW_UNFREE=1", "nix", "build", "--impure", "--dry-run", "#all"],
   capture_output=True,
   text=True
 )
@@ -19,18 +22,16 @@ for line in result.stderr.splitlines():
 
   matches = re.findall("terraform-([0-9]+\\.[0-9]+\\.[0-9]+)\\.drv", line)
 
-  if len(matches) > 0:
-    versions.append(semver.VersionInfo.parse(matches[0]))
-  else:
+  if not len(matches) > 0:
     break
 
-# Group versions by the number of workers
-versions_per_group = 10
+  versions.append(semver.VersionInfo.parse(matches[0]))
 
-if len(versions) > versions_per_group:
+if len(versions) > 10:
   versions.sort()
-  string_versions = list(map(lambda version: f".#\\\"{version}\\\"", versions))
-  installables = [" ".join(string_versions[i:i + versions_per_group]) for i in range(0, len(string_versions), versions_per_group)]
-  print(json.dumps(installables))
+  installables = list(map(lambda version: f".#\\\"{version}\\\"", versions))
+  grouped_installables = numpy.array_split(installables, MAX_WORKERS)
+  installables_per_worker = list(map(lambda installables: " ".join(installables), grouped_installables))
+  print(json.dumps(installables_per_worker))
 else:
   print(json.dumps([".#all"]))

@@ -57,6 +57,7 @@
         buildInputs = [
           pkgs-unstable.black
           (pkgs-unstable.python3.withPackages (ps: [
+            ps.numpy
             ps.pygithub
             ps.semver
           ]))
