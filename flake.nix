@@ -43,7 +43,7 @@
           cycles = linkPackagesByCycle (groupVersionsByCycle versions);
         in
         versions // cycles // ({
-          default = pkgs.symlinkJoin {
+          all = pkgs.symlinkJoin {
             name = "all";
             paths = builtins.attrValues versions;
           };
