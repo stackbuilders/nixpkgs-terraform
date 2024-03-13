@@ -44,7 +44,7 @@
         in
         versions // cycles // ({
           all = pkgs.symlinkJoin {
-            name = "all";
+            name = "terraform-all";
             paths = builtins.attrValues versions;
           };
         });
