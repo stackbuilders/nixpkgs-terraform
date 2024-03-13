@@ -19,7 +19,7 @@ jobs:
       - name: Install Nix
         uses: cachix/install-nix-action@v25
       - id: plan
-        run:
+        run: |
           PACKAGES=$(nix develop --impure --command ./build_plan)
           echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
     outputs:
