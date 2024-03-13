@@ -20,19 +20,19 @@ jobs:
         uses: cachix/install-nix-action@v25
       - id: plan
         run: |
-          PACKAGES=$(nix develop --impure --command ./build_plan)
-          echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
+          INSTALLABLES=$(nix develop --impure --command ./build_plan)
+          echo "installables=$INSTALLABLES" >> $GITHUB_OUTPUT
     outputs:
-      packages: ${{ steps.plan.outputs.packages }}
+      installables: ${{ steps.plan.outputs.installables }}
 
   build:
     strategy:
       matrix:
         os:
-          # - macos-12 # Intel
-          # - macos-14 # M1
+          - macos-12 # Intel
+          - macos-14 # M1
           - ubuntu-latest
-        package: ${{ fromJSON(needs.plan.outputs.packages) }}
+        installables: ${{ fromJSON(needs.plan.outputs.installables) }}
       fail-fast: false
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
@@ -52,10 +52,10 @@ jobs:
         run: |
           if grep -q authToken ~/.config/cachix/cachix.dhall; then
             echo "Cachix token is present"
-            cachix watch-exec nixpkgs-terraform nix -- build --impure ${{ matrix.package }}
+            cachix watch-exec nixpkgs-terraform nix -- build --impure ${{ matrix.installables }}
           else
             echo "Cachix token is not present"
-            nix build --impure ${{ matrix.package }}
+            nix build --impure ${{ matrix.installables }}
           fi
         env:
           NIXPKGS_ALLOW_UNFREE: 1
