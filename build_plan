@@ -33,4 +33,4 @@ if len(versions) > versions_per_group:
   installables = [" ".join(string_versions[i:i + versions_per_group]) for i in range(0, len(string_versions), versions_per_group)]
   print(json.dumps(installables))
 else:
-  print(json.dumps(["all"]))
+  print(json.dumps([".#all"]))
