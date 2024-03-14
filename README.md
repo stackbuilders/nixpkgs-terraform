@@ -62,6 +62,12 @@ nixConfig = {
 };
 ```
 
+Currently, the binary cache supports the following systems:
+
+- aarch64-darwin
+- x86_64-darwin
+- x86_64-linux
+
 ## Usage
 
 After configuring the inputs from the [Install](#install) section, a common use
