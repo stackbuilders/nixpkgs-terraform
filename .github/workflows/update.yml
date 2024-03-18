@@ -18,7 +18,7 @@ jobs:
         with:
           ref: main
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v9
+        uses: DeterminateSystems/nix-installer-action@v10
       - name: Install tools via Nix
         run: nix develop --impure --check
       - name: Update versions
