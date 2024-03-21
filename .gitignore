@@ -2,6 +2,7 @@
 .devenv.flake.nix
 .direnv
 .env
+.pre-commit-config.yaml
 node_modules
 result
 templates/*/flake.lock

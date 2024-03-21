@@ -18,9 +18,9 @@
     {
       packages = forEachSystem (system: {
         default = terranix.lib.terranixConfiguration {
-        inherit system;
-        modules = [ ./config.nix ];
-      };
+          inherit system;
+          modules = [ ./config.nix ];
+        };
       });
       devShells = forEachSystem
         (system:
@@ -30,7 +30,7 @@
           in
           {
             default = pkgs.mkShell {
-              buildInputs = [ terraform pkgs.terranix];
+              buildInputs = [ terraform pkgs.terranix ];
             };
           });
     };

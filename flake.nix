@@ -49,19 +49,6 @@
       overlayAttrs = {
         terraform-versions = config.packages;
       };
-
-      devShells.default = pkgs.mkShell {
-        buildInputs = [
-          pkgs-unstable.black
-          (pkgs-unstable.python3.withPackages (ps: [
-            ps.pygithub
-            ps.semver
-          ]))
-          pkgs-unstable.nix-prefetch
-          pkgs.nodejs
-          pkgs.rubyPackages.dotenv
-        ];
-      };
     };
 
     flake = {
