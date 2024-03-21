@@ -20,6 +20,8 @@
         pkgs-unstable = inputs.nixpkgs-unstable.legacyPackages.${system};
       };
 
+      checks = config.packages;
+
       packages =
         let
           versions = import ./lib/packages.nix { inherit pkgs pkgs-unstable; custom-lib = self.lib; };
