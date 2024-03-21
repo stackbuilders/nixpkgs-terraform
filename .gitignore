@@ -1,3 +1,5 @@
+.devenv
+.devenv.flake.nix
 .direnv
 .env
 node_modules
