@@ -25,7 +25,7 @@
           versions = import ./lib/packages.nix { inherit pkgs pkgs-unstable; custom-lib = self.lib; };
           linkPackagesByCycle = versionsPerCycle: builtins.mapAttrs
             (cycle: cycleVersions: pkgs.symlinkJoin {
-              name = "terraform-all-${cycle}";
+              name = "terraform-${cycle}";
               paths = builtins.map (version: versions.${version}) cycleVersions;
             })
             versionsPerCycle;
