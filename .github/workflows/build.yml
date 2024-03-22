@@ -11,6 +11,20 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install Nix
+        uses: cachix/install-nix-action@v26
+      - name: Setup Cachix
+        uses: cachix/cachix-action@v14
+        with:
+          name: devenv
+      - name: Run tests
+        run: devenv test
+
   build:
     strategy:
       matrix:
@@ -20,6 +34,7 @@ jobs:
           - ubuntu-latest
       fail-fast: false
     runs-on: ${{ matrix.os }}
+    needs: [check]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

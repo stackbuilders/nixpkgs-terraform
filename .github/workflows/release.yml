@@ -24,7 +24,7 @@ jobs:
         with:
           name: devenv
       - name: Install devenv
-        uses: nix-env -if https://install.devenv.sh/latest
+        run: nix-env -if https://install.devenv.sh/latest
       - name: Run semantic-release
         run: devenv shell semantic-release --dry-run
         env:
