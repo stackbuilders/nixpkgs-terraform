@@ -30,7 +30,7 @@ jobs:
         with:
           author: GitHub <noreply@github.com>
           commit-message: Update Terraform versions
-          title: Update Terraform versions
+          title: "feat: Update Terraform versions" 
           body: |
             Automatically created pull-request to update Terraform versions.
 
