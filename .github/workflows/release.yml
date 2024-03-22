@@ -26,6 +26,6 @@ jobs:
       - name: Install devenv
         run: nix-env -if https://install.devenv.sh/latest
       - name: Run semantic-release
-        run: devenv shell semantic-release -- --dry-run
+        run: devenv shell semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
