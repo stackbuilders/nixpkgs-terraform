@@ -20,7 +20,6 @@
         (system:
           let
             pkgs = nixpkgs.legacyPackages.${system};
-            terraform = nixpkgs-terraform.packages.${system}."1.7.4";
           in
           {
             default = devenv.lib.mkShell {
@@ -28,7 +27,7 @@
               modules = [
                 ({ pkgs, config, ... }: {
                   languages.terraform.enable = true;
-                  languages.terraform.package = terraform;
+                  languages.terraform.version = "1.7.4";
                 })
               ];
             };
