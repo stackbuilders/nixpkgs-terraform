@@ -1,9 +1,9 @@
 ---
 name: Update
 
-on:
-  schedule:
-    - cron: "0 0 * * 0"
+on: push
+  # schedule:
+  #   - cron: "0 0 * * 0"
 
 concurrency:
   group: update
@@ -18,11 +18,15 @@ jobs:
         with:
           ref: main
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v9
-      - name: Install tools via Nix
-        run: nix develop --impure --check
+        uses: cachix/install-nix-action@v26
+      - name: Setup Cachix
+        uses: cachix/cachix-action@v14
+        with:
+          name: devenv
+      - name: Install devenv
+        run: nix-env -if https://install.devenv.sh/latest
       - name: Update versions
-        run: nix develop --impure --command python3 update-versions.py
+        run: devenv shell update-versions
         env:
           GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
       - name: Create pull request
@@ -30,7 +34,7 @@ jobs:
         with:
           author: GitHub <noreply@github.com>
           commit-message: Update Terraform versions
-          title: "feat: Update Terraform versions" 
+          title: "feat: Update Terraform versions"
           body: |
             Automatically created pull-request to update Terraform versions.
 
