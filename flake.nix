@@ -22,29 +22,7 @@
 
       checks = config.packages;
 
-      packages =
-        let
-          versions = import ./lib/packages.nix { inherit pkgs pkgs-unstable; custom-lib = self.lib; };
-          linkPackagesByCycle = versionsPerCycle: builtins.mapAttrs
-            (cycle: cycleVersions: pkgs.symlinkJoin {
-              name = "terraform-${cycle}";
-              paths = builtins.map (version: versions.${version}) cycleVersions;
-            })
-            versionsPerCycle;
-          groupVersionsByCycle = versions: builtins.groupBy
-            (version:
-              let
-                splittedVersion = builtins.splitVersion version;
-              in
-              "all-" + (builtins.concatStringsSep "." [
-                (builtins.elemAt splittedVersion 0)
-                (builtins.elemAt splittedVersion 1)
-              ])
-            )
-            (builtins.attrNames versions);
-          cycles = linkPackagesByCycle (groupVersionsByCycle versions);
-        in
-        versions // cycles;
+      packages = import ./lib/packages.nix { inherit pkgs pkgs-unstable; custom-lib = self.lib; };
 
       overlayAttrs = {
         terraform-versions = config.packages;
