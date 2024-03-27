@@ -18,12 +18,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v9
-      - name: Install tools via Nix
-        run: nix develop --check
-      - name: Install dependencies
-        run: nix develop -c npm ci
+        uses: cachix/install-nix-action@v26
+      - name: Setup Cachix
+        uses: cachix/cachix-action@v14
+        with:
+          name: devenv
+      - name: Install devenv
+        run: nix-env -if https://install.devenv.sh/latest
       - name: Run semantic-release
-        run: nix develop -c npx semantic-release
+        run: devenv shell semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
