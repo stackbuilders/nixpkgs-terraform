@@ -22,7 +22,13 @@
 
       checks = config.packages;
 
-      packages = import ./lib/packages.nix { inherit pkgs pkgs-unstable; custom-lib = self.lib; };
+      packages =
+        let
+          versions = builtins.fromJSON (builtins.readFile ./versions.json);
+          releases = import ./lib/packages.nix { inherit pkgs pkgs-unstable; custom-lib = self.lib; releases = versions.releases; };
+          latestVersions = builtins.mapAttrs (cycle: version: releases.${version}) versions.latest;
+        in
+        releases // latestVersions;
 
       overlayAttrs = {
         terraform-versions = config.packages;
