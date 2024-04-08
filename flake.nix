@@ -25,7 +25,7 @@
       packages =
         let
           versions = builtins.fromJSON (builtins.readFile ./versions.json);
-          releases = import ./lib/packages.nix { inherit pkgs pkgs-unstable; custom-lib = self.lib; releases = versions.releases; };
+          releases = import ./lib/releases.nix { inherit pkgs pkgs-unstable; custom-lib = self.lib; releases = versions.releases; };
           latestVersions = builtins.mapAttrs (_cycle: version: releases.${version}) versions.latest;
         in
         releases // latestVersions;
