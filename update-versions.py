@@ -66,10 +66,7 @@ def get_stable_github_versions(releases: Iterable[GitRelease]) -> List[SemVer]:
 def get_latest_versions_per_cycle(
     versions: collections.OrderedDict,
 ) -> collections.OrderedDict:
-    sorted_versions = sorted(versions, key=lambda v: (v.major, v.minor), reverse=True)
-    grouped_versions = itertools.groupby(
-        sorted_versions, key=lambda v: f"{v.major}.{v.minor}"
-    )
+    grouped_versions = itertools.groupby(versions, key=lambda v: f"{v.major}.{v.minor}")
 
     latest_versions = {k: max(list(g)) for k, g in grouped_versions}
 
