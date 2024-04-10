@@ -1,6 +1,7 @@
 import argparse
 import collections
 import functools
+import itertools
 import json
 import os
 import pathlib
@@ -35,8 +36,9 @@ def parse_semver(input: str) -> SemVer:
 
 def read_current_versions(file: Path) -> Versions:
     with open(file, "r") as f:
-        versions = json.load(f)
+        data = json.load(f)
 
+    versions = data["releases"]
     result: OrderedDict[SemVer, NixHashes] = OrderedDict()
     for key_raw, value_raw in versions.items():
         key = parse_semver(key_raw)
@@ -59,6 +61,16 @@ def get_stable_github_versions(releases: Iterable[GitRelease]) -> List[SemVer]:
         )
 
     return list(map(to_semver, filter(is_stable, releases)))
+
+
+def get_latest_versions_per_cycle(
+    versions: collections.OrderedDict,
+) -> collections.OrderedDict:
+    grouped_versions = itertools.groupby(versions, key=lambda v: f"{v.major}.{v.minor}")
+
+    latest_versions = {k: max(list(g)) for k, g in grouped_versions}
+
+    return collections.OrderedDict(sorted(latest_versions.items(), reverse=True))
 
 
 def get_or_calculate_hashes(
@@ -170,12 +182,23 @@ def main():
         )
     )
 
+    latest_versions_per_cycle = get_latest_versions_per_cycle(versions)
+
     versions_jsonified = OrderedDict(
         (str(version), hashes.__dict__) for version, hashes in versions.items()
     )
 
+    latest_versions_jsonified = OrderedDict(
+        (str(cycle), str(latest_version))
+        for cycle, latest_version in latest_versions_per_cycle.items()
+    )
+
     with open(versions_file, "w") as f:
-        json.dump(versions_jsonified, f, indent=2)
+        json.dump(
+            {"releases": versions_jsonified, "latest": latest_versions_jsonified},
+            f,
+            indent=2,
+        )
 
 
 if __name__ == "__main__":
