@@ -21,6 +21,9 @@ This flake provides a set of Terraform versions in the form of:
 nixpkgs-terraform.packages.${system}.${version}
 ```
 
+Where *version* can either be `X.Y.Z` or `X.Y`. You can see all the available
+versions in the [versions.json](./versions.json) file.
+
 Terraform versions are kept up to date via a weekly scheduled [CI
 workflow](.github/workflows/update.yml).
 
