@@ -63,7 +63,7 @@ jobs:
   template:
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    needs: [build]
+    # needs: [build]
     strategy:
       matrix:
         template: [default, devenv, terranix]
