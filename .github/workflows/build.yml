@@ -31,9 +31,8 @@ jobs:
     strategy:
       matrix:
         os:
-          # TODO: Revert this change later
-          # - macos-12 # Intel
-          # - macos-14 # M1
+          - macos-12 # Intel
+          - macos-14 # M1
           - ubuntu-latest
       fail-fast: false
     runs-on: ${{ matrix.os }}
