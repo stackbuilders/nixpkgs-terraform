@@ -38,10 +38,10 @@ jobs:
           body: |
             Automatically created pull-request to update Terraform versions.
 
-            This is the result of running:
+            This is the result of configuring a GITHUB_TOKEN in `.env` and running:
 
             ```
-            env GITHUB_TOKEN=<token> nix develop --impure --command python3 update-versions.py
+            devenv shell update-versions
             ```
           delete-branch: true
           reviewers: |
