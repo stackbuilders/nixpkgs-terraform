@@ -3,7 +3,7 @@
 if builtins.compareVersions version "1.6.0" >= 0
 then
 # https://github.com/NixOS/nixpkgs/blob/nixpkgs-unstable/pkgs/applications/networking/cluster/terraform/default.nix
-  (pkgs-unstable.mkTerraform {
+  (pkgs.lib.warn ("allowUnfree is set to true to build version " + version) pkgs-unstable.mkTerraform {
     inherit version hash vendorHash;
     patches = [ ../patches/provider-path-0_15.patch ];
   })
