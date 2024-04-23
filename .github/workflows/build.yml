@@ -52,13 +52,11 @@ jobs:
         run: |
           if grep -q authToken ~/.config/cachix/cachix.dhall; then
             echo "Cachix token is present"
-            cachix watch-exec nixpkgs-terraform nix -- flake check --impure
+            cachix watch-exec nixpkgs-terraform nix -- flake check
           else
             echo "Cachix token is not present"
-            nix flake check --impure
+            nix flake check
           fi
-        env:
-          NIXPKGS_ALLOW_UNFREE: 1
 
   template:
     runs-on: ubuntu-latest
@@ -81,7 +79,5 @@ jobs:
         run: nix flake init -t ${{ github.workspace }}#${{ matrix.template }}
         working-directory: ${{ steps.mktemp.outputs.tmpdir }}
       - name: Run smoke test
-        run: nix develop --accept-flake-config --impure -c terraform --version
+        run: nix develop --accept-flake-config -c terraform --version
         working-directory: ${{ steps.mktemp.outputs.tmpdir }}
-        env:
-          NIXPKGS_ALLOW_UNFREE: 1
