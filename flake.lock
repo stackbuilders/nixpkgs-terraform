@@ -3,11 +3,11 @@
     "config": {
       "locked": {
         "dir": "config",
-        "lastModified": 1713890523,
-        "narHash": "sha256-KyNY8NWpt+/s85Q7uQDWLuhG6PePt9wAvv9/2eRKcus=",
+        "lastModified": 1713890586,
+        "narHash": "sha256-84fF6KKK/GzZyieGNvGfBPli09dmR/GqfqntrEWT4sI=",
         "owner": "stackbuilders",
         "repo": "nixpkgs-terraform",
-        "rev": "9634ac611813aa831139ea4491b0569eb33ca88f",
+        "rev": "1ac9cb09d171a163cc2619659feb4f7333dcbddb",
         "type": "github"
       },
       "original": {
