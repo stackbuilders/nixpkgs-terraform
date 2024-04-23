@@ -5,6 +5,7 @@
     flake-parts.url = "github:hercules-ci/flake-parts";
     # TODO: replace poc_allow_unfree with default branch
     config.url = "github:stackbuilders/nixpkgs-terraform/poc_allow_unfree?dir=config";
+    # config.url = "path:/Users/sestrella/code/stackbuilders/nixpkgs-terraform/config";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     nixpkgs.url = "github:nixos/nixpkgs/nixos-23.05";
     systems.url = "github:nix-systems/default";
@@ -37,7 +38,7 @@
             releases = import ./lib/releases.nix {
               inherit pkgs pkgs-unstable; custom-lib = self.lib;
               releases = versions.releases;
-              silenceWarnings = flakeConfig.nixpkgs-terraform.silenceWarnings;
+              silenceWarnings = flakeConfig.nixpkgs-terraform.config.silenceWarnings;
             };
             latestVersions = builtins.mapAttrs (_cycle: version: releases.${version}) versions.latest;
           in

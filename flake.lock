@@ -1,5 +1,17 @@
 {
   "nodes": {
+    "config": {
+      "locked": {
+        "lastModified": 1713890476,
+        "narHash": "sha256-xwz+TB/MX/qglDWhwxC8MkspQ2ayTgpcNUS6k4qdCu8=",
+        "path": "/Users/sestrella/code/stackbuilders/nixpkgs-terraform/config",
+        "type": "path"
+      },
+      "original": {
+        "path": "/Users/sestrella/code/stackbuilders/nixpkgs-terraform/config",
+        "type": "path"
+      }
+    },
     "flake-parts": {
       "inputs": {
         "nixpkgs-lib": "nixpkgs-lib"
@@ -68,30 +80,12 @@
         "type": "github"
       }
     },
-    "nixpkgs-unstable-config": {
-      "locked": {
-        "dir": "nixpkgs-unstable-config",
-        "lastModified": 1713889058,
-        "narHash": "sha256-/wD2KFonrgmnc1rAbEwzfGmb0987HuuGJ8hCZSs/98w=",
-        "owner": "stackbuilders",
-        "repo": "nixpkgs-terraform",
-        "rev": "33f3195c21c92e896f72724b5e56cb7ca5ef7b13",
-        "type": "github"
-      },
-      "original": {
-        "dir": "nixpkgs-unstable-config",
-        "owner": "stackbuilders",
-        "ref": "poc_allow_unfree",
-        "repo": "nixpkgs-terraform",
-        "type": "github"
-      }
-    },
     "root": {
       "inputs": {
+        "config": "config",
         "flake-parts": "flake-parts",
         "nixpkgs": "nixpkgs",
         "nixpkgs-unstable": "nixpkgs-unstable",
-        "nixpkgs-unstable-config": "nixpkgs-unstable-config",
         "systems": "systems"
       }
     },
