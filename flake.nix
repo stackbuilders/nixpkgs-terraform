@@ -2,11 +2,11 @@
   description = "A collection of Terraform versions that are automatically updated";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-23.05";
-    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
-
-    systems.url = "github:nix-systems/default";
     flake-parts.url = "github:hercules-ci/flake-parts";
+    nixpkgs-unstable-config.url = "github:stackbuilders/nixpkgs-terraform/poc_allow_unfree?dir=nixpkgs-unstable-config";
+    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-23.05";
+    systems.url = "github:nix-systems/default";
   };
 
   outputs = { self, flake-parts, ... }@inputs: flake-parts.lib.mkFlake { inherit inputs; } {
@@ -19,7 +19,7 @@
       _module.args = {
         pkgs-unstable = import inputs.nixpkgs-unstable {
           inherit system;
-          config.allowUnfree = true;
+          config = inputs.nixpkgs-unstable-config;
         };
       };
 
@@ -27,6 +27,7 @@
 
       packages =
         let
+          # TODO: filter versions when allowUnfree is set to false
           versions = builtins.fromJSON (builtins.readFile ./versions.json);
           releases = import ./lib/releases.nix { inherit pkgs pkgs-unstable; custom-lib = self.lib; releases = versions.releases; };
           latestVersions = builtins.mapAttrs (_cycle: version: releases.${version}) versions.latest;
