@@ -79,5 +79,5 @@ jobs:
         run: nix flake init -t ${{ github.workspace }}#${{ matrix.template }}
         working-directory: ${{ steps.mktemp.outputs.tmpdir }}
       - name: Run smoke test
-        run: nix develop --accept-flake-config -c terraform --version
+        run: nix develop --accept-flake-config --impure -c terraform --version
         working-directory: ${{ steps.mktemp.outputs.tmpdir }}
