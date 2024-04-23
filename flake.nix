@@ -17,7 +17,10 @@
 
     perSystem = { config, pkgs, pkgs-unstable, system, ... }: {
       _module.args = {
-        pkgs-unstable = inputs.nixpkgs-unstable.legacyPackages.${system};
+        pkgs-unstable = import inputs.nixpkgs-unstable {
+          inherit system;
+          config.allowUnfree = false;
+        };
       };
 
       checks = config.packages;
