@@ -38,7 +38,7 @@
             releases = import ./lib/releases.nix {
               inherit pkgs pkgs-unstable; custom-lib = self.lib;
               releases = versions.releases;
-              silenceWarnings = flakeConfig.nixpkgs-terraform.config.silenceWarnings;
+              silenceWarnings = flakeConfig.nixpkgs-terraform.silenceWarnings;
             };
             latestVersions = builtins.mapAttrs (_cycle: version: releases.${version}) versions.latest;
           in
