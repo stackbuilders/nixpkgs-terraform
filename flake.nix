@@ -19,7 +19,7 @@
       _module.args = {
         pkgs-unstable = import inputs.nixpkgs-unstable {
           inherit system;
-          config = inputs.nixpkgs-unstable-config;
+          config = import inputs.nixpkgs-unstable-config;
         };
       };
 
