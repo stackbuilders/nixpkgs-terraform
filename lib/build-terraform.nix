@@ -1,4 +1,4 @@
-{ pkgs, pkgs-unstable, version, hash, vendorHash, silenceWarnings }:
+{ pkgs, pkgs-unstable, version, hash, vendorHash, silenceWarnings ? false }:
 # https://www.hashicorp.com/blog/hashicorp-adopts-business-source-license
 if builtins.compareVersions version "1.6.0" >= 0
 then
