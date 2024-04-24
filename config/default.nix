@@ -1,4 +1,4 @@
 {
-  nixpkgs-unstable.config.allowUnfree = true;
+  nixpkgs-unstable.allowUnfree = true;
   nixpkgs-terraform.silenceWarnings = false;
 }

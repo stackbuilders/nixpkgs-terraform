@@ -25,7 +25,7 @@
         _module.args = {
           pkgs-unstable = import inputs.nixpkgs-unstable {
             inherit system;
-            config = flakeConfig.nixpkgs-unstable.config;
+            config = flakeConfig.nixpkgs-unstable;
           };
         };
 
