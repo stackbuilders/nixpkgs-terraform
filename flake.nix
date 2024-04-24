@@ -11,61 +11,64 @@
     systems.url = "github:nix-systems/default";
   };
 
-  outputs = { self, flake-parts, ... }@inputs: flake-parts.lib.mkFlake { inherit inputs; } {
-    imports = [
-      inputs.flake-parts.flakeModules.easyOverlay
-    ];
-    systems = import inputs.systems;
+  outputs = inputs@{ self, ... }: inputs.flake-parts.lib.mkFlake
+    { inherit inputs; }
+    {
+      imports = [
+        inputs.flake-parts.flakeModules.easyOverlay
+      ];
 
-    perSystem = { config, pkgs, pkgs-unstable, system, ... }:
-      let
-        flakeConfig = import inputs.config;
-      in
-      {
-        _module.args = {
-          pkgs-unstable = import inputs.nixpkgs-unstable {
-            inherit system;
-            config = flakeConfig.nixpkgs-unstable;
+      systems = import inputs.systems;
+
+      perSystem = { config, pkgs, pkgs-unstable, system, ... }:
+        let
+          flakeConfig = import inputs.config;
+        in
+        {
+          _module.args = {
+            pkgs-unstable = import inputs.nixpkgs-unstable {
+              inherit system;
+              config = flakeConfig.nixpkgs-unstable;
+            };
+          };
+
+          checks = config.packages;
+
+          packages =
+            let
+              # TODO: filter versions when allowUnfree is set to false
+              versions = builtins.fromJSON (builtins.readFile ./versions.json);
+              releases = import ./lib/releases.nix {
+                inherit pkgs pkgs-unstable; custom-lib = self.lib;
+                releases = versions.releases;
+                silenceWarnings = flakeConfig.nixpkgs-terraform.silenceWarnings;
+              };
+              latestVersions = builtins.mapAttrs (_cycle: version: releases.${version}) versions.latest;
+            in
+            releases // latestVersions;
+
+          overlayAttrs = {
+            terraform-versions = config.packages;
           };
         };
 
-        checks = config.packages;
-
-        packages =
-          let
-            # TODO: filter versions when allowUnfree is set to false
-            versions = builtins.fromJSON (builtins.readFile ./versions.json);
-            releases = import ./lib/releases.nix {
-              inherit pkgs pkgs-unstable; custom-lib = self.lib;
-              releases = versions.releases;
-              silenceWarnings = flakeConfig.nixpkgs-terraform.silenceWarnings;
-            };
-            latestVersions = builtins.mapAttrs (_cycle: version: releases.${version}) versions.latest;
-          in
-          releases // latestVersions;
-
-        overlayAttrs = {
-          terraform-versions = config.packages;
+      flake = {
+        templates = {
+          default = {
+            description = "Simple nix-shell with Terraform installed via nixpkgs-terraform";
+            path = ./templates/default;
+          };
+          devenv = {
+            description = "Using nixpkgs-terraform with devenv";
+            path = ./templates/devenv;
+          };
+          terranix = {
+            description = "Using nixpkgs-terraform with terranix";
+            path = ./templates/terranix;
+          };
         };
+
+        lib = import ./lib;
       };
-
-    flake = {
-      templates = {
-        default = {
-          description = "Simple nix-shell with Terraform installed via nixpkgs-terraform";
-          path = ./templates/default;
-        };
-        devenv = {
-          description = "Using nixpkgs-terraform with devenv";
-          path = ./templates/devenv;
-        };
-        terranix = {
-          description = "Using nixpkgs-terraform with terranix";
-          path = ./templates/terranix;
-        };
-      };
-
-      lib = import ./lib;
     };
-  };
 }
