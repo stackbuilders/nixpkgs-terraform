@@ -2,10 +2,10 @@
   description = "A collection of Terraform versions that are automatically updated";
 
   inputs = {
-    flake-parts.url = "github:hercules-ci/flake-parts";
     # TODO: replace poc_allow_unfree with default branch
     config.url = "github:stackbuilders/nixpkgs-terraform/poc_allow_unfree?dir=config";
-    # config.url = "path:/Users/sestrella/code/stackbuilders/nixpkgs-terraform/config";
+    # config.url = "github:stackbuilders/nixpkgs-terraform?dir=config";
+    flake-parts.url = "github:hercules-ci/flake-parts";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     nixpkgs.url = "github:nixos/nixpkgs/nixos-23.05";
     systems.url = "github:nix-systems/default";
@@ -36,14 +36,22 @@
 
           packages =
             let
-              # TODO: filter versions when allowUnfree is set to false
-              versions = builtins.fromJSON (builtins.readFile ./versions.json);
+              filteredVersions =
+                let
+                  versions = builtins.fromJSON (builtins.readFile ./versions.json);
+                  allowUnfree = flakeConfig.nixpkgs-unstable.allowUnfree;
+                  versionLessThan1_5 = version: builtins.compareVersions version "1.6.0" < 0;
+                in
+                {
+                  releases = pkgs.lib.filterAttrs (version: _: allowUnfree || versionLessThan1_5 version) versions.releases;
+                  latest = pkgs.lib.filterAttrs (_: version: allowUnfree || versionLessThan1_5 version) versions.latest;
+                };
               releases = import ./lib/releases.nix {
                 inherit pkgs pkgs-unstable; custom-lib = self.lib;
-                releases = versions.releases;
+                releases = filteredVersions.releases;
                 silenceWarnings = flakeConfig.nixpkgs-terraform.silenceWarnings;
               };
-              latestVersions = builtins.mapAttrs (_cycle: version: releases.${version}) versions.latest;
+              latestVersions = builtins.mapAttrs (_cycle: version: releases.${version}) filteredVersions.latest;
             in
             releases // latestVersions;
 
