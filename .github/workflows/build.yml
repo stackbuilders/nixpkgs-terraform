@@ -64,7 +64,7 @@ jobs:
     needs: [build]
     strategy:
       matrix:
-        template: [default, devenv, terranix]
+        template: [config, default, devenv, terranix]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
