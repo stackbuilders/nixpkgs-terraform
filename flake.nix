@@ -62,6 +62,10 @@
 
       flake = {
         templates = {
+          config = {
+            description = "Template use to override nixpkgs-terraform default configuration";
+            path = ./config;
+          };
           default = {
             description = "Simple nix-shell with Terraform installed via nixpkgs-terraform";
             path = ./templates/default;
