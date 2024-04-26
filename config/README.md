@@ -32,25 +32,30 @@ inputs = {
 };
 ```
 
-## Disable `allowUnfree`
+The relative path `./config` provided in the example above could be replaced
+with a full path or a git URL; look at the [URL-like
+syntax](https://nixos.org/manual/nix/stable/command-ref/new-cli/nix3-flake.html#url-like-syntax)
+for more details.
 
+## Overview
 
-```
-nixpkgs-unstable.allowUnfree = false;
-```
+The following section provides an overview of all the available options
+supported by `nixpkgs-terraform`.
 
-## Silence Warnings
+### `nixpkgs-unstable.allowUnfree` (default `true`)
 
-```sh
-> nix build .#\"1.8.0\"
-trace: warning: allowUnfree is enabled to build version 1.8.0
-```
+Control whether Terraform versions after the [HashiCorp license
+change](https://www.hashicorp.com/blog/hashicorp-adopts-business-source-license)
+are available or not; if set to `true`, all free and non-free versions are
+available; otherwise, only free versions are available.
 
-```
-# default.nix
-nixpkgs-terraform.silenceWarnings = true;
-```
+### `nixpkgs-terraform.silenceWarnings` (default `true`)
 
-## Related
+Starting with version `4.0`, the flag `allowUnfree` is enabled by default; to
+notify users of this change, a warning message is printed whenever a non-free
+package is evaluated. If set to `true`, the warning message is silence.
 
-https://github.com/nix-systems/default
+## References
+
+This configuration flake has the same structure as
+[nix-systems/default](https://github.com/nix-systems/default).
