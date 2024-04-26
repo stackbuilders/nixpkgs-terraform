@@ -1,3 +1,5 @@
 {
+  description = "TODO";
+
   outputs = _: { };
 }
