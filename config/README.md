@@ -1,4 +1,4 @@
-# Config
+# nixpkgs-terraform - config
 
 This flake stores the default configuration for `nixpkgs-terraform`.
 
