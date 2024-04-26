@@ -9,9 +9,14 @@
 [![flakestry.dev](https://flakestry.dev/api/badge/flake/github/stackbuilders/nixpkgs-terraform)](https://flakestry.dev/flake/github/stackbuilders/nixpkgs-terraform/)
 
 This [flake](https://nixos.wiki/wiki/Flakes) exposes a collection of Terraform
-[versions](versions.json) as Nix packages, starting with version 1.0.0. The
+[versions](versions.json) as Nix packages, starting with version `1.0.0`. The
 packages provided can be used for creating reproducible development
 environments using a [nix-shell] or [devenv](https://devenv.sh).
+
+**Note:** Starting with version `4.0`, this project enables `allowUnfree` by
+default in order to build Terraform versions with a BSL license; however, this
+flag can be disabled via a configuration flake; see [here](config) for more
+details.
 
 ## How it works
 
