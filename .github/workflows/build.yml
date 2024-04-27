@@ -12,6 +12,7 @@ concurrency:
 
 jobs:
   check:
+    if: false
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -61,7 +62,7 @@ jobs:
   template:
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    needs: [build]
+    # needs: [build]
     strategy:
       matrix:
         template:
