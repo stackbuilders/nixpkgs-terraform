@@ -6,9 +6,12 @@
   packages = [
     pkgs.nix-prefetch
     pkgs.semantic-release
+    pkgs.cobra-cli # Temporary
   ];
 
-  scripts.update-versions.exec =
+  languages.go.enable = true;
+
+  scripts.update-versions-py.exec = # We should remove this too when ready to merge
     let
       python = pkgs.python3.withPackages (ps: [
         ps.pygithub
