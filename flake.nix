@@ -2,9 +2,7 @@
   description = "A collection of Terraform versions that are automatically updated";
 
   inputs = {
-    # TODO: replace poc_allow_unfree with default branch
-    config.url = "github:stackbuilders/nixpkgs-terraform/poc_allow_unfree?dir=config";
-    # config.url = "github:stackbuilders/nixpkgs-terraform?dir=config";
+    config.url = "./templates/config";
     flake-parts.url = "github:hercules-ci/flake-parts";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     nixpkgs.url = "github:nixos/nixpkgs/nixos-23.05";
@@ -64,7 +62,7 @@
         templates = {
           config = {
             description = "Template use to override nixpkgs-terraform default configuration";
-            path = ./config;
+            path = ./templates/config;
           };
           default = {
             description = "Simple nix-shell with Terraform installed via nixpkgs-terraform";

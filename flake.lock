@@ -2,20 +2,14 @@
   "nodes": {
     "config": {
       "locked": {
-        "dir": "config",
-        "lastModified": 1714147294,
-        "narHash": "sha256-LFdRdjNHHRNu/IGhhXEwadyiCufTJoA69at895mTmfQ=",
-        "owner": "stackbuilders",
-        "repo": "nixpkgs-terraform",
-        "rev": "3f5284bdd2082867591c1b68d3fdab197ec2d7c7",
-        "type": "github"
+        "lastModified": 1,
+        "narHash": "sha256-IiwMIt7GegA63nSi7dXYbKFhT6eCNxPVPpeNBN2fSQo=",
+        "path": "/nix/store/z13f44qvargv8gz45zcy120sh81nsik9-source/templates/config",
+        "type": "path"
       },
       "original": {
-        "dir": "config",
-        "owner": "stackbuilders",
-        "ref": "poc_allow_unfree",
-        "repo": "nixpkgs-terraform",
-        "type": "github"
+        "path": "/nix/store/z13f44qvargv8gz45zcy120sh81nsik9-source/templates/config",
+        "type": "path"
       }
     },
     "flake-parts": {
