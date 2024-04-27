@@ -69,11 +69,11 @@ jobs:
           - name: config
             test: nix flake metadata
           - name: default
-            test: nix develop --accept-flake-config -c terraform --version
+            test: nix develop --accept-flake-config --impure -c terraform --version
           - name: devenv
-            test: nix develop --accept-flake-config -c terraform --version
+            test: nix develop --accept-flake-config --impure -c terraform --version
           - name: terranix
-            test: nix develop --accept-flake-config -c terraform --version
+            test: nix develop --accept-flake-config --impure -c terraform --version
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
