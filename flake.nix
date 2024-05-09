@@ -40,11 +40,11 @@
                 let
                   versions = builtins.fromJSON (builtins.readFile ./versions.json);
                   allowUnfree = flakeConfig.nixpkgs-unstable.allowUnfree;
-                  versionLessThan1_5 = version: builtins.compareVersions version "1.6.0" < 0;
+                  versionLessThan1_6 = version: builtins.compareVersions version "1.6.0" < 0;
                 in
                 {
-                  releases = pkgs.lib.filterAttrs (version: _: allowUnfree || versionLessThan1_5 version) versions.releases;
-                  latest = pkgs.lib.filterAttrs (_: version: allowUnfree || versionLessThan1_5 version) versions.latest;
+                  releases = pkgs.lib.filterAttrs (version: _: allowUnfree || versionLessThan1_6 version) versions.releases;
+                  latest = pkgs.lib.filterAttrs (_: version: allowUnfree || versionLessThan1_6 version) versions.latest;
                 };
               releases = import ./lib/releases.nix {
                 inherit pkgs pkgs-unstable; custom-lib = self.lib;
