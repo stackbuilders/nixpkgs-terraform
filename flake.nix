@@ -2,9 +2,7 @@
   description = "A collection of Terraform versions that are automatically updated";
 
   inputs = {
-    # TODO: change config input after merging PR
-    # config.url = "github:stackbuilders/nixpkgs-terraform?dir=templates/config";
-    config.url = "github:stackbuilders/nixpkgs-terraform/poc_allow_unfree?dir=templates/config";
+    config.url = "github:stackbuilders/nixpkgs-terraform?dir=templates/config";
     flake-parts.url = "github:hercules-ci/flake-parts";
     nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     nixpkgs.url = "github:nixos/nixpkgs/nixos-23.05";

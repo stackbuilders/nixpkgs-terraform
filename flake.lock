@@ -3,17 +3,16 @@
     "config": {
       "locked": {
         "dir": "templates/config",
-        "lastModified": 1714182936,
-        "narHash": "sha256-q7L4hHUxwEhb7LQE2OlQIXORzesxgJRl/gbD2xhxBGM=",
+        "lastModified": 1715288913,
+        "narHash": "sha256-NQhxnFCAUj4x5t878Gpzb6xlRpr1V7bm5AEoqCVaJbk=",
         "owner": "stackbuilders",
         "repo": "nixpkgs-terraform",
-        "rev": "1a3fbda3edb789369ec58424f9bd8771a978b019",
+        "rev": "4f09d5af5c1782414ff27caab6f3abd84e516ded",
         "type": "github"
       },
       "original": {
         "dir": "templates/config",
         "owner": "stackbuilders",
-        "ref": "poc_allow_unfree",
         "repo": "nixpkgs-terraform",
         "type": "github"
       }
