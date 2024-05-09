@@ -9,9 +9,14 @@
 [![flakestry.dev](https://flakestry.dev/api/badge/flake/github/stackbuilders/nixpkgs-terraform)](https://flakestry.dev/flake/github/stackbuilders/nixpkgs-terraform/)
 
 This [flake](https://nixos.wiki/wiki/Flakes) exposes a collection of Terraform
-[versions](versions.json) as Nix packages, starting with version 1.0.0. The
+[versions](versions.json) as Nix packages, starting with version `1.0.0`. The
 packages provided can be used for creating reproducible development
 environments using a [nix-shell] or [devenv](https://devenv.sh).
+
+**Note:** Starting with version `4.0`, this project enables `allowUnfree` by
+default in order to build Terraform versions with a [BSL
+license][license-change]; however, this flag can be disabled via a
+configuration flake; see [here](templates/config) for more details.
 
 ## How it works
 
@@ -123,10 +128,9 @@ command:
 env NIXPKGS_ALLOW_UNFREE=1 nix develop --impure
 ```
 
-**Note:** Due to Hashicorp’s most recent [license
-change](https://www.hashicorp.com/blog/hashicorp-adopts-business-source-license),
-the `NIXPKGS_ALLOW_UNFREE` flag is required for Terraform versions `>= 1.6.0`,
-`nix develop` should work out of the box for older versions.
+**Note:** Due to Hashicorp’s most recent [license change][license-change] the
+`NIXPKGS_ALLOW_UNFREE` flag is required for Terraform versions `>= 1.6.0`, `nix
+develop` should work out of the box for older versions.
 
 ### Templates
 
@@ -178,5 +182,6 @@ alt="Stack Builders" width="50%"></img>
 [Check out our libraries](https://github.com/stackbuilders/) | [Join our
 team](https://www.stackbuilders.com/join-us/)
 
+[license-change]: https://www.hashicorp.com/blog/hashicorp-adopts-business-source-license
 [nix-shell]: https://nixos.wiki/wiki/Development_environment_with_nix-shell
 [semantic-release]: https://semantic-release.gitbook.io/semantic-release/

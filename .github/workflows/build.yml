@@ -52,13 +52,11 @@ jobs:
         run: |
           if grep -q authToken ~/.config/cachix/cachix.dhall; then
             echo "Cachix token is present"
-            cachix watch-exec nixpkgs-terraform nix -- flake check --impure
+            cachix watch-exec nixpkgs-terraform nix -- flake check
           else
             echo "Cachix token is not present"
-            nix flake check --impure
+            nix flake check
           fi
-        env:
-          NIXPKGS_ALLOW_UNFREE: 1
 
   template:
     runs-on: ubuntu-latest
@@ -66,7 +64,15 @@ jobs:
     needs: [build]
     strategy:
       matrix:
-        template: [default, devenv, terranix]
+        template:
+          - name: config
+            test: nix flake metadata
+          - name: default
+            test: nix develop --accept-flake-config --impure -c terraform --version
+          - name: devenv
+            test: nix develop --accept-flake-config --impure -c terraform --version
+          - name: terranix
+            test: nix develop --accept-flake-config --impure -c terraform --version
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -78,10 +84,8 @@ jobs:
         run: echo "tmpdir=$(mktemp -d)" >> "$GITHUB_OUTPUT"
         id: mktemp
       - name: Scaffold a new project
-        run: nix flake init -t ${{ github.workspace }}#${{ matrix.template }}
+        run: nix flake init -t ${{ github.workspace }}#${{ matrix.template.name }}
         working-directory: ${{ steps.mktemp.outputs.tmpdir }}
-      - name: Run smoke test
-        run: nix develop --accept-flake-config --impure -c terraform --version
+      - name: Run test
+        run: ${{ matrix.template.test }}
         working-directory: ${{ steps.mktemp.outputs.tmpdir }}
-        env:
-          NIXPKGS_ALLOW_UNFREE: 1
