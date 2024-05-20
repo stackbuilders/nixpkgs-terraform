@@ -20,7 +20,7 @@ jobs:
       - name: Install Nix
         uses: cachix/install-nix-action@v26
       - name: Setup Cachix
-        uses: cachix/cachix-action@v14
+        uses: cachix/cachix-action@v15
         with:
           name: devenv
       - name: Install devenv
