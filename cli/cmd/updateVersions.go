@@ -22,8 +22,11 @@ THE SOFTWARE.
 package cmd
 
 import (
+	"context"
 	"fmt"
+	"log"
 
+	"github.com/google/go-github/github"
 	"github.com/spf13/cobra"
 )
 
@@ -33,7 +36,12 @@ var updateVersionsCmd = &cobra.Command{
 	Short: "Update versions.json file",
 	Long:  "Add new Terraform releases to the versions.json file",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("updateVersions called")
+		client := github.NewClient(nil)
+		releases, _, err := client.Repositories.ListReleases(context.Background(), "hashicorp", "terraform", nil)
+		if err != nil {
+			log.Fatal("Unable to list releases", err)
+		}
+		fmt.Printf("%v", releases)
 	},
 }
 
