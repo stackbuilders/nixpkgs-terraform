@@ -21,7 +21,7 @@ THE SOFTWARE.
 */
 package main
 
-import "github.com/stackbuilders/nixpkgs-terraform/cmd"
+import "github.com/stackbuilders/nixpkgs-terraform/cli/cmd"
 
 func main() {
 	cmd.Execute()

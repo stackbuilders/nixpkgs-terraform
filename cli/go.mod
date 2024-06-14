@@ -1,4 +1,4 @@
-module github.com/stackbuilders/nixpkgs-terraform
+module github.com/stackbuilders/nixpkgs-terraform/cli
 
 go 1.21.7
 
