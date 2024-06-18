@@ -22,8 +22,11 @@ THE SOFTWARE.
 package cmd
 
 import (
+	"context"
 	"fmt"
+	"log"
 
+	"github.com/google/go-github/github"
 	"github.com/spf13/cobra"
 )
 
@@ -38,7 +41,21 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("updateVersions called")
+		client := github.NewClient(nil)
+		opt := &github.ListOptions{Page: 1}
+		for {
+			releases, resp, err := client.Repositories.ListReleases(context.Background(), "hashicorp", "terraform", opt)
+			if err != nil {
+				log.Fatal("Unable to list releases: ", err)
+			}
+			for _, release := range releases {
+				fmt.Printf("%v\n", release.GetTagName())
+			}
+			if resp.NextPage == 0 {
+				break
+			}
+			opt.Page = resp.NextPage
+		}
 	},
 }
 
