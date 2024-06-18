@@ -26,6 +26,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/google/go-github/github"
 	"github.com/spf13/cobra"
 )
@@ -49,7 +50,11 @@ to quickly create a Cobra application.`,
 				log.Fatal("Unable to list releases: ", err)
 			}
 			for _, release := range releases {
-				fmt.Printf("%v\n", release.GetTagName())
+				version, err := semver.NewVersion(release.GetTagName())
+				if err != nil {
+					log.Fatal("Unable to parse version: ", err)
+				}
+				fmt.Printf("%v\n", version)
 			}
 			if resp.NextPage == 0 {
 				break
