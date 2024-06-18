@@ -23,13 +23,25 @@ package cmd
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/Masterminds/semver/v3"
-	"github.com/google/go-github/github"
+	"github.com/google/go-github/v62/github"
 	"github.com/spf13/cobra"
 )
+
+type Versions struct {
+	Releases map[semver.Version]Release        `json:"releases"`
+	Latest   map[semver.Version]semver.Version `json:"latest"`
+}
+
+type Release struct {
+	Hash       string `json:"hash"`
+	VendorHash string `json:"vendorHash"`
+}
 
 // updateVersionsCmd represents the updateVersions command
 var updateVersionsCmd = &cobra.Command{
@@ -42,26 +54,57 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		client := github.NewClient(nil)
-		opt := &github.ListOptions{Page: 1}
-		for {
-			releases, resp, err := client.Repositories.ListReleases(context.Background(), "hashicorp", "terraform", opt)
-			if err != nil {
-				log.Fatal("Unable to list releases: ", err)
-			}
-			for _, release := range releases {
-				version, err := semver.NewVersion(release.GetTagName())
-				if err != nil {
-					log.Fatal("Unable to parse version: ", err)
-				}
-				fmt.Printf("%v\n", version)
-			}
-			if resp.NextPage == 0 {
-				break
-			}
-			opt.Page = resp.NextPage
-		}
+		token := os.Getenv("NIXPKGS_TERRAFORM_GITHUB_TOKEN")
+		updateVersions("../versions.json", token)
 	},
+}
+
+func updateVersions(file string, token string) {
+	content, err := os.ReadFile(file)
+	if err != nil {
+		log.Fatal("Unable to read file: ", err)
+	}
+
+	var versions Versions
+	json.Unmarshal(content, &versions)
+	fmt.Printf("Releases %v\n", versions.Releases)
+
+	client := github.NewClient(nil).WithAuthToken(token)
+
+	opt := &github.ListOptions{Page: 1}
+	for {
+		releases, resp, err := client.Repositories.ListReleases(context.Background(), "hashicorp", "terraform", opt)
+		if err != nil {
+			log.Fatal("Unable to list releases: ", err)
+		}
+
+		threshold, err := semver.NewVersion("1.0.0")
+		if err != nil {
+			log.Fatal("Unable to parse version: ", err)
+		}
+
+		for _, release := range releases {
+			version, err := semver.NewVersion(release.GetTagName())
+			if err != nil {
+				log.Fatal("Unable to parse version: ", err)
+			}
+
+			// _, ok := versions.Releases[*version]
+			// if ok {
+			// 	fmt.Printf("Version %v found\n", version)
+			// } else {
+			// 	fmt.Printf("Version %v not found\n", version)
+			// }
+
+			if version.Compare(threshold) >= 1 && version.Prerelease() == "" {
+				fmt.Printf("Version %v\n", version)
+			}
+		}
+		if resp.NextPage == 0 {
+			break
+		}
+		opt.Page = resp.NextPage
+	}
 }
 
 func init() {
