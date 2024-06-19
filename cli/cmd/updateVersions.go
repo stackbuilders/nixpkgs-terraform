@@ -24,9 +24,10 @@ package cmd
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"os"
+	"os/exec"
+	"strings"
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/google/go-github/v62/github"
@@ -67,7 +68,6 @@ func updateVersions(file string, token string) {
 
 	var versions Versions
 	json.Unmarshal(content, &versions)
-	fmt.Printf("Releases %v\n", versions.Releases)
 
 	client := github.NewClient(nil).WithAuthToken(token)
 
@@ -84,20 +84,22 @@ func updateVersions(file string, token string) {
 		}
 
 		for _, release := range releases {
-			version, err := semver.NewVersion(release.GetTagName())
+			version, err := semver.NewVersion(strings.TrimLeft(release.GetTagName(), "v"))
 			if err != nil {
 				log.Fatal("Unable to parse version: ", err)
 			}
 
-			// _, ok := versions.Releases[*version]
-			// if ok {
-			// 	fmt.Printf("Version %v found\n", version)
-			// } else {
-			// 	fmt.Printf("Version %v not found\n", version)
-			// }
-
-			if version.Compare(threshold) >= 1 && version.Prerelease() == "" {
-				fmt.Printf("Version %v\n", version)
+			if version.Compare(threshold) >= 0 && version.Prerelease() == "" {
+				if _, ok := versions.Releases[*version]; ok {
+					log.Printf("Version %v found in releases\n", version)
+				} else {
+					log.Printf("Computing hashes for %v\n", version)
+					output, err := exec.Command("nix-prefetch", "--option", "extra-experimental-features", "flakes", "fetchFromGitHub", "--owner", "hashicorp", "--repo", "terraform", "--rev", *release.TagName).Output()
+					if err != nil {
+						log.Fatal("Unable to compute hash: ", err)
+					}
+					log.Printf("Computed hash: %v\n", string(output))
+				}
 			}
 		}
 		if resp.NextPage == 0 {
