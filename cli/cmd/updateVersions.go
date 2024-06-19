@@ -92,7 +92,8 @@ func updateVersions(file string, token string) {
 		}
 
 		for _, release := range releases {
-			version, err := semver.NewVersion(strings.TrimLeft(release.GetTagName(), "v"))
+			tagName := release.GetTagName()
+			version, err := semver.NewVersion(strings.TrimLeft(tagName, "v"))
 			if err != nil {
 				log.Fatal("Unable to parse version: ", err)
 			}
@@ -103,7 +104,7 @@ func updateVersions(file string, token string) {
 				} else {
 					log.Printf("Computing hashes for %v\n", version)
 
-					output, err := exec.Command(nixPrefetch, "--option", "extra-experimental-features", "flakes", "fetchFromGitHub", "--owner", owner, "--repo", repo, "--rev", *release.TagName).Output()
+					output, err := exec.Command(nixPrefetch, "--option", "extra-experimental-features", "flakes", "fetchFromGitHub", "--owner", owner, "--repo", repo, "--rev", tagName).Output()
 					if err != nil {
 						log.Fatal("Unable to compute hash: ", err)
 					}
