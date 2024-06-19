@@ -34,6 +34,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var owner = "hashicorp"
+var repo = "terraform"
+
 type Versions struct {
 	Releases map[semver.Version]Release        `json:"releases"`
 	Latest   map[semver.Version]semver.Version `json:"latest"`
@@ -78,7 +81,7 @@ func updateVersions(file string, token string) {
 
 	opt := &github.ListOptions{Page: 1}
 	for {
-		releases, resp, err := client.Repositories.ListReleases(context.Background(), "hashicorp", "terraform", opt)
+		releases, resp, err := client.Repositories.ListReleases(context.Background(), owner, repo, opt)
 		if err != nil {
 			log.Fatal("Unable to list releases: ", err)
 		}
@@ -100,7 +103,7 @@ func updateVersions(file string, token string) {
 				} else {
 					log.Printf("Computing hashes for %v\n", version)
 
-					output, err := exec.Command(nixPrefetch, "--option", "extra-experimental-features", "flakes", "fetchFromGitHub", "--owner", "hashicorp", "--repo", "terraform", "--rev", *release.TagName).Output()
+					output, err := exec.Command(nixPrefetch, "--option", "extra-experimental-features", "flakes", "fetchFromGitHub", "--owner", owner, "--repo", repo, "--rev", *release.TagName).Output()
 					if err != nil {
 						log.Fatal("Unable to compute hash: ", err)
 					}
