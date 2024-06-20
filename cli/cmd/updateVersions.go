@@ -104,7 +104,21 @@ func updateVersions(file string, token string) {
 				} else {
 					log.Printf("Computing hashes for %v\n", version)
 
-					output, err := exec.Command(nixPrefetch, "--option", "extra-experimental-features", "flakes", "fetchFromGitHub", "--owner", owner, "--repo", repo, "--rev", tagName).Output()
+					cmd := exec.Command(nixPrefetch,
+						"--option",
+						"extra-experimental-features",
+						"flakes",
+						"fetchFromGitHub",
+
+						"--owner",
+						owner,
+						"--repo",
+						repo,
+						"--rev",
+						tagName)
+					cmd.Stderr = log.Writer()
+
+					output, err := cmd.Output()
 					if err != nil {
 						log.Fatal("Unable to compute hash: ", err)
 					}
