@@ -69,61 +69,78 @@ func updateVersions(file string, token string) {
 		log.Fatal("Unable to find nix-prefetch", err)
 	}
 
-	content, err := os.ReadFile(file)
+	versions, err := readVersions(file)
 	if err != nil {
-		log.Fatal("Unable to read file: ", err)
+		log.Fatal("Unable to read versions file: ", err)
 	}
 
-	var versions Versions
+	threshold, err := semver.NewVersion("1.0.0")
+	if err != nil {
+		log.Fatal("Unable to parse version: ", err)
+	}
+	f := func(release *github.RepositoryRelease) error {
+		tagName := release.GetTagName()
+		version, err := semver.NewVersion(strings.TrimLeft(tagName, "v"))
+		if err != nil {
+			return err
+		}
+		if version.Compare(threshold) >= 0 && version.Prerelease() == "" {
+			if _, ok := versions.Releases[*version]; ok {
+				log.Printf("Version %v found in releases\n", version)
+			} else {
+				log.Printf("Computing hashes for %v\n", version)
+				cmd := exec.Command(nixPrefetch,
+					"--option",
+					"extra-experimental-features",
+					"flakes",
+					"fetchFromGitHub",
+
+					"--owner",
+					owner,
+					"--repo",
+					repo,
+					"--rev",
+					tagName)
+				cmd.Stderr = log.Writer()
+
+				output, err := cmd.Output()
+				if err != nil {
+					log.Fatal("Unable to compute hash: ", err)
+				}
+				log.Printf("Computed hash: %v\n", string(output))
+			}
+		}
+		return nil
+	}
+
+	err = withReleases(token, f)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func readVersions(file string) (*Versions, error) {
+	content, err := os.ReadFile(file)
+	if err != nil {
+		return nil, err
+	}
+	var versions *Versions
 	json.Unmarshal(content, &versions)
+	return versions, nil
+}
 
+func withReleases(token string, f func(release *github.RepositoryRelease) error) error {
 	client := github.NewClient(nil).WithAuthToken(token)
-
 	opt := &github.ListOptions{Page: 1}
 	for {
 		releases, resp, err := client.Repositories.ListReleases(context.Background(), owner, repo, opt)
 		if err != nil {
-			log.Fatal("Unable to list releases: ", err)
+			return err
 		}
-
-		threshold, err := semver.NewVersion("1.0.0")
-		if err != nil {
-			log.Fatal("Unable to parse version: ", err)
-		}
-
 		for _, release := range releases {
-			tagName := release.GetTagName()
-			version, err := semver.NewVersion(strings.TrimLeft(tagName, "v"))
+			err = f(release)
 			if err != nil {
-				log.Fatal("Unable to parse version: ", err)
-			}
-
-			if version.Compare(threshold) >= 0 && version.Prerelease() == "" {
-				if _, ok := versions.Releases[*version]; ok {
-					log.Printf("Version %v found in releases\n", version)
-				} else {
-					log.Printf("Computing hashes for %v\n", version)
-
-					cmd := exec.Command(nixPrefetch,
-						"--option",
-						"extra-experimental-features",
-						"flakes",
-						"fetchFromGitHub",
-
-						"--owner",
-						owner,
-						"--repo",
-						repo,
-						"--rev",
-						tagName)
-					cmd.Stderr = log.Writer()
-
-					output, err := cmd.Output()
-					if err != nil {
-						log.Fatal("Unable to compute hash: ", err)
-					}
-					log.Printf("Computed hash: %v\n", string(output))
-				}
+				return err
 			}
 		}
 		if resp.NextPage == 0 {
@@ -131,6 +148,7 @@ func updateVersions(file string, token string) {
 		}
 		opt.Page = resp.NextPage
 	}
+	return nil
 }
 
 func init() {
