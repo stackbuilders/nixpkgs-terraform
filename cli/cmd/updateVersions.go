@@ -24,9 +24,11 @@ package cmd
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/Masterminds/semver/v3"
@@ -59,17 +61,25 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		token := os.Getenv("NIXPKGS_TERRAFORM_GITHUB_TOKEN")
-		updateVersions("../versions.json", token)
+		versionsPath, err := filepath.Abs("../versions.json")
+		if err != nil {
+			log.Fatal("File versions.json not found", err)
+		}
+		vendorHashPath, err := filepath.Abs("../vendor-hash.nix")
+		if err != nil {
+			log.Fatal("File vendor-hash.nix not found", err)
+		}
+		updateVersions(versionsPath, vendorHashPath, token)
 	},
 }
 
-func updateVersions(file string, token string) {
-	nixPrefetch, err := exec.LookPath("nix-prefetch")
+func updateVersions(versionsPath string, vendorHashPath string, token string) {
+	nixPrefetchPath, err := exec.LookPath("nix-prefetch")
 	if err != nil {
 		log.Fatal("Unable to find nix-prefetch", err)
 	}
 
-	versions, err := readVersions(file)
+	versions, err := readVersions(versionsPath)
 	if err != nil {
 		log.Fatal("Unable to read versions file: ", err)
 	}
@@ -90,17 +100,22 @@ func updateVersions(file string, token string) {
 				log.Printf("Version %v found in releases\n", version)
 			} else {
 				log.Printf("Computing hashes for %v\n", version)
-				hash, err := computeHash(nixPrefetch, tagName)
+				hash, err := computeHash(nixPrefetchPath, tagName)
 				if err != nil {
-					log.Fatal("Unable to compute hash: ", err)
+					return err
 				}
 				log.Printf("Computed hash: %v\n", hash)
-				// Compute vendorHash
-				vendorHash, err := computeVendorHash(nixPrefetch, "../vendor-hash.nix", version, hash)
+				vendorHash, err := computeVendorHash(nixPrefetchPath, vendorHashPath, version, hash)
 				if err != nil {
-					log.Fatal("Unable to compute vendor hash: ", err)
+					return err
 				}
 				log.Printf("Computed vendor hash: %v\n", vendorHash)
+				versions.Releases[*version] = Release{Hash: hash, VendorHash: vendorHash}
+				content, err := json.Marshal(versions)
+				if err != nil {
+					return err
+				}
+				fmt.Println(string(content))
 			}
 		}
 		return nil
@@ -112,8 +127,8 @@ func updateVersions(file string, token string) {
 	}
 }
 
-func readVersions(file string) (*Versions, error) {
-	content, err := os.ReadFile(file)
+func readVersions(versionsPath string) (*Versions, error) {
+	content, err := os.ReadFile(versionsPath)
 	if err != nil {
 		return nil, err
 	}
@@ -144,8 +159,8 @@ func withReleases(token string, f func(release *github.RepositoryRelease) error)
 	return nil
 }
 
-func computeHash(nixPrefetch string, tagName string) (string, error) {
-	cmd := exec.Command(nixPrefetch,
+func computeHash(nixPrefetchPath string, tagName string) (string, error) {
+	cmd := exec.Command(nixPrefetchPath,
 		"--option",
 		"extra-experimental-features",
 		"flakes",
@@ -164,8 +179,8 @@ func computeHash(nixPrefetch string, tagName string) (string, error) {
 	return string(hash), nil
 }
 
-func computeVendorHash(nixPrefetch string, vendorHashFile string, version *semver.Version, hash string) (string, error) {
-	cmd := exec.Command(nixPrefetch,
+func computeVendorHash(nixPrefetchPath string, vendorHashFile string, version *semver.Version, hash string) (string, error) {
+	cmd := exec.Command(nixPrefetchPath,
 		"--option",
 		"extra-experimental-features",
 		"flakes",
