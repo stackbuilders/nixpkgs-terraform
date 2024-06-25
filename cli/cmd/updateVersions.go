@@ -28,7 +28,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"sort"
 	"strings"
 
 	"github.com/Masterminds/semver/v3"
@@ -123,12 +122,12 @@ func updateVersions(versionsPath string, vendorHashPath string, token string) {
 
 	content, err := json.MarshalIndent(versions, "  ", "  ")
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Unable to marshall versions", err)
 	}
 
 	err = os.WriteFile(versionsPath, content, 0644)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Unable to write to file versions.json", err)
 	}
 }
 
