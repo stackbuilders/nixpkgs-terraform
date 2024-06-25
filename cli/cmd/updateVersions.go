@@ -35,8 +35,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var owner = "hashicorp"
-var repo = "terraform"
+var owner string
+var repo string
+var vendorHashPath string
+var versionsPath string
 
 type Versions struct {
 	Releases map[semver.Version]Release        `json:"releases"`
@@ -60,11 +62,11 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		token := os.Getenv("NIXPKGS_TERRAFORM_GITHUB_TOKEN")
-		versionsPath, err := filepath.Abs("../versions.json")
+		versionsPath, err := filepath.Abs(versionsPath)
 		if err != nil {
 			log.Fatal("File versions.json not found", err)
 		}
-		vendorHashPath, err := filepath.Abs("../vendor-hash.nix")
+		vendorHashPath, err := filepath.Abs(vendorHashPath)
 		if err != nil {
 			log.Fatal("File vendor-hash.nix not found", err)
 		}
@@ -208,15 +210,10 @@ func runNixPrefetch(nixPrefetchPath string, extraArgs ...string) (string, error)
 }
 
 func init() {
+	updateVersionsCmd.Flags().StringVarP(&owner, "owner", "", "hashicorp", "TODO")
+	updateVersionsCmd.Flags().StringVarP(&repo, "repo", "", "terraform", "TODO")
+	updateVersionsCmd.Flags().StringVarP(&vendorHashPath, "vendor-hash", "", "vendor-hash.nix", "TODO")
+	updateVersionsCmd.Flags().StringVarP(&versionsPath, "versions", "", "versions.json", "TODO")
+
 	rootCmd.AddCommand(updateVersionsCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// updateVersionsCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// updateVersionsCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
