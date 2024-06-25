@@ -24,11 +24,11 @@ package cmd
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/Masterminds/semver/v3"
@@ -111,17 +111,22 @@ func updateVersions(versionsPath string, vendorHashPath string, token string) {
 				}
 				log.Printf("Computed vendor hash: %v\n", vendorHash)
 				versions.Releases[*version] = Release{Hash: hash, VendorHash: vendorHash}
-				content, err := json.Marshal(versions)
-				if err != nil {
-					return err
-				}
-				fmt.Println(string(content))
 			}
 		}
 		return nil
 	}
 
 	err = withReleases(token, f)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	content, err := json.MarshalIndent(versions, "  ", "  ")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = os.WriteFile(versionsPath, content, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -160,10 +165,8 @@ func withReleases(token string, f func(release *github.RepositoryRelease) error)
 }
 
 func computeHash(nixPrefetchPath string, tagName string) (string, error) {
-	cmd := exec.Command(nixPrefetchPath,
-		"--option",
-		"extra-experimental-features",
-		"flakes",
+	hash, err := runNixPrefetch(
+		nixPrefetchPath,
 		"fetchFromGitHub",
 		"--owner",
 		owner,
@@ -171,19 +174,15 @@ func computeHash(nixPrefetchPath string, tagName string) (string, error) {
 		repo,
 		"--rev",
 		tagName)
-	cmd.Stderr = log.Writer()
-	hash, err := cmd.Output()
 	if err != nil {
 		return "", err
 	}
-	return string(hash), nil
+	return hash, nil
 }
 
 func computeVendorHash(nixPrefetchPath string, vendorHashFile string, version *semver.Version, hash string) (string, error) {
-	cmd := exec.Command(nixPrefetchPath,
-		"--option",
-		"extra-experimental-features",
-		"flakes",
+	vendorHash, err := runNixPrefetch(
+		nixPrefetchPath,
 		"--file",
 		vendorHashFile,
 		"--argstr",
@@ -192,27 +191,22 @@ func computeVendorHash(nixPrefetchPath string, vendorHashFile string, version *s
 		"--argstr",
 		"hash",
 		hash)
-	cmd.Stderr = log.Writer()
-	vendorHash, err := cmd.Output()
 	if err != nil {
 		return "", err
 	}
-	return string(vendorHash), nil
+	return vendorHash, nil
 }
 
-// func runNixPrefetch(nixPrefetch string, args []string) {
-// 	cmd := exec.Command(nixPrefetch,
-// 		"--option",
-// 		"extra-experimental-features",
-// 		"flakes",
-// 		args)
-// 	cmd.Stderr = log.Writer()
-// 	hash, err := cmd.Output()
-// 	if err != nil {
-// 		return "", err
-// 	}
-// 	return string(hash), nil
-// }
+func runNixPrefetch(nixPrefetchPath string, extraArgs ...string) (string, error) {
+	args := append([]string{"--option", "extra-experimental-features", "flakes"}, extraArgs...)
+	cmd := exec.Command(nixPrefetchPath, args...)
+	cmd.Stderr = log.Writer()
+	output, err := cmd.Output()
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimRight(string(output), "\n"), nil
+}
 
 func init() {
 	rootCmd.AddCommand(updateVersionsCmd)
