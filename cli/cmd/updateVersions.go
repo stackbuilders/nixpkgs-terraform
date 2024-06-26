@@ -190,8 +190,8 @@ func runNixPrefetch(nixPrefetchPath string, extraArgs ...string) (string, error)
 
 func init() {
 	rootCmd.AddCommand(updateVersionsCmd)
-	updateVersionsCmd.Flags().StringVarP(&owner, "owner", "", "hashicorp", "TODO")
-	updateVersionsCmd.Flags().StringVarP(&repo, "repo", "", "terraform", "TODO")
-	updateVersionsCmd.Flags().StringVarP(&vendorHashPath, "vendor-hash", "", "vendor-hash.nix", "TODO")
-	updateVersionsCmd.Flags().StringVarP(&versionsPath, "versions", "", "versions.json", "TODO")
+	updateVersionsCmd.Flags().StringVarP(&owner, "owner", "", "hashicorp", "The owner name of the repository on GitHub")
+	updateVersionsCmd.Flags().StringVarP(&repo, "repo", "", "terraform", "The repository name on GitHub")
+	updateVersionsCmd.Flags().StringVarP(&vendorHashPath, "vendor-hash", "", "vendor-hash.nix", "Nix file required to compute vendorHash")
+	updateVersionsCmd.Flags().StringVarP(&versionsPath, "versions", "", "versions.json", "The file to be updated")
 }
