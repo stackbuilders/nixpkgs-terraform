@@ -6,7 +6,7 @@
   packages = [
     pkgs.nix-prefetch
     pkgs.semantic-release
-    pkgs.cobra-cli # Temporary
+    pkgs.cobra-cli
   ];
 
   languages.go.enable = true;
