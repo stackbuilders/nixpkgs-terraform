@@ -68,7 +68,7 @@ func updateVersions(versionsPath string, vendorHashPath string, token string) {
 		log.Fatal("Unable to parse version: ", err)
 	}
 
-	f := func(release *github.RepositoryRelease) error {
+	err = withReleases(token, func(release *github.RepositoryRelease) error {
 		tagName := release.GetTagName()
 		version, err := semver.NewVersion(strings.TrimLeft(tagName, "v"))
 		if err != nil {
@@ -93,9 +93,7 @@ func updateVersions(versionsPath string, vendorHashPath string, token string) {
 			}
 		}
 		return nil
-	}
-
-	err = withReleases(token, f)
+	})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -117,7 +115,10 @@ func readVersions(versionsPath string) (*Versions, error) {
 		return nil, err
 	}
 	var versions *Versions
-	json.Unmarshal(content, &versions)
+	err = json.Unmarshal(content, &versions)
+	if err != nil {
+		return nil, err
+	}
 	return versions, nil
 }
 
@@ -188,10 +189,9 @@ func runNixPrefetch(nixPrefetchPath string, extraArgs ...string) (string, error)
 }
 
 func init() {
+	rootCmd.AddCommand(updateVersionsCmd)
 	updateVersionsCmd.Flags().StringVarP(&owner, "owner", "", "hashicorp", "TODO")
 	updateVersionsCmd.Flags().StringVarP(&repo, "repo", "", "terraform", "TODO")
 	updateVersionsCmd.Flags().StringVarP(&vendorHashPath, "vendor-hash", "", "vendor-hash.nix", "TODO")
 	updateVersionsCmd.Flags().StringVarP(&versionsPath, "versions", "", "versions.json", "TODO")
-
-	rootCmd.AddCommand(updateVersionsCmd)
 }
