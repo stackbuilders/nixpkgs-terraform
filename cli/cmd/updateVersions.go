@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -20,13 +21,21 @@ var vendorHashPath string
 var versionsPath string
 
 type Versions struct {
-	Releases map[semver.Version]Release        `json:"releases"`
-	Latest   map[semver.Version]semver.Version `json:"latest"`
+	Releases map[semver.Version]Release       `json:"releases"`
+	Latest   map[LatestVersion]semver.Version `json:"latest"`
 }
 
 type Release struct {
 	Hash       string `json:"hash"`
 	VendorHash string `json:"vendorHash"`
+}
+
+type LatestVersion struct {
+	semver.Version
+}
+
+func (v LatestVersion) MarshalText() ([]byte, error) {
+	return []byte(fmt.Sprintf("%d.%d", v.Major(), v.Minor())), nil
 }
 
 var updateVersionsCmd = &cobra.Command{
@@ -76,17 +85,17 @@ func updateVersions(versionsPath string, vendorHashPath string, token string) {
 		}
 		if version.Compare(threshold) >= 0 && version.Prerelease() == "" {
 			if _, ok := versions.Releases[*version]; ok {
-				log.Printf("Version %s found in versions file\n", version)
+				log.Printf("Version %s found in file\n", version)
 			} else {
 				log.Printf("Computing hashes for %s\n", version)
 				hash, err := computeHash(nixPrefetchPath, tagName)
 				if err != nil {
-					return err
+					return fmt.Errorf("Unable to compute hash: %w", err)
 				}
 				log.Printf("Computed hash: %s\n", hash)
 				vendorHash, err := computeVendorHash(nixPrefetchPath, vendorHashPath, version, hash)
 				if err != nil {
-					return err
+					return fmt.Errorf("Unable to compute vendor hash: %w", err)
 				}
 				log.Printf("Computed vendor hash: %s\n", vendorHash)
 				versions.Releases[*version] = Release{Hash: hash, VendorHash: vendorHash}
@@ -98,14 +107,15 @@ func updateVersions(versionsPath string, vendorHashPath string, token string) {
 		log.Fatal(err)
 	}
 
-	content, err := json.MarshalIndent(versions, "  ", "  ")
+	content, err := json.MarshalIndent(versions, "", "  ")
 	if err != nil {
 		log.Fatal("Unable to marshall versions", err)
 	}
+	fmt.Println(string(content))
 
 	err = os.WriteFile(versionsPath, content, 0644)
 	if err != nil {
-		log.Fatal("Unable to write to file versions.json", err)
+		log.Fatal("Unable to write file versions", err)
 	}
 }
 
