@@ -39,7 +39,7 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		token := os.Getenv("NIXPKGS_TERRAFORM_GITHUB_TOKEN")
+		token := os.Getenv("CLI_GITHUB_TOKEN")
 		versionsPath, err := filepath.Abs(versionsPath)
 		if err != nil {
 			log.Fatal("File versions.json not found", err)
@@ -76,19 +76,19 @@ func updateVersions(versionsPath string, vendorHashPath string, token string) {
 		}
 		if version.Compare(threshold) >= 0 && version.Prerelease() == "" {
 			if _, ok := versions.Releases[*version]; ok {
-				log.Printf("Version %v found in releases\n", version)
+				log.Printf("Version %s found in versions file\n", version)
 			} else {
-				log.Printf("Computing hashes for %v\n", version)
+				log.Printf("Computing hashes for %s\n", version)
 				hash, err := computeHash(nixPrefetchPath, tagName)
 				if err != nil {
 					return err
 				}
-				log.Printf("Computed hash: %v\n", hash)
+				log.Printf("Computed hash: %s\n", hash)
 				vendorHash, err := computeVendorHash(nixPrefetchPath, vendorHashPath, version, hash)
 				if err != nil {
 					return err
 				}
-				log.Printf("Computed vendor hash: %v\n", vendorHash)
+				log.Printf("Computed vendor hash: %s\n", vendorHash)
 				versions.Releases[*version] = Release{Hash: hash, VendorHash: vendorHash}
 			}
 		}
