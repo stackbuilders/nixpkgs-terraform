@@ -51,38 +51,45 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		token := os.Getenv("CLI_GITHUB_TOKEN")
+
 		versionsPath, err := filepath.Abs(versionsPath)
 		if err != nil {
-			log.Fatal("File versions.json not found", err)
+			log.Fatal("File versions.json not found: ", err)
 		}
 		vendorHashPath, err := filepath.Abs(vendorHashPath)
 		if err != nil {
-			log.Fatal("File vendor-hash.nix not found", err)
+			log.Fatal("File vendor-hash.nix not found: ", err)
 		}
 
 		minVersion, err := semver.NewVersion(minVersionStr)
 		if err != nil {
-			log.Fatal("File vendor-hash.nix not found", err)
+			log.Fatal("Invalid min-version: ", err)
 		}
 
-		maxVersion, err := semver.NewVersion(maxVersionStr)
+		var maxVersion *semver.Version
+		if maxVersionStr != "" {
+			maxVersion, err = semver.NewVersion(maxVersionStr)
+			if err != nil {
+				log.Fatal("Invalid max-version: ", err)
+			}
+		}
+
+		err = updateVersions(token, versionsPath, vendorHashPath, minVersion, maxVersion)
 		if err != nil {
-			log.Fatal("Invalid max-version: ", err)
+			log.Fatal("Unable to update versions: ", err)
 		}
-
-		updateVersions(versionsPath, vendorHashPath, token, minVersion, maxVersion)
 	},
 }
 
-func updateVersions(versionsPath string, vendorHashPath string, token string, minVersion *semver.Version, maxVersion *semver.Version) {
+func updateVersions(token string, versionsPath string, vendorHashPath string, minVersion *semver.Version, maxVersion *semver.Version) error {
 	nixPrefetchPath, err := exec.LookPath("nix-prefetch")
 	if err != nil {
-		log.Fatal("Unable to find nix-prefetch", err)
+		return fmt.Errorf("nix-prefetch not found: %w", err)
 	}
 
 	versions, err := readVersions(versionsPath)
 	if err != nil {
-		log.Fatal("Unable to read versions file: ", err)
+		return err
 	}
 
 	err = withReleases(token, func(release *github.RepositoryRelease) error {
@@ -91,7 +98,7 @@ func updateVersions(versionsPath string, vendorHashPath string, token string, mi
 		if err != nil {
 			return err
 		}
-		if version.Compare(minVersion) >= 0 && version.Compare(maxVersion) <= 0 && version.Prerelease() == "" {
+		if version.Compare(minVersion) >= 0 && (maxVersion == nil || version.Compare(maxVersion) <= 0) && version.Prerelease() == "" {
 			if _, ok := versions.Releases[*version]; ok {
 				log.Printf("Version %s found in file\n", version)
 			} else {
@@ -112,7 +119,7 @@ func updateVersions(versionsPath string, vendorHashPath string, token string, mi
 		return nil
 	})
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	versions.Latest = make(map[Alias]semver.Version)
@@ -125,13 +132,15 @@ func updateVersions(versionsPath string, vendorHashPath string, token string, mi
 
 	content, err := json.MarshalIndent(versions, "", "  ")
 	if err != nil {
-		log.Fatal("Unable to marshall versions", err)
+		log.Fatal("Unable to marshall versions: ", err)
 	}
 
 	err = os.WriteFile(versionsPath, content, 0644)
 	if err != nil {
-		log.Fatal("Unable to write file versions", err)
+		log.Fatal("Unable to write file: ", err)
 	}
+
+	return nil
 }
 
 func readVersions(versionsPath string) (*Versions, error) {
