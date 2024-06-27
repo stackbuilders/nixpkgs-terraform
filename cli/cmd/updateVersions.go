@@ -19,10 +19,12 @@ var owner string
 var repo string
 var vendorHashPath string
 var versionsPath string
+var minVersionStr string
+var maxVersionStr string
 
 type Versions struct {
-	Releases map[semver.Version]Release       `json:"releases"`
-	Latest   map[LatestVersion]semver.Version `json:"latest"`
+	Releases map[semver.Version]Release `json:"releases"`
+	Latest   map[Alias]semver.Version   `json:"latest"`
 }
 
 type Release struct {
@@ -30,12 +32,12 @@ type Release struct {
 	VendorHash string `json:"vendorHash"`
 }
 
-type LatestVersion struct {
+type Alias struct {
 	semver.Version
 }
 
-func (v LatestVersion) MarshalText() ([]byte, error) {
-	return []byte(fmt.Sprintf("%d.%d", v.Major(), v.Minor())), nil
+func (a Alias) MarshalText() ([]byte, error) {
+	return []byte(fmt.Sprintf("%d.%d", a.Major(), a.Minor())), nil
 }
 
 var updateVersionsCmd = &cobra.Command{
@@ -57,11 +59,22 @@ to quickly create a Cobra application.`,
 		if err != nil {
 			log.Fatal("File vendor-hash.nix not found", err)
 		}
-		updateVersions(versionsPath, vendorHashPath, token)
+
+		minVersion, err := semver.NewVersion(minVersionStr)
+		if err != nil {
+			log.Fatal("File vendor-hash.nix not found", err)
+		}
+
+		maxVersion, err := semver.NewVersion(maxVersionStr)
+		if err != nil {
+			log.Fatal("Invalid max-version: ", err)
+		}
+
+		updateVersions(versionsPath, vendorHashPath, token, minVersion, maxVersion)
 	},
 }
 
-func updateVersions(versionsPath string, vendorHashPath string, token string) {
+func updateVersions(versionsPath string, vendorHashPath string, token string, minVersion *semver.Version, maxVersion *semver.Version) {
 	nixPrefetchPath, err := exec.LookPath("nix-prefetch")
 	if err != nil {
 		log.Fatal("Unable to find nix-prefetch", err)
@@ -72,18 +85,13 @@ func updateVersions(versionsPath string, vendorHashPath string, token string) {
 		log.Fatal("Unable to read versions file: ", err)
 	}
 
-	threshold, err := semver.NewVersion("1.0.0")
-	if err != nil {
-		log.Fatal("Unable to parse version: ", err)
-	}
-
 	err = withReleases(token, func(release *github.RepositoryRelease) error {
 		tagName := release.GetTagName()
 		version, err := semver.NewVersion(strings.TrimLeft(tagName, "v"))
 		if err != nil {
 			return err
 		}
-		if version.Compare(threshold) >= 0 && version.Prerelease() == "" {
+		if version.Compare(minVersion) >= 0 && version.Compare(maxVersion) <= 0 && version.Prerelease() == "" {
 			if _, ok := versions.Releases[*version]; ok {
 				log.Printf("Version %s found in file\n", version)
 			} else {
@@ -107,11 +115,18 @@ func updateVersions(versionsPath string, vendorHashPath string, token string) {
 		log.Fatal(err)
 	}
 
+	versions.Latest = make(map[Alias]semver.Version)
+	for version := range versions.Releases {
+		alias := Alias{*semver.New(version.Major(), version.Minor(), 0, "", "")}
+		if latest, ok := versions.Latest[alias]; !ok || version.Compare(&latest) > 0 {
+			versions.Latest[alias] = version
+		}
+	}
+
 	content, err := json.MarshalIndent(versions, "", "  ")
 	if err != nil {
 		log.Fatal("Unable to marshall versions", err)
 	}
-	fmt.Println(string(content))
 
 	err = os.WriteFile(versionsPath, content, 0644)
 	if err != nil {
@@ -200,8 +215,11 @@ func runNixPrefetch(nixPrefetchPath string, extraArgs ...string) (string, error)
 
 func init() {
 	rootCmd.AddCommand(updateVersionsCmd)
+
 	updateVersionsCmd.Flags().StringVarP(&owner, "owner", "", "hashicorp", "The owner name of the repository on GitHub")
 	updateVersionsCmd.Flags().StringVarP(&repo, "repo", "", "terraform", "The repository name on GitHub")
 	updateVersionsCmd.Flags().StringVarP(&vendorHashPath, "vendor-hash", "", "vendor-hash.nix", "Nix file required to compute vendorHash")
 	updateVersionsCmd.Flags().StringVarP(&versionsPath, "versions", "", "versions.json", "The file to be updated")
+	updateVersionsCmd.Flags().StringVarP(&minVersionStr, "min-version", "", "1.0.0", "TODO")
+	updateVersionsCmd.Flags().StringVarP(&maxVersionStr, "max-version", "", "", "TODO")
 }
