@@ -27,7 +27,7 @@ jobs:
         run: nix-env -if https://install.devenv.sh/latest
       - name: Update versions
         run: |
-          devenv shell go run . update-versions \
+          devenv shell -- go run . update-versions \
             --versions ../versions.json \
             --vendor-hash ../vendor-hash.nix
         env:
