@@ -25,11 +25,9 @@ jobs:
           name: devenv
       - name: Install devenv
         run: nix-env -if https://install.devenv.sh/latest
-      - name: Update versions
-        run: |
-          devenv shell -- go run . update-versions \
-            --versions ../versions.json \
-            --vendor-hash ../vendor-hash.nix
+      - run: devenv shell -- go build
+        working-directory: cli
+      - run: ./cli/cli
         env:
           CLI_GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
         working-directory: cli
