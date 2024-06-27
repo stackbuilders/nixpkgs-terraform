@@ -30,7 +30,6 @@ jobs:
       - run: ./cli/cli
         env:
           CLI_GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
-        working-directory: cli
       - run: git diff
       # - name: Create pull request
       #   uses: peter-evans/create-pull-request@v6
