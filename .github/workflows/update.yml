@@ -1,9 +1,9 @@
 ---
 name: Update
 
-on: push
-  # schedule:
-  #   - cron: "0 0 * * *"
+on:
+  schedule:
+    - cron: "0 0 * * *"
 
 concurrency:
   group: update
@@ -15,8 +15,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        # with:
-        #   ref: main
+        with:
+          ref: main
       - name: Install Nix
         uses: cachix/install-nix-action@V27
         with:
@@ -28,7 +28,10 @@ jobs:
       - name: Install devenv
         run: nix-env -if https://install.devenv.sh/latest
       - name: Update versions
-        run: devenv shell -- go run . update-versions --versions ../versions.json --vendor-hash ../vendor-hash.nix
+        run: |
+          devenv shell -- go run . update-versions \
+            --versions ../versions.json \
+            --vendor-hash ../vendor-hash.nix
         env:
           CLI_GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
         working-directory: cli
