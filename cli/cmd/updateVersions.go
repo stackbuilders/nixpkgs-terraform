@@ -42,13 +42,8 @@ func (a Alias) MarshalText() ([]byte, error) {
 
 var updateVersionsCmd = &cobra.Command{
 	Use:   "update-versions",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Update versions file",
+	Long:  "Look up the most recent Terraform releases and calculate the needed hashes for new versions",
 	Run: func(cmd *cobra.Command, args []string) {
 		token := os.Getenv("CLI_GITHUB_TOKEN")
 
@@ -229,6 +224,6 @@ func init() {
 	updateVersionsCmd.Flags().StringVarP(&repo, "repo", "", "terraform", "The repository name on GitHub")
 	updateVersionsCmd.Flags().StringVarP(&vendorHashPath, "vendor-hash", "", "vendor-hash.nix", "Nix file required to compute vendorHash")
 	updateVersionsCmd.Flags().StringVarP(&versionsPath, "versions", "", "versions.json", "The file to be updated")
-	updateVersionsCmd.Flags().StringVarP(&minVersionStr, "min-version", "", "1.0.0", "TODO")
-	updateVersionsCmd.Flags().StringVarP(&maxVersionStr, "max-version", "", "", "TODO")
+	updateVersionsCmd.Flags().StringVarP(&minVersionStr, "min-version", "", "1.0.0", "Min release version")
+	updateVersionsCmd.Flags().StringVarP(&maxVersionStr, "max-version", "", "", "Max release version")
 }
