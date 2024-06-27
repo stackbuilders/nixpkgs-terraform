@@ -46,6 +46,9 @@ var updateVersionsCmd = &cobra.Command{
 	Long:  "Look up the most recent Terraform releases and calculate the needed hashes for new versions",
 	Run: func(cmd *cobra.Command, args []string) {
 		token := os.Getenv("CLI_GITHUB_TOKEN")
+		if token == "" {
+			log.Fatal("Environment variable CLI_GITHUB_TOKEN is missing")
+		}
 
 		versionsPath, err := filepath.Abs(versionsPath)
 		if err != nil {
