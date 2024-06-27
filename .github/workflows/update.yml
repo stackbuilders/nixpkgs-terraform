@@ -32,8 +32,7 @@ jobs:
       - run: devenv shell ./cli/cli update-versions
         env:
           CLI_GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
-      - run: devenv shell -- nix-prefetch --option extra-experimental-features flakes fetchFromGitHub --owner hashicorp --repo terraform --rev v1.9.0
-      # - run: git diff
+      - run: git diff
       # - name: Create pull request
       #   uses: peter-evans/create-pull-request@v6
       #   with:
