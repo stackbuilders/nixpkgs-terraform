@@ -1,10 +1,7 @@
 { pkgs, ... }:
 
 {
-  dotenv.enable = true;
-
   packages = [
-    pkgs.nix-prefetch
     pkgs.semantic-release
   ];
 
