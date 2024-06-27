@@ -27,12 +27,12 @@ jobs:
           name: devenv
       - name: Install devenv
         run: nix-env -if https://install.devenv.sh/latest
-      - run: devenv shell go build
-        working-directory: cli
-      - run: devenv shell ./cli/cli update-versions
-        env:
-          CLI_GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
-      # - run: devenv shell -- nix-prefetch --option extra-experimental-features flakes fetchFromGitHub --owner hashicorp --repo terraform --rev v1.9.0
+      # - run: devenv shell go build
+      #   working-directory: cli
+      # - run: devenv shell ./cli/cli update-versions
+      #   env:
+      #     CLI_GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
+      - run: devenv shell -- nix-prefetch --option extra-experimental-features flakes fetchFromGitHub --owner hashicorp --repo terraform --rev v1.9.0
       # - run: git diff
       # - name: Create pull request
       #   uses: peter-evans/create-pull-request@v6
