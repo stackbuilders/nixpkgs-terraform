@@ -51,6 +51,7 @@ var updateVersionsCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal("File versions.json not found: ", err)
 		}
+
 		vendorHashPath, err := filepath.Abs(vendorHashPath)
 		if err != nil {
 			log.Fatal("File vendor-hash.nix not found: ", err)
