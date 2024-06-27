@@ -27,7 +27,7 @@ jobs:
         run: nix-env -if https://install.devenv.sh/latest
       - run: devenv shell -- go build
         working-directory: cli
-      - run: ./cli/cli
+      - run: ./cli/cli update-versions
         env:
           CLI_GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
       - run: git diff
