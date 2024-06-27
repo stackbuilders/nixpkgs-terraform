@@ -1,6 +1,5 @@
 .devenv*
 .direnv
-.env
 .pre-commit-config.yaml
 result
 templates/*/flake.lock
