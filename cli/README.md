@@ -8,6 +8,12 @@ Install [devenv](https://devenv.sh/getting-started/)
 
 ## Usage
 
+Change working directory:
+
+```
+cd cli
+```
+
 Spawn a [nix-shell]:
 
 ```

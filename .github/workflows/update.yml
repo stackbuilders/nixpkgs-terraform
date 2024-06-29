@@ -1,9 +1,9 @@
 ---
 name: Update
 
-on:
-  schedule:
-    - cron: "0 0 * * *"
+on: push
+  # schedule:
+    # - cron: "0 0 * * *"
 
 concurrency:
   group: update
@@ -15,18 +15,20 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          ref: main
+        # with:
+          # ref: main
       - name: Install Nix
         uses: cachix/install-nix-action@V27
         with:
-          nix_path: nixpkgs=channel:nixpkgs-unstable
+          nix_path: nixpkgs=channel:nixos-24.05-small
       - name: Setup Cachix
         uses: cachix/cachix-action@v15
         with:
           name: devenv
       - name: Install devenv
-        run: nix-env -if https://install.devenv.sh/latest
+        run: |
+          nix profile install --accept-flake-config nixpkgs#devenv
+          devenv --version
       - name: Update versions
         run: |
           devenv shell -- go run . update-versions \
@@ -35,22 +37,22 @@ jobs:
         env:
           CLI_GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
         working-directory: cli
-      - name: Create pull request
-        uses: peter-evans/create-pull-request@v6
-        with:
-          author: GitHub <noreply@github.com>
-          commit-message: Update Terraform versions
-          title: "feat: Update Terraform versions"
-          body: |
-            Automatically created pull-request to update Terraform versions.
-
-            This is the result of configuring a CLI_GITHUB_TOKEN in `.env` and running:
-
-            ```
-            cli update-versions
-            ```
-          delete-branch: true
-          reviewers: |
-            oscar-izval
-            sestrella
-          token: ${{ secrets.BOT_TOKEN }}
+      # - name: Create pull request
+      #   uses: peter-evans/create-pull-request@v6
+      #   with:
+      #     author: GitHub <noreply@github.com>
+      #     commit-message: Update Terraform versions
+      #     title: "feat: Update Terraform versions"
+      #     body: |
+      #       Automatically created pull-request to update Terraform versions.
+      #
+      #       This is the result of configuring a CLI_GITHUB_TOKEN in `.env` and running:
+      #
+      #       ```
+      #       cli update-versions
+      #       ```
+      #     delete-branch: true
+      #     reviewers: |
+      #       oscar-izval
+      #       sestrella
+      #     token: ${{ secrets.BOT_TOKEN }}
