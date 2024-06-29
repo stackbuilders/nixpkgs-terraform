@@ -28,7 +28,7 @@ jobs:
       - name: Install devenv
         run: |
           nix profile install --accept-flake-config nixpkgs#devenv
-          devenv --version
+          devenv version
       - name: Update versions
         run: |
           devenv shell -- go run . update-versions \
