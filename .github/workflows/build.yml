@@ -20,10 +20,6 @@ jobs:
         uses: cachix/install-nix-action@V27
         with:
           nix_path: nixpkgs=channel:nixos-24.05-small
-      - name: Setup Cachix
-        uses: cachix/cachix-action@v15
-        with:
-          name: devenv
       - name: Install devenv
         run: |
           nix profile install --accept-flake-config nixpkgs#devenv
