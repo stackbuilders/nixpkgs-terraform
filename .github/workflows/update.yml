@@ -19,16 +19,20 @@ jobs:
           ref: main
       - name: Install Nix
         uses: cachix/install-nix-action@V27
-      - name: Setup Cachix
-        uses: cachix/cachix-action@v15
         with:
-          name: devenv
+          nix_path: nixpkgs=channel:nixos-24.05-small
       - name: Install devenv
-        run: nix-env -if https://install.devenv.sh/latest
+        run: |
+          nix profile install --accept-flake-config nixpkgs#devenv
+          devenv version
       - name: Update versions
-        run: devenv shell update-versions
+        run: |
+          devenv shell -- go run . update-versions \
+            --versions ../versions.json \
+            --vendor-hash ../vendor-hash.nix
         env:
-          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
+          CLI_GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
+        working-directory: cli
       - name: Create pull request
         uses: peter-evans/create-pull-request@v6
         with:
@@ -38,10 +42,10 @@ jobs:
           body: |
             Automatically created pull-request to update Terraform versions.
 
-            This is the result of configuring a GITHUB_TOKEN in `.env` and running:
+            This is the result of configuring a CLI_GITHUB_TOKEN in `.env` and running:
 
             ```
-            devenv shell update-versions
+            cli update-versions
             ```
           delete-branch: true
           reviewers: |

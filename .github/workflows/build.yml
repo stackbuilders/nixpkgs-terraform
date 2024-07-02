@@ -18,12 +18,12 @@ jobs:
         uses: actions/checkout@v4
       - name: Install Nix
         uses: cachix/install-nix-action@V27
-      - name: Setup Cachix
-        uses: cachix/cachix-action@v15
         with:
-          name: devenv
+          nix_path: nixpkgs=channel:nixos-24.05-small
       - name: Install devenv
-        run: nix-env -if https://install.devenv.sh/latest
+        run: |
+          nix profile install --accept-flake-config nixpkgs#devenv
+          devenv version
       - name: Run tests
         run: devenv test
 
@@ -31,9 +31,9 @@ jobs:
     strategy:
       matrix:
         os:
-          - macos-12 # Intel
-          - macos-14 # M1
-          - ubuntu-latest
+          - macos-13      # x86_64-darwin
+          - macos-latest  # aarch64-darwin
+          - ubuntu-latest # x86_64-linux
       fail-fast: false
     runs-on: ${{ matrix.os }}
     needs: [check]
