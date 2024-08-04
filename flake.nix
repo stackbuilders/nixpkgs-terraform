@@ -4,9 +4,9 @@
   inputs = {
     config.url = "github:stackbuilders/nixpkgs-terraform?dir=templates/config";
     flake-parts.url = "github:hercules-ci/flake-parts";
-    nixpkgs-1_0.url = "github:nixos/nixpkgs/41de143fda10e33be0f47eab2bfe08a50f234267";
-    nixpkgs-1_6.url = "github:nixos/nixpkgs/d6b3ddd253c578a7ab98f8011e59990f21dc3932";
-    nixpkgs-1_9.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    nixpkgs-23_05.url = "github:nixos/nixpkgs/nixos-23.05";
+    nixpkgs-24_05.url = "github:nixos/nixpkgs/nixos-24.05";
+    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     systems.url = "github:nix-systems/default";
   };
 
@@ -19,20 +19,20 @@
 
       systems = import inputs.systems;
 
-      perSystem = { config, pkgs-1_0, pkgs-1_6, pkgs-1_9, system, ... }:
+      perSystem = { config, pkgs-23_05, pkgs-24_05, pkgs, system, ... }:
         let
           flakeConfig = import inputs.config;
         in
         {
           _module.args = {
-            pkgs-1_0 = import inputs.nixpkgs-1_0 {
+            pkgs-23_05 = import inputs.nixpkgs-23_05 {
               inherit system;
             };
-            pkgs-1_6 = import inputs.nixpkgs-1_6 {
+            pkgs-24_05 = import inputs.nixpkgs-24_05 {
               inherit system;
               config = flakeConfig.nixpkgs-unstable;
             };
-            pkgs-1_9 = import inputs.nixpkgs-1_9 {
+            pkgs = import inputs.nixpkgs {
               inherit system;
               config = flakeConfig.nixpkgs-unstable;
             };
@@ -49,11 +49,11 @@
                   versionLessThan1_6 = version: builtins.compareVersions version "1.6.0" < 0;
                 in
                 {
-                  releases = pkgs-1_9.lib.filterAttrs (version: _: allowUnfree || versionLessThan1_6 version) versions.releases;
-                  latest = pkgs-1_9.lib.filterAttrs (_: version: allowUnfree || versionLessThan1_6 version) versions.latest;
+                  releases = pkgs.lib.filterAttrs (version: _: allowUnfree || versionLessThan1_6 version) versions.releases;
+                  latest = pkgs.lib.filterAttrs (_: version: allowUnfree || versionLessThan1_6 version) versions.latest;
                 };
               releases = import ./lib/releases.nix {
-                inherit pkgs-1_0 pkgs-1_6 pkgs-1_9; custom-lib = self.lib;
+                inherit pkgs-23_05 pkgs-24_05 pkgs; custom-lib = self.lib;
                 releases = filteredVersions.releases;
                 silenceWarnings = flakeConfig.nixpkgs-terraform.silenceWarnings;
               };
