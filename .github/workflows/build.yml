@@ -53,13 +53,11 @@ jobs:
         run: |
           if grep -q authToken ~/.config/cachix/cachix.dhall; then
             echo "Cachix token is present"
-            cachix watch-exec nixpkgs-terraform nix -- flake check
+            cachix watch-exec nixpkgs-terraform nix -- flake check --max-jobs 2
           else
             echo "Cachix token is not present"
-            nix flake check
+            nix flake check --max-jobs 2
           fi
-        env:
-          NIX_BUILD_CORES: 2
 
   template:
     runs-on: ubuntu-latest
