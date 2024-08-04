@@ -48,16 +48,9 @@ jobs:
         with:
           name: nixpkgs-terraform
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
-          skipPush: true
+          # skipPush: true
       - name: Build packages
-        run: |
-          if grep -q authToken ~/.config/cachix/cachix.dhall; then
-            echo "Cachix token is present"
-            cachix watch-exec nixpkgs-terraform nix -- flake check
-          else
-            echo "Cachix token is not present"
-            nix flake check
-          fi
+        run: nix flake check
 
   template:
     runs-on: ubuntu-latest
