@@ -1,6 +1,6 @@
-{ custom-lib, pkgs-23_05, pkgs-24_05, pkgs, releases, silenceWarnings }:
+{ custom-lib, pkgs-1_0, pkgs-1_6, pkgs-1_9, releases, silenceWarnings }:
 builtins.mapAttrs
   (version: { hash, vendorHash }: custom-lib.buildTerraform {
-    inherit pkgs-23_05 pkgs-24_05 pkgs version hash vendorHash silenceWarnings;
+    inherit pkgs-1_0 pkgs-1_6 pkgs-1_9 version hash vendorHash silenceWarnings;
   })
   releases
