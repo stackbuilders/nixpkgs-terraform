@@ -58,6 +58,8 @@ jobs:
             echo "Cachix token is not present"
             nix flake check
           fi
+        env:
+          NIX_BUILD_CORES: 2
 
   template:
     runs-on: ubuntu-latest
