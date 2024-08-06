@@ -12,7 +12,6 @@ concurrency:
 
 jobs:
   check:
-    if: false
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -37,7 +36,7 @@ jobs:
           - ubuntu-latest # x86_64-linux
       fail-fast: false
     runs-on: ${{ matrix.os }}
-    # needs: [check]
+    needs: [check]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -60,10 +59,9 @@ jobs:
           fi
 
   template:
-    if: false
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    # needs: [build]
+    needs: [build]
     strategy:
       matrix:
         template:
