@@ -33,6 +33,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Publish flake
-        uses: flakestry/flakestry-publish@main
+        uses: stackbuilders/flakestry-publish@test
         with:
           version: v4.4.0
