@@ -1,8 +1,8 @@
 name: Publish
 
-on:
-  release:
-    types: [released]
+on: push
+  # release:
+  #   types: [released]
 
 concurrency:
   group: publish
@@ -14,6 +14,7 @@ permissions:
 
 jobs:
   flakehub:
+    if: false
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -34,4 +35,4 @@ jobs:
       - name: Publish flake
         uses: flakestry/flakestry-publish@main
         with:
-          version: ${{ github.ref_name }}
+          version: v4.4.0
