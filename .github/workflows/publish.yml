@@ -36,4 +36,4 @@ jobs:
       - name: Publish flake
         uses: stackbuilders/flakestry-publish@update_install_nix_action
         with:
-          version: v4.4.0
+          version: ${{ github.ref_name }}
