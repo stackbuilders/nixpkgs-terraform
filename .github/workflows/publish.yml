@@ -29,6 +29,7 @@ jobs:
           tag: ${{ github.ref_name }}
           visibility: public
 
+  # https://flakehub.com/docs/faq#err-last-modified
   flakestry:
     runs-on: ubuntu-latest
     steps:
