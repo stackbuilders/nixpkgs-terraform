@@ -3,11 +3,12 @@ let
   flake = builtins.getFlake (toString ./.);
   system = builtins.currentSystem;
 
-  pkgs = flake.inputs.nixpkgs.legacyPackages.${system};
-  pkgs-unstable = flake.inputs.nixpkgs-unstable.legacyPackages.${system};
+  pkgs-1_0 = flake.inputs.nixpkgs-1_0.legacyPackages.${system};
+  pkgs-1_6 = flake.inputs.nixpkgs-1_6.legacyPackages.${system};
+  pkgs-1_9 = flake.inputs.nixpkgs-1_9.legacyPackages.${system};
 
   terraform = flake.lib.buildTerraform {
-    inherit pkgs pkgs-unstable version hash;
+    inherit pkgs-1_0 pkgs-1_6 pkgs-1_9 version hash;
     vendorHash = sha256;
   };
 in
