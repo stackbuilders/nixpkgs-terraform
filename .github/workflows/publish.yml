@@ -33,6 +33,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Publish flake
-        uses: stackbuilders/flakestry-publish@test
+        uses: stackbuilders/flakestry-publish@update_install_nix_action
         with:
           version: v4.4.0
