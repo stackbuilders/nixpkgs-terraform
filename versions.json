@@ -323,6 +323,14 @@
     "1.9.2": {
       "hash": "sha256-g1CsDWjwjBVfSNFZ9PRGlPlJOrqXP2eMYk1P+ohtYNU=",
       "vendorHash": "sha256-cPWJtrGad8VsvyjJHQwpfDitsJY/Q0iCtp1MRyzGT+U="
+    },
+    "1.9.3": {
+      "hash": "sha256-5xtTjT+AP7Db3bhzhHkzmRIJpJB3UFZs+4cTgDB7Ihc=",
+      "vendorHash": "sha256-FnjCJilPuhYs/JTuEyb4Grn4t40Ox2uqwQf2h9B227Q="
+    },
+    "1.9.4": {
+      "hash": "sha256-RCjeKdxrnCmOtUQfBC5/gM+FB6YHbc/V1cmVxNCVf20=",
+      "vendorHash": "sha256-FnjCJilPuhYs/JTuEyb4Grn4t40Ox2uqwQf2h9B227Q="
     }
   },
   "latest": {
@@ -335,6 +343,6 @@
     "1.6": "1.6.6",
     "1.7": "1.7.5",
     "1.8": "1.8.5",
-    "1.9": "1.9.2"
+    "1.9": "1.9.4"
   }
 }
