@@ -28,7 +28,8 @@ jobs:
           tag: ${{ github.ref_name }}
           visibility: public
 
-  # https://flakehub.com/docs/faq#err-last-modified
+  # INFO: The following fork updates the Nix version used by the action to fix
+  # the "lastModified" issue. https://flakehub.com/docs/faq#err-last-modified
   flakestry:
     runs-on: ubuntu-latest
     steps:
