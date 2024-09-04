@@ -177,8 +177,7 @@ to make it easier for maintainers to release new changes.
 
 ---
 
-<img src="https://www.stackbuilders.com/media/images/Sb-supports.original.png"
-alt="Stack Builders" width="50%"></img>  
+<img src="https://cdn.stackbuilders.com/media/images/Sb-supports.original.png" alt="Stack Builders" width="50%"></img>
 [Check out our libraries](https://github.com/stackbuilders/) | [Join our
 team](https://www.stackbuilders.com/join-us/)
 
