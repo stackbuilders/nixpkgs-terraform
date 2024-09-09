@@ -35,7 +35,7 @@ jobs:
           CLI_GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
         working-directory: cli
       - name: Create pull request
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v7
         with:
           author: GitHub <noreply@github.com>
           commit-message: Update Terraform versions
