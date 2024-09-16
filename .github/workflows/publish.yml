@@ -21,7 +21,7 @@ jobs:
         with:
           ref: ${{ github.ref_name }}
       - name: Install Nix
-        uses: cachix/install-nix-action@V27
+        uses: cachix/install-nix-action@V28
       - name: Publish flake
         uses: DeterminateSystems/flakehub-push@v4
         with:
