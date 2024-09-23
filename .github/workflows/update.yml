@@ -2,6 +2,8 @@
 name: Update
 
 on:
+  pull_request:
+    branches: [main]
   workflow_dispatch:
   schedule:
     - cron: "0 0 * * *"
@@ -17,7 +19,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: main
+          ref: bump-go-1.22.7
       - name: Install Nix
         uses: cachix/install-nix-action@V27
         with:
@@ -34,22 +36,22 @@ jobs:
         env:
           CLI_GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
         working-directory: cli
-      - name: Create pull request
-        uses: peter-evans/create-pull-request@v6
-        with:
-          author: GitHub <noreply@github.com>
-          commit-message: Update Terraform versions
-          title: "feat: Update Terraform versions"
-          body: |
-            Automatically created pull-request to update Terraform versions.
+      # - name: Create pull request
+      #   uses: peter-evans/create-pull-request@v6
+      #   with:
+      #     author: GitHub <noreply@github.com>
+      #     commit-message: Update Terraform versions
+      #     title: "feat: Update Terraform versions"
+      #     body: |
+      #       Automatically created pull-request to update Terraform versions.
 
-            This is the result of configuring a CLI_GITHUB_TOKEN in `.env` and running:
+      #       This is the result of configuring a CLI_GITHUB_TOKEN in `.env` and running:
 
-            ```
-            cli update-versions
-            ```
-          delete-branch: true
-          reviewers: |
-            oscar-izval
-            sestrella
-          token: ${{ secrets.BOT_TOKEN }}
+      #       ```
+      #       cli update-versions
+      #       ```
+      #     delete-branch: true
+      #     reviewers: |
+      #       oscar-izval
+      #       sestrella
+      #     token: ${{ secrets.BOT_TOKEN }}
