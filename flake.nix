@@ -6,7 +6,7 @@
     flake-parts.url = "github:hercules-ci/flake-parts";
     nixpkgs-1_0.url = "github:nixos/nixpkgs/41de143fda10e33be0f47eab2bfe08a50f234267"; # nixos-23.05
     nixpkgs-1_6.url = "github:nixos/nixpkgs/d6b3ddd253c578a7ab98f8011e59990f21dc3932"; # nixos-24.05
-    nixpkgs-1_9.url = "github:nixos/nixpkgs/f5fd8730397b9951d24de58f51a5e9cb327e2a85"; # nixpkgs-unstable
+    nixpkgs-1_9.url = "github:nixos/nixpkgs/a1d92660c6b3b7c26fb883500a80ea9d33321be2"; # nixpkgs-unstable
     systems.url = "github:nix-systems/default";
   };
 
