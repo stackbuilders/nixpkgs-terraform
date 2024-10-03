@@ -339,6 +339,10 @@
     "1.9.6": {
       "hash": "sha256-rlqpqiMlLcn2LqqKRU9iFaVqUz/QQtpiiZ39h5ZvpbI=",
       "vendorHash": "sha256-tH9KQF4oHcQh34ikB9Bx6fij/iLZN+waxv5ZilqGGlU="
+    },
+    "1.9.7": {
+      "hash": "sha256-L0F0u96et18IlqAUsc0HK+cLeav2OqN4kxs58hPNMIM=",
+      "vendorHash": "sha256-tH9KQF4oHcQh34ikB9Bx6fij/iLZN+waxv5ZilqGGlU="
     }
   },
   "latest": {
@@ -351,6 +355,6 @@
     "1.6": "1.6.6",
     "1.7": "1.7.5",
     "1.8": "1.8.5",
-    "1.9": "1.9.6"
+    "1.9": "1.9.7"
   }
 }
