@@ -27,7 +27,7 @@
               modules = [
                 ({ pkgs, config, ... }: {
                   languages.terraform.enable = true;
-                  languages.terraform.version = "1.8.1";
+                  languages.terraform.version = "1.9";
                 })
               ];
             };
