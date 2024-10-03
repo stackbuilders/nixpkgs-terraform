@@ -26,7 +26,7 @@
         (system:
           let
             pkgs = nixpkgs.legacyPackages.${system};
-            terraform = nixpkgs-terraform.packages.${system}."1.8.1";
+            terraform = nixpkgs-terraform.packages.${system}."1.9";
           in
           {
             default = pkgs.mkShell {
