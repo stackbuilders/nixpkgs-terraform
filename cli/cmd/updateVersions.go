@@ -181,7 +181,7 @@ func withReleases(token string, f func(release *github.RepositoryRelease) error)
 func computeHash(nurlPath string, tagName string) (string, error) {
 	hash, err := runNurl(
 		nurlPath,
-		fmt.Sprintf("https://github.com/%s/%s", owner,
+		fmt.Sprintf("https://github.com/%s/%s", owner, repo),
 		tagName,
 		"--hash")
 	if err != nil {
