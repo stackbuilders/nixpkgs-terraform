@@ -82,6 +82,7 @@ var updateVersionsCmd = &cobra.Command{
 
 func updateVersions(token string, versionsPath string, vendorHashPath string, minVersion *semver.Version, maxVersion *semver.Version) error {
 	nixPrefetchPath, err := exec.LookPath("nix-prefetch")
+	nurlPath, err := exec.LookPath("nurl")
 	if err != nil {
 		return fmt.Errorf("nix-prefetch not found: %w", err)
 	}
@@ -102,7 +103,7 @@ func updateVersions(token string, versionsPath string, vendorHashPath string, mi
 				log.Printf("Version %s found in file\n", version)
 			} else {
 				log.Printf("Computing hashes for %s\n", version)
-				hash, err := computeHash(nixPrefetchPath, tagName)
+				hash, err := computeHash(nurlPath, tagName)
 				if err != nil {
 					return fmt.Errorf("Unable to compute hash: %w", err)
 				}
@@ -177,16 +178,12 @@ func withReleases(token string, f func(release *github.RepositoryRelease) error)
 	return nil
 }
 
-func computeHash(nixPrefetchPath string, tagName string) (string, error) {
-	hash, err := runNixPrefetch(
-		nixPrefetchPath,
-		"fetchFromGitHub",
-		"--owner",
-		owner,
-		"--repo",
-		repo,
-		"--rev",
-		tagName)
+func computeHash(nurlPath string, tagName string) (string, error) {
+	hash, err := runNurl(
+		nurlPath,
+		"https://github.com/hashicorp/terraform",
+		tagName,
+		"--hash")
 	if err != nil {
 		return "", err
 	}
@@ -219,6 +216,18 @@ func runNixPrefetch(nixPrefetchPath string, extraArgs ...string) (string, error)
 		return "", err
 	}
 	return strings.TrimRight(string(output), "\n"), nil
+}
+
+func runNurl(nurlPath string, args ...string) (string, error) {
+    cmd := exec.Command(nurlPath, args...)
+    cmd.Stderr = log.Writer()
+
+    output, err := cmd.Output()
+    if err != nil {
+        return "", err
+    }
+
+    return strings.TrimSpace(string(output)), nil
 }
 
 func init() {
