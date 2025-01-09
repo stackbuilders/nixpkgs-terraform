@@ -21,8 +21,8 @@ jobs:
           ref: oi/fix-update-ci
       - name: Install Nix
         uses: cachix/install-nix-action@v30
-        with:
-          nix_path: nixpkgs=channel:nixos-24.11-small
+        # with:
+        #   nix_path: nixpkgs=channel:nixos-24.11-small
       - name: Install devenv
         run: |
           nix profile install --accept-flake-config nixpkgs#devenv
