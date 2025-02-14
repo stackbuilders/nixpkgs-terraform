@@ -86,6 +86,11 @@ func updateVersions(token string, versionsPath string, vendorHashPath string, mi
 		return fmt.Errorf("nix-prefetch not found: %w", err)
 	}
 
+	nixBinaryPath, err := exec.LookPath("nix")
+	if err != nil {
+		return fmt.Errorf("nix not found: %w", err)
+	}
+
 	versions, err := readVersions(versionsPath)
 	if err != nil {
 		return err
@@ -102,7 +107,7 @@ func updateVersions(token string, versionsPath string, vendorHashPath string, mi
 				log.Printf("Version %s found in file\n", version)
 			} else {
 				log.Printf("Computing hashes for %s\n", version)
-				hash, err := computeHash(nixPrefetchPath, tagName)
+				hash, err := computeHash(nixBinaryPath, tagName)
 				if err != nil {
 					return fmt.Errorf("Unable to compute hash: %w", err)
 				}
@@ -177,20 +182,31 @@ func withReleases(token string, f func(release *github.RepositoryRelease) error)
 	return nil
 }
 
-func computeHash(nixPrefetchPath string, tagName string) (string, error) {
-	hash, err := runNixPrefetch(
-		nixPrefetchPath,
-		"fetchFromGitHub",
-		"--owner",
-		owner,
-		"--repo",
-		repo,
-		"--rev",
-		tagName)
+func computeHash(nixBinaryPath string, tagName string) (string, error) {
+	cmd := exec.Command(
+		nixBinaryPath, "flake", "prefetch",
+		"--extra-experimental-features", "nix-command flakes",
+		"--json", fmt.Sprintf("github:%s/%s/%s", owner, repo, tagName),
+	)
+
+	// Redirect stderr to the standard logger
+	cmd.Stderr = log.Writer()
+
+	// Get the output
+	output, err := cmd.Output()
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("command execution failed: %w", err)
 	}
-	return hash, nil
+
+	// Parse JSON output to get hash
+	var result struct {
+		Hash string `json:"hash"`
+	}
+	if err := json.Unmarshal(output, &result); err != nil {
+		return "", fmt.Errorf("failed to parse JSON output: %w", err)
+	}
+
+	return result.Hash, nil
 }
 
 func computeVendorHash(nixPrefetchPath string, vendorHashFile string, version *semver.Version, hash string) (string, error) {
