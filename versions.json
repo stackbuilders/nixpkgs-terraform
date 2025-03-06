@@ -116,6 +116,10 @@
       "hash": "sha256-CPt1SxZZEvK2MXk45vvtKb2/NR/4yNWXBEUm6dvBXkU=",
       "vendorHash": "sha256-xF9m67GE3MgeKqy7DGAf8RO1/MCZ5Uis1XNrajogQcI="
     },
+    "1.11.1": {
+      "hash": "sha256-z7GX0h6f4N+TszdVUQanqUH1qyIvy07V66MsKiLisrw=",
+      "vendorHash": "sha256-Drje+HEWaqsYhqeRHHw8QFhhB5oGRyOptFXMV0amWhE="
+    },
     "1.2.0": {
       "hash": "sha256-5um+zS7MVL59SlxchjXdlhBGNdacbQgvg7BRAWnW5XU=",
       "vendorHash": "sha256-6x1cv+DKXH2yyMjIA6JY5EkTmWbwH4LBammXKtw2EZo="
@@ -381,7 +385,7 @@
     "1.0": "1.0.11",
     "1.1": "1.1.9",
     "1.10": "1.10.5",
-    "1.11": "1.11.0",
+    "1.11": "1.11.1",
     "1.2": "1.2.9",
     "1.3": "1.3.10",
     "1.4": "1.4.7",
