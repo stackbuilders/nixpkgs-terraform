@@ -29,8 +29,10 @@ jobs:
         run: |
           nix profile install --accept-flake-config nixpkgs#devenv
           devenv version
-      - name: Compile cli tool
-        run: devenv shell -- go build -v ./...
+      - name: Build cli
+        run: |
+          devenv shell -- go build -v ./...
+          ls -al
       - name: Update versions
         id: update_versions
         run: |
