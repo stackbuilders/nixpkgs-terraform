@@ -5,7 +5,6 @@ go 1.22.1
 require (
 	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/google/go-github/v62 v62.0.0
-	github.com/joho/godotenv v1.5.1
 	github.com/spf13/cobra v1.8.1
 )
 
