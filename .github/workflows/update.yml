@@ -1,10 +1,10 @@
 ---
 name: Update
 
-on: push
-  # workflow_dispatch:
-  # schedule:
-  #   - cron: "0 0 * * *"
+on: 
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * *"
 
 concurrency:
   group: update
@@ -19,8 +19,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        # with:
-        #   ref: main
+        with:
+          ref: main
       - name: Install Nix
         uses: cachix/install-nix-action@v31
         with:
@@ -33,17 +33,10 @@ jobs:
         id: update_versions
         run: |
           title=$(devenv shell -- go run . update-versions --versions ../versions.json --vendor-hash ../vendor-hash.nix)
-          echo "-------------------"
-          echo "$title"
-          echo "-------------------"
           echo "title=$title" >> "$GITHUB_OUTPUT"
         env:
           CLI_GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
-      - run: echo $TITLE
-        env:
-          TITLE: ${{ steps.update_versions.outputs.title }}
       - name: Create pull request
-        if: false
         uses: peter-evans/create-pull-request@v7
         with:
           author: GitHub <noreply@github.com>
