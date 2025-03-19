@@ -12,12 +12,15 @@ concurrency:
 
 jobs:
   update:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: cli
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          ref: main
+        # with:
+        #   ref: main
       - name: Install Nix
         uses: cachix/install-nix-action@v31
         with:
@@ -26,17 +29,18 @@ jobs:
         run: |
           nix profile install --accept-flake-config nixpkgs#devenv
           devenv version
+      - name: Compile cli tool
+        run: devenv shell -- go build -v ./...
       - name: Update versions
         id: update_versions
         run: |
-          title=$(devenv shell -- go run . update-versions --versions ../versions.json --vendor-hash ../vendor-hash.nix)
+          title=$(./cli update-versions --versions ../versions.json --vendor-hash ../vendor-hash.nix)
           echo "-------------------"
           echo "$title"
           echo "-------------------"
           echo "title=$title" >> "$GITHUB_OUTPUT"
         env:
           CLI_GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
-        working-directory: cli
       - run: echo $TITLE
         env:
           TITLE: ${{ steps.update_versions.outputs.title }}
