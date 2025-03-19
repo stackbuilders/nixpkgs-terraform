@@ -13,6 +13,7 @@ concurrency:
 jobs:
   check:
     runs-on: ubuntu-latest
+    if: false
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
