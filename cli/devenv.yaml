@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://devenv.sh/devenv.schema.json
 inputs:
   nixpkgs:
-    url: github:nixos/nixpkgs/nixos-24.11-small
+    url: github:cachix/devenv-nixpkgs/rolling
