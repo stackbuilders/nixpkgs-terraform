@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   update:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     defaults:
       run:
         working-directory: cli
@@ -21,7 +21,6 @@ jobs:
         uses: actions/checkout@v4
         # with:
         #   ref: main
-      - run: ls -al ..
       - name: Install Nix
         uses: cachix/install-nix-action@v31
         with:
