@@ -21,6 +21,7 @@ jobs:
         uses: actions/checkout@v4
         # with:
         #   ref: main
+      - run: ls -al ..
       - name: Install Nix
         uses: cachix/install-nix-action@v31
         with:
