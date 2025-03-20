@@ -73,36 +73,58 @@ var updateVersionsCmd = &cobra.Command{
 			}
 		}
 
-		err = updateVersions(token, versionsPath, vendorHashPath, minVersion, maxVersion)
+		addedVersions, err := updateVersions(
+			token,
+			versionsPath,
+			vendorHashPath,
+			minVersion,
+			maxVersion,
+		)
 		if err != nil {
 			log.Fatal("Unable to update versions: ", err)
+		}
+		if len(addedVersions) > 0 {
+			var formattedVersions []string
+			for _, addedVersion := range addedVersions {
+				formattedVersions = append(formattedVersions, addedVersion.String())
+			}
+			fmt.Printf("feat: Add Terraform version(s) %s", strings.Join(formattedVersions, ", "))
 		}
 	},
 }
 
-func updateVersions(token string, versionsPath string, vendorHashPath string, minVersion *semver.Version, maxVersion *semver.Version) error {
+func updateVersions(
+	token string,
+	versionsPath string,
+	vendorHashPath string,
+	minVersion *semver.Version,
+	maxVersion *semver.Version,
+) ([]*semver.Version, error) {
 	nixPrefetchPath, err := exec.LookPath("nix-prefetch")
 	if err != nil {
-		return fmt.Errorf("nix-prefetch not found: %w", err)
+		return nil, fmt.Errorf("nix-prefetch not found: %w", err)
 	}
 
 	nixBinaryPath, err := exec.LookPath("nix")
 	if err != nil {
-		return fmt.Errorf("nix not found: %w", err)
+		return nil, fmt.Errorf("nix not found: %w", err)
 	}
 
 	versions, err := readVersions(versionsPath)
 	if err != nil {
-		return err
+		return nil, fmt.Errorf("unable to read versions: %w", err)
 	}
 
+	var addedVersions []*semver.Version
 	err = withReleases(token, func(release *github.RepositoryRelease) error {
 		tagName := release.GetTagName()
 		version, err := semver.NewVersion(strings.TrimLeft(tagName, "v"))
 		if err != nil {
-			return err
+			return fmt.Errorf("unable to parse version: %w", err)
 		}
-		if version.Compare(minVersion) >= 0 && (maxVersion == nil || version.Compare(maxVersion) <= 0) && version.Prerelease() == "" {
+		if version.Compare(minVersion) >= 0 &&
+			(maxVersion == nil || version.Compare(maxVersion) <= 0) &&
+			version.Prerelease() == "" {
 			if _, ok := versions.Releases[*version]; ok {
 				log.Printf("Version %s found in file\n", version)
 			} else {
@@ -118,12 +140,13 @@ func updateVersions(token string, versionsPath string, vendorHashPath string, mi
 				}
 				log.Printf("Computed vendor hash: %s\n", vendorHash)
 				versions.Releases[*version] = Release{Hash: hash, VendorHash: vendorHash}
+				addedVersions = append(addedVersions, version)
 			}
 		}
 		return nil
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	versions.Latest = make(map[Alias]semver.Version)
@@ -136,15 +159,15 @@ func updateVersions(token string, versionsPath string, vendorHashPath string, mi
 
 	content, err := json.MarshalIndent(versions, "", "  ")
 	if err != nil {
-		log.Fatal("Unable to marshall versions: ", err)
+		return nil, fmt.Errorf("Unable to marshall versions: ", err)
 	}
 
 	err = os.WriteFile(versionsPath, content, 0644)
 	if err != nil {
-		log.Fatal("Unable to write file: ", err)
+		return nil, fmt.Errorf("Unable to write file: ", err)
 	}
 
-	return nil
+	return addedVersions, nil
 }
 
 func readVersions(versionsPath string) (*Versions, error) {
@@ -164,7 +187,12 @@ func withReleases(token string, f func(release *github.RepositoryRelease) error)
 	client := github.NewClient(nil).WithAuthToken(token)
 	opt := &github.ListOptions{Page: 1}
 	for {
-		releases, resp, err := client.Repositories.ListReleases(context.Background(), owner, repo, opt)
+		releases, resp, err := client.Repositories.ListReleases(
+			context.Background(),
+			owner,
+			repo,
+			opt,
+		)
 		if err != nil {
 			return err
 		}
@@ -209,7 +237,12 @@ func computeHash(nixBinaryPath string, tagName string) (string, error) {
 	return result.Hash, nil
 }
 
-func computeVendorHash(nixPrefetchPath string, vendorHashFile string, version *semver.Version, hash string) (string, error) {
+func computeVendorHash(
+	nixPrefetchPath string,
+	vendorHashFile string,
+	version *semver.Version,
+	hash string,
+) (string, error) {
 	vendorHash, err := runNixPrefetch(
 		nixPrefetchPath,
 		"--file",
@@ -240,10 +273,16 @@ func runNixPrefetch(nixPrefetchPath string, extraArgs ...string) (string, error)
 func init() {
 	rootCmd.AddCommand(updateVersionsCmd)
 
-	updateVersionsCmd.Flags().StringVarP(&owner, "owner", "", "hashicorp", "The owner name of the repository on GitHub")
-	updateVersionsCmd.Flags().StringVarP(&repo, "repo", "", "terraform", "The repository name on GitHub")
-	updateVersionsCmd.Flags().StringVarP(&vendorHashPath, "vendor-hash", "", "vendor-hash.nix", "Nix file required to compute vendorHash")
-	updateVersionsCmd.Flags().StringVarP(&versionsPath, "versions", "", "versions.json", "The file to be updated")
-	updateVersionsCmd.Flags().StringVarP(&minVersionStr, "min-version", "", "1.0.0", "Min release version")
-	updateVersionsCmd.Flags().StringVarP(&maxVersionStr, "max-version", "", "", "Max release version")
+	updateVersionsCmd.Flags().
+		StringVarP(&owner, "owner", "", "hashicorp", "The owner name of the repository on GitHub")
+	updateVersionsCmd.Flags().
+		StringVarP(&repo, "repo", "", "terraform", "The repository name on GitHub")
+	updateVersionsCmd.Flags().
+		StringVarP(&vendorHashPath, "vendor-hash", "", "vendor-hash.nix", "Nix file required to compute vendorHash")
+	updateVersionsCmd.Flags().
+		StringVarP(&versionsPath, "versions", "", "versions.json", "The file to be updated")
+	updateVersionsCmd.Flags().
+		StringVarP(&minVersionStr, "min-version", "", "1.0.0", "Min release version")
+	updateVersionsCmd.Flags().
+		StringVarP(&maxVersionStr, "max-version", "", "", "Max release version")
 }
