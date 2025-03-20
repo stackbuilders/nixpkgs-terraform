@@ -10,16 +10,23 @@
     systems.url = "github:nix-systems/default";
   };
 
-  outputs = inputs@{ self, ... }: inputs.flake-parts.lib.mkFlake
-    { inherit inputs; }
-    {
+  outputs =
+    inputs@{ self, ... }:
+    inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       imports = [
         inputs.flake-parts.flakeModules.easyOverlay
       ];
 
       systems = import inputs.systems;
 
-      perSystem = { config, pkgs-1_0, pkgs-1_6, pkgs-1_9, system, ... }:
+      perSystem =
+        { config
+        , pkgs-1_0
+        , pkgs-1_6
+        , pkgs-1_9
+        , system
+        , ...
+        }:
         let
           flakeConfig = import inputs.config;
         in
@@ -49,11 +56,23 @@
                   versionLessThan1_6 = version: builtins.compareVersions version "1.6.0" < 0;
                 in
                 {
-                  releases = pkgs-1_9.lib.filterAttrs (version: _: allowUnfree || versionLessThan1_6 version) versions.releases;
-                  latest = pkgs-1_9.lib.filterAttrs (_: version: allowUnfree || versionLessThan1_6 version) versions.latest;
+                  releases = pkgs-1_9.lib.filterAttrs
+                    (
+                      version: _: allowUnfree || versionLessThan1_6 version
+                    )
+                    versions.releases;
+                  latest = pkgs-1_9.lib.filterAttrs
+                    (
+                      _: version: allowUnfree || versionLessThan1_6 version
+                    )
+                    versions.latest;
                 };
-              releases = import ./lib/releases.nix {
-                inherit pkgs-1_0 pkgs-1_6 pkgs-1_9; custom-lib = self.lib;
+              releases = self.lib.mkPackages {
+                allPkgs = {
+                  "1.9" = pkgs-1_9;
+                  "1.6" = pkgs-1_6;
+                  "1.0" = pkgs-1_0;
+                };
                 releases = filteredVersions.releases;
                 silenceWarnings = flakeConfig.nixpkgs-terraform.silenceWarnings;
               };
