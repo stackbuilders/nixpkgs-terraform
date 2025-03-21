@@ -11,5 +11,9 @@ pkgs.lib.warnIf (!silenceWarnings && builtins.compareVersions version "1.6.0" >=
   pkgs.mkTerraform
 {
   inherit version hash vendorHash;
-  patches = [ ../patches/provider-path-1_9.patch ];
+  patches =
+    if builtins.compareVersions version "1.9.0" >= 0 then
+      [ ../patches/provider-path-1_9.patch ]
+    else
+      [ ../patches/provider-path-0_15.patch ];
 }

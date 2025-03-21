@@ -6,7 +6,7 @@
     flake-parts.url = "github:hercules-ci/flake-parts";
     nixpkgs-1_0.url = "github:nixos/nixpkgs/41de143fda10e33be0f47eab2bfe08a50f234267"; # nixos-23.05
     nixpkgs-1_6.url = "github:nixos/nixpkgs/d6b3ddd253c578a7ab98f8011e59990f21dc3932"; # nixos-24.05
-    nixpkgs-1_9.url = "github:nixos/nixpkgs/af51545ec9a44eadf3fe3547610a5cdd882bc34e"; # nixpkgs-unstable
+    nixpkgs.url = "github:nixos/nixpkgs/af51545ec9a44eadf3fe3547610a5cdd882bc34e"; # nixpkgs-unstable
     systems.url = "github:nix-systems/default";
   };
 
@@ -21,9 +21,9 @@
 
       perSystem =
         { config
+        , pkgs
         , pkgs-1_0
         , pkgs-1_6
-        , pkgs-1_9
         , system
         , ...
         }:
@@ -39,7 +39,7 @@
               inherit system;
               config = flakeConfig.nixpkgs-unstable;
             };
-            pkgs-1_9 = import inputs.nixpkgs-1_9 {
+            pkgs = import inputs.nixpkgs {
               inherit system;
               config = flakeConfig.nixpkgs-unstable;
             };
@@ -56,12 +56,12 @@
                   versionLessThan1_6 = version: builtins.compareVersions version "1.6.0" < 0;
                 in
                 {
-                  releases = pkgs-1_9.lib.filterAttrs
+                  releases = pkgs.lib.filterAttrs
                     (
                       version: _: allowUnfree || versionLessThan1_6 version
                     )
                     versions.releases;
-                  latest = pkgs-1_9.lib.filterAttrs
+                  latest = pkgs.lib.filterAttrs
                     (
                       _: version: allowUnfree || versionLessThan1_6 version
                     )
@@ -69,9 +69,9 @@
                 };
               releases = self.lib.mkPackages {
                 allPkgs = {
-                  "1.9" = pkgs-1_9;
-                  "1.6" = pkgs-1_6;
                   "1.0" = pkgs-1_0;
+                  "1.6" = pkgs-1_6;
+                  "1.9" = pkgs;
                 };
                 releases = filteredVersions.releases;
                 silenceWarnings = flakeConfig.nixpkgs-terraform.silenceWarnings;
