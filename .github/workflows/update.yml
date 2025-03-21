@@ -29,10 +29,12 @@ jobs:
         run: |
           nix profile install --accept-flake-config nixpkgs#devenv
           devenv version
+      - name: Compile tool
+        run: devenv shell -- go build .
       - name: Update versions
         id: update_versions
         run: |
-          title=$(devenv shell -- go run . update-versions --versions ../versions.json --vendor-hash ../vendor-hash.nix)
+          title=$(./cli . update-versions --versions ../versions.json --vendor-hash ../vendor-hash.nix)
           echo "------------------------"
           echo "$title"
           echo "------------------------"
