@@ -29,7 +29,7 @@ jobs:
         run: |
           nix profile install --accept-flake-config nixpkgs#devenv
           devenv version
-        # INFO: Creating an empty `.env` file is a workaround for this:
+        # INFO: Creating an empty `.env` file is a workaround for:
         # 
         # https://github.com/cachix/devenv/pull/1788
       - name: Update versions
@@ -37,14 +37,10 @@ jobs:
         run: |
           touch .env
           title=$(devenv shell -- go run . update-versions --versions ../versions.json --vendor-hash ../vendor-hash.nix)
-          echo "------------------------"
-          echo "$title"
-          echo "------------------------"
-          echo "title=$title" >> "$GITHUB_OUTPUT"
         env:
           CLI_GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
       - name: Create pull request
-        if: false
+        if: ${{ steps.update_versions.outputs.title }}
         uses: peter-evans/create-pull-request@v7
         with:
           author: GitHub <noreply@github.com>
