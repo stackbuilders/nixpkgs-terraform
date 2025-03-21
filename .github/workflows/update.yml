@@ -33,10 +33,14 @@ jobs:
         id: update_versions
         run: |
           title=$(devenv shell -- go run . update-versions --versions ../versions.json --vendor-hash ../vendor-hash.nix)
+          echo "------------------------"
+          echo "$title"
+          echo "------------------------"
           echo "title=$title" >> "$GITHUB_OUTPUT"
         env:
           CLI_GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
       - name: Create pull request
+        if: false
         uses: peter-evans/create-pull-request@v7
         with:
           author: GitHub <noreply@github.com>
