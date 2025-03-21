@@ -2,11 +2,10 @@
 , version
 , hash
 , vendorHash
-, silenceWarnings ? false
 ,
 }:
 
-pkgs.lib.warnIf (!silenceWarnings && builtins.compareVersions version "1.6.0" >= 0)
+pkgs.lib.warnIf (builtins.compareVersions version "1.6.0" >= 0)
   ("allowUnfree is enabled to build version " + version)
   pkgs.mkTerraform
 {
