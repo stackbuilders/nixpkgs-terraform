@@ -29,12 +29,14 @@ jobs:
         run: |
           nix profile install --accept-flake-config nixpkgs#devenv
           devenv version
-      - name: Compile tool
-        run: devenv shell -- go build .
+        # INFO: Creating an empty `.env` file is a workaround for this:
+        # 
+        # https://github.com/cachix/devenv/pull/1788
       - name: Update versions
         id: update_versions
         run: |
-          title=$(./cli update-versions --versions ../versions.json --vendor-hash ../vendor-hash.nix)
+          touch .env
+          title=$(devenv shell -- go run . update-versions --versions ../versions.json --vendor-hash ../vendor-hash.nix)
           echo "------------------------"
           echo "$title"
           echo "------------------------"
