@@ -32,6 +32,7 @@ jobs:
       - name: Update versions
         id: update_versions
         run: |
+          touch .env
           title=$(devenv shell -- go run . update-versions --versions ../versions.json --vendor-hash ../vendor-hash.nix)
           echo "---------------"
           echo "$title"
