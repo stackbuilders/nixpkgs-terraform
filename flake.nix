@@ -17,8 +17,7 @@
     , ...
     }:
     let
-      supportedSystems = import systems;
-      forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
+      forAllSystems = nixpkgs.lib.genAttrs (import systems);
 
       # Import nixpkgs for each supported system
       nixpkgsFor = forAllSystems (
@@ -44,28 +43,16 @@
         }
       );
 
-      # Library functions
-      lib = import ./lib;
-
-      # Create overlay
-      overlayFor = system: final: prev: {
-        terraform-versions = packagesFor.${system};
-      };
-
       # Create packages for each system
       packagesFor = forAllSystems (
         system:
         let
-          pkgs = nixpkgsFor.${system};
-          pkgs-1_0 = nixpkgs1_0For.${system};
-          pkgs-1_6 = nixpkgs1_6For.${system};
-
           versions = builtins.fromJSON (builtins.readFile ./versions.json);
           releases = self.lib.mkPackages {
             allPkgs = {
-              "1.0" = pkgs-1_0;
-              "1.6" = pkgs-1_6;
-              "1.9" = pkgs;
+              "1.0" = nixpkgs1_0For.${system};
+              "1.6" = nixpkgs1_6For.${system};
+              "1.9" = nixpkgsFor.${system};
             };
             releases = versions.releases;
           };
@@ -73,18 +60,19 @@
         in
         releases // latestVersions
       );
-
-      # Create checks for each system
-      checksFor = forAllSystems (system: packagesFor.${system});
     in
     {
       packages = packagesFor;
 
-      checks = checksFor;
+      checks = packagesFor;
 
-      overlays = forAllSystems (system: overlayFor system);
+      overlays = forAllSystems (
+        system: final: prev: {
+          terraform-versions = packagesFor.${system};
+        }
+      );
 
-      lib = lib;
+      lib = import ./lib;
 
       templates = {
         default = {
