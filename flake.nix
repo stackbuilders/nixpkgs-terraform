@@ -20,7 +20,7 @@
       forAllSystems = nixpkgs.lib.genAttrs (import systems);
 
       # Import nixpkgs for each supported system
-      nixpkgsFor = forAllSystems (
+      pkgsFor = forAllSystems (
         system:
         import nixpkgs {
           inherit system;
@@ -28,14 +28,14 @@
         }
       );
 
-      nixpkgs1_0For = forAllSystems (
+      pkgs-1_0For = forAllSystems (
         system:
         import nixpkgs-1_0 {
           inherit system;
         }
       );
 
-      nixpkgs1_6For = forAllSystems (
+      pkgs-1_6For = forAllSystems (
         system:
         import nixpkgs-1_6 {
           inherit system;
@@ -50,9 +50,9 @@
           versions = builtins.fromJSON (builtins.readFile ./versions.json);
           releases = self.lib.mkPackages {
             allPkgs = {
-              "1.0" = nixpkgs1_0For.${system};
-              "1.6" = nixpkgs1_6For.${system};
-              "1.9" = nixpkgsFor.${system};
+              "1.0" = pkgs-1_0For.${system};
+              "1.6" = pkgs-1_6For.${system};
+              "1.9" = pkgsFor.${system};
             };
             releases = versions.releases;
           };
