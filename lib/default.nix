@@ -1,4 +1,5 @@
 rec {
   buildTerraform = import ./build.nix;
-  mkPackages = import ./packages.nix { inherit buildTerraform; };
+  buildTerraformFor = import ./build-for.nix { inherit buildTerraform; };
+  mkPackages = import ./packages.nix { inherit buildTerraformFor; };
 }
