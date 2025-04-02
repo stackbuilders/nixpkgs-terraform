@@ -66,11 +66,9 @@
 
       checks = packagesFor;
 
-      overlays = forAllSystems (
-        system: final: prev: {
-          terraform-versions = packagesFor.${system};
-        }
-      );
+      overlays.default = final: prev: {
+        terraform-versions = packagesFor.${prev.system};
+      };
 
       lib = import ./lib;
 
