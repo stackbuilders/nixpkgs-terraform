@@ -2,6 +2,7 @@
 name: Update
 
 on:
+  push:
   workflow_dispatch:
   schedule:
     - cron: "0 0 * * *"
@@ -20,7 +21,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: main
+          ref: oi/fix-update-script
       - name: Install Nix
         uses: cachix/install-nix-action@v31
         with:
@@ -37,23 +38,23 @@ jobs:
           echo "title=$title" >> "$GITHUB_OUTPUT"
         env:
           CLI_GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
-      - name: Create pull request
-        if: ${{ steps.update_versions.outputs.title }}
-        uses: peter-evans/create-pull-request@v7
-        with:
-          author: GitHub <noreply@github.com>
-          commit-message: Update Terraform versions
-          title: ${{ steps.update_versions.outputs.title }}
-          body: |
-            Automatically created pull-request to update Terraform versions.
+      # - name: Create pull request
+      #   if: ${{ steps.update_versions.outputs.title }}
+      #   uses: peter-evans/create-pull-request@v7
+      #   with:
+      #     author: GitHub <noreply@github.com>
+      #     commit-message: Update Terraform versions
+      #     title: ${{ steps.update_versions.outputs.title }}
+      #     body: |
+      #       Automatically created pull-request to update Terraform versions.
 
-            This is the result of configuring a CLI_GITHUB_TOKEN in `.env` and running:
+      #       This is the result of configuring a CLI_GITHUB_TOKEN in `.env` and running:
 
-            ```
-            cli update-versions
-            ```
-          delete-branch: true
-          reviewers: |
-            oscar-izval
-            sestrella
-          token: ${{ secrets.BOT_TOKEN }}
+      #       ```
+      #       cli update-versions
+      #       ```
+      #     delete-branch: true
+      #     reviewers: |
+      #       oscar-izval
+      #       sestrella
+      #     token: ${{ secrets.BOT_TOKEN }}
