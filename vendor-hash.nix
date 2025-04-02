@@ -5,10 +5,19 @@ let
 
   pkgs-1_0 = flake.inputs.nixpkgs-1_0.legacyPackages.${system};
   pkgs-1_6 = flake.inputs.nixpkgs-1_6.legacyPackages.${system};
-  pkgs-1_9 = flake.inputs.nixpkgs-1_9.legacyPackages.${system};
+  pkgs = flake.inputs.nixpkgs.legacyPackages.${system};
+
+  finalPkgs =
+    if builtins.compareVersions version "1.9.0" >= 0 then
+      pkgs
+    else if builtins.compareVersions version "1.6.0" >= 0 then
+      pkgs-1_6
+    else
+      pkgs-1_0;
 
   terraform = flake.lib.buildTerraform {
-    inherit pkgs-1_0 pkgs-1_6 pkgs-1_9 version hash;
+    inherit version hash;
+    pkgs = finalPkgs;
     vendorHash = sha256;
   };
 in
