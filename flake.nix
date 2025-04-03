@@ -9,51 +9,21 @@
   };
 
   outputs =
-    { self
+    inputs@{ self
     , nixpkgs
-    , nixpkgs-1_0
-    , nixpkgs-1_6
     , systems
     , ...
     }:
     let
       forAllSystems = nixpkgs.lib.genAttrs (import systems);
 
-      # Import nixpkgs for each supported system
-      pkgsFor = forAllSystems (
-        system:
-        import nixpkgs {
-          inherit system;
-          config.allowUnfree = true;
-        }
-      );
-
-      pkgs-1_0For = forAllSystems (
-        system:
-        import nixpkgs-1_0 {
-          inherit system;
-        }
-      );
-
-      pkgs-1_6For = forAllSystems (
-        system:
-        import nixpkgs-1_6 {
-          inherit system;
-          config.allowUnfree = true;
-        }
-      );
-
       # Create packages for each system
       packagesFor = forAllSystems (
         system:
         let
           versions = builtins.fromJSON (builtins.readFile ./versions.json);
-          releases = self.lib.mkPackages {
-            allPkgs = {
-              "1.0" = pkgs-1_0For.${system};
-              "1.6" = pkgs-1_6For.${system};
-              "1.9" = pkgsFor.${system};
-            };
+          releases = self.lib.__mkPackages {
+            inherit inputs system;
             releases = versions.releases;
           };
           latestVersions = builtins.mapAttrs (_cycle: version: releases.${version}) versions.latest;
