@@ -1,4 +1,4 @@
-{ buildTerraformFor }:
+{ __buildTerraformFor }:
 
 { inputs
 , system
@@ -10,7 +10,7 @@ builtins.mapAttrs
   (
     version:
     { hash, vendorHash }:
-    buildTerraformFor {
+    __buildTerraformFor {
       inherit
         inputs
         system

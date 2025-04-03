@@ -22,7 +22,7 @@
         system:
         let
           versions = builtins.fromJSON (builtins.readFile ./versions.json);
-          releases = self.lib.mkPackages {
+          releases = self.lib.__mkPackages {
             inherit inputs system;
             releases = versions.releases;
           };

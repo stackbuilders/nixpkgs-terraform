@@ -4,7 +4,7 @@ let
   flake = builtins.getFlake (toString ./.);
   system = builtins.currentSystem;
 
-  terraform = flake.lib.buildTerraformFor {
+  terraform = flake.lib.__buildTerraformFor {
     inherit
       system
       version
@@ -14,4 +14,4 @@ let
     vendorHash = sha256;
   };
 in
-terraform.goModules or terraform.go-modules
+  terraform.goModules or terraform.go-modules
