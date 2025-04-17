@@ -20,7 +20,9 @@ jobs:
         uses: cachix/install-nix-action@v31
         with:
           nix_path: nixpkgs=channel:nixos-24.11-small
-      - name: Install devenv 1.4
+      # INFO: Latest `devenv` version is not compatible with `nixos-24.11`
+      # channel
+      - name: Install devenv
         run: |
           nix profile install --accept-flake-config github:cachix/devenv/v1.4.1
           devenv version
