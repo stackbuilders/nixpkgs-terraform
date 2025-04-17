@@ -13,9 +13,9 @@ This [flake](https://nixos.wiki/wiki/Flakes) exposes a collection of Terraform
 packages provided can be used for creating reproducible development
 environments using a [nix-shell] or [devenv](https://devenv.sh).
 
-**Note:** Starting with version `4.0`, this project enables `allowUnfree` by
-default in order to build Terraform versions with a [BSL
-license][license-change].
+> [!IMPORTANT]
+> Starting with version `4.0.0`, this project enables `allowUnfree` by default
+> in order to build Terraform versions with a [BSL license][license-change].
 
 ## How it works
 
@@ -70,6 +70,12 @@ nixConfig = {
   extra-trusted-public-keys = "nixpkgs-terraform.cachix.org-1:8Sit092rIdAVENA3ZVeH9hzSiqI/jng6JiCrQ1Dmusw=";
 };
 ```
+
+> [!NOTE]
+> Since version `5.3.0`, only the most recent versions for each release cycle
+> are pushed to the binary cache; if you are having trouble hitting the cache,
+> try upgrading to the most recent patch version specified in the
+> [versions.json](versions.json) file for the corresponding cycle.  
 
 Currently, the binary cache supports the following systems:
 
