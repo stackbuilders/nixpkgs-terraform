@@ -20,7 +20,7 @@
       versions = builtins.fromJSON (builtins.readFile ./versions.json);
 
       # Create packages for each system
-      packagesFor = forAllSystems (
+      releasesFor = forAllSystems (
         system:
         self.lib.__mkPackages {
           inherit inputs system;
@@ -29,16 +29,16 @@
       );
 
       latestFor = forAllSystems (
-        system: builtins.mapAttrs (_cycle: version: packagesFor.${system}.${version}) versions.latest
+        system: builtins.mapAttrs (_cycle: version: releasesFor.${system}.${version}) versions.latest
       );
     in
     {
-      packages = forAllSystems (system: packagesFor.${system} // latestFor.${system});
+      packages = forAllSystems (system: releasesFor.${system} // latestFor.${system});
 
       checks = latestFor;
 
       overlays.default = final: prev: {
-        terraform-versions = packagesFor.${prev.system};
+        terraform-versions = releasesFor.${prev.system};
       };
 
       lib = import ./lib;
