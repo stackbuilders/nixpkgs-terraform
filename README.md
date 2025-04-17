@@ -72,10 +72,10 @@ nixConfig = {
 ```
 
 > [!NOTE]
-> Since version `5.3.0`, only the most recent versions for each release cycle
-> are pushed to the binary cache; if you are having trouble hitting the cache,
-> try upgrading to the most recent patch version specified in the
-> [versions.json](versions.json) file for the corresponding cycle.  
+> Only the most recent versions for each release cycle are pushed to the binary
+> cache; if you are having trouble hitting the cache, try upgrading to the most
+> recent patch version specified in the [versions.json](versions.json) file for
+> the corresponding cycle.  
 
 Currently, the binary cache supports the following systems:
 
