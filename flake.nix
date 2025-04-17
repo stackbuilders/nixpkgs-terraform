@@ -17,27 +17,28 @@
     let
       forAllSystems = nixpkgs.lib.genAttrs (import systems);
 
+      versions = builtins.fromJSON (builtins.readFile ./versions.json);
+
       # Create packages for each system
-      packagesFor = forAllSystems (
+      releasesFor = forAllSystems (
         system:
-        let
-          versions = builtins.fromJSON (builtins.readFile ./versions.json);
-          releases = self.lib.__mkPackages {
-            inherit inputs system;
-            releases = versions.releases;
-          };
-          latestVersions = builtins.mapAttrs (_cycle: version: releases.${version}) versions.latest;
-        in
-        releases // latestVersions
+        self.lib.__mkPackages {
+          inherit inputs system;
+          releases = versions.releases;
+        }
+      );
+
+      latestFor = forAllSystems (
+        system: builtins.mapAttrs (_cycle: version: releasesFor.${system}.${version}) versions.latest
       );
     in
     {
-      packages = packagesFor;
+      packages = forAllSystems (system: releasesFor.${system} // latestFor.${system});
 
-      checks = packagesFor;
+      checks = latestFor;
 
       overlays.default = final: prev: {
-        terraform-versions = packagesFor.${prev.system};
+        terraform-versions = self.packages.${prev.system};
       };
 
       lib = import ./lib;
