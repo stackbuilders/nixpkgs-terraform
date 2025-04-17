@@ -38,7 +38,7 @@
       checks = latestFor;
 
       overlays.default = final: prev: {
-        terraform-versions = releasesFor.${prev.system};
+        terraform-versions = self.packages.${prev.system};
       };
 
       lib = import ./lib;
