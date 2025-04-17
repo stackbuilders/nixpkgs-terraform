@@ -12,7 +12,6 @@ concurrency:
 
 jobs:
   check:
-    if: false
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -21,10 +20,9 @@ jobs:
         uses: cachix/install-nix-action@v31
         with:
           nix_path: nixpkgs=channel:nixos-24.11-small
-        # TODO: Install devenv 1.4 as a workaround
-      - name: Install devenv
+      - name: Install devenv 1.4
         run: |
-          nix profile install --accept-flake-config nixpkgs#devenv
+          nix profile install --accept-flake-config github:cachix/devenv/v1.4.1
           devenv version
       - name: Run tests
         run: devenv test
@@ -38,7 +36,7 @@ jobs:
           - ubuntu-latest # x86_64-linux
       fail-fast: false
     runs-on: ${{ matrix.os }}
-    # needs: [check]
+    needs: [check]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
