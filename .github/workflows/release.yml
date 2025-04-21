@@ -26,7 +26,9 @@ jobs:
       # INFO: Latest `devenv` version is not compatible with `nixos-24.11`
       # channel
       - name: Install devenv
-        run: nix profile install --accept-flake-config github:cachix/devenv/v1.4.1
+        run: |
+          nix profile install --accept-flake-config github:cachix/devenv/v1.4.1
+          devenv version
       - name: Run semantic-release
         run: devenv shell semantic-release
         env:
