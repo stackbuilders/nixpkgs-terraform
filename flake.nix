@@ -4,7 +4,7 @@
   inputs = {
     nixpkgs-1_0.url = "github:nixos/nixpkgs/41de143fda10e33be0f47eab2bfe08a50f234267"; # nixos-23.05
     nixpkgs-1_6.url = "github:nixos/nixpkgs/d6b3ddd253c578a7ab98f8011e59990f21dc3932"; # nixos-24.05
-    nixpkgs.url = "github:nixos/nixpkgs/af51545ec9a44eadf3fe3547610a5cdd882bc34e"; # nixpkgs-unstable
+    nixpkgs.url = "github:nixos/nixpkgs/2f9173bde1d3fbf1ad26ff6d52f952f9e9da52ea"; # nixpkgs-unstable
     systems.url = "github:nix-systems/default";
   };
 
