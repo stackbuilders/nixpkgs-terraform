@@ -50,9 +50,9 @@ jobs:
         if: ${{ steps.update_versions.outputs.commit_message }}
         uses: peter-evans/create-pull-request@v7
         with:
-          author: GitHub <noreply@github.com>
+          # author: GitHub <noreply@github.com>
           commit-message: ${{ steps.update_versions.outputs.commit_message }}
-          title: ${{ steps.update_versions.outputs.commit_message }}
+          title: "DO NOT MERGE: ${{ steps.update_versions.outputs.commit_message }}"
           body: |
             Automatically created pull-request to update Terraform versions.
 
