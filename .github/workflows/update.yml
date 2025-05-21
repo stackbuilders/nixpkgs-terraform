@@ -27,8 +27,9 @@ jobs:
           private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          ref: main
+        # TODO: Revert this change
+        # with:
+        #   ref: main
       - name: Install Nix
         uses: cachix/install-nix-action@v31
         with:
@@ -65,3 +66,5 @@ jobs:
             oscar-izval
             sestrella
           token: ${{ steps.app-token.outputs.token }}
+          # TODO: Revert this change
+          base: gh_auth_via_app
