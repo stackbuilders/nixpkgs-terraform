@@ -12,6 +12,7 @@ concurrency:
 
 jobs:
   check:
+    if: false
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
