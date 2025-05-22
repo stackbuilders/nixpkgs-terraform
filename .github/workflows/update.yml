@@ -21,7 +21,8 @@ jobs:
       run:
         working-directory: cli
     steps:
-      - uses: actions/create-github-app-token@v2
+      - name: Create GH App token
+        uses: actions/create-github-app-token@v2
         id: app-token
         with:
           app-id: ${{ secrets.GH_APP_ID }}
