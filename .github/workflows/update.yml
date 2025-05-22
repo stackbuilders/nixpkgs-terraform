@@ -13,10 +13,20 @@ concurrency:
 jobs:
   update:
     runs-on: macos-latest
+    permissions:
+      contents: write
+      id-token: write
+      pull-requests: write
     defaults:
       run:
         working-directory: cli
     steps:
+      - name: Create GH App token
+        uses: actions/create-github-app-token@v2
+        id: app-token
+        with:
+          app-id: ${{ vars.GH_APP_ID }}
+          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
       - name: Checkout code
         uses: actions/checkout@v4
         with:
@@ -28,32 +38,32 @@ jobs:
       # INFO: Latest `devenv` version is not compatible with `nixos-24.11`
       # channel
       - name: Install devenv
-        run: nix profile install --accept-flake-config github:cachix/devenv/v1.4.1
+        run: nix profile install --accept-flake-config github:cachix/devenv/v1.4
       - name: Update versions
-        id: update_versions
+        id: update-versions
         run: |
           touch .env
           commit_message=$(devenv shell -- go run . update-versions --versions ../versions.json --vendor-hash ../vendor-hash.nix)
           echo "commit_message=$commit_message" >> "$GITHUB_OUTPUT"
         env:
-          CLI_GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
+          CLI_GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
       - name: Create pull request
-        if: ${{ steps.update_versions.outputs.commit_message }}
+        if: ${{ steps.update-versions.outputs.commit_message }}
         uses: peter-evans/create-pull-request@v7
         with:
-          author: GitHub <noreply@github.com>
-          commit-message: ${{ steps.update_versions.outputs.commit_message }}
-          title: ${{ steps.update_versions.outputs.commit_message }}
+          commit-message: ${{ steps.update-versions.outputs.commit_message }}
+          title: ${{ steps.update-versions.outputs.commit_message }}
           body: |
             Automatically created pull-request to update Terraform versions.
 
             This is the result of configuring a CLI_GITHUB_TOKEN in `.env` and running:
 
             ```
-            cli update-versions
+            cd cli
+            go run . update-versions --versions ../versions.json --vendor-hash ../vendor-hash.nix
             ```
           delete-branch: true
           reviewers: |
             oscar-izval
             sestrella
-          token: ${{ secrets.BOT_TOKEN }}
+          token: ${{ steps.app-token.outputs.token }}

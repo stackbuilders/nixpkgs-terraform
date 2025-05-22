@@ -14,7 +14,16 @@ jobs:
   release:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
     steps:
+      - name: Create GH App token
+        uses: actions/create-github-app-token@v2
+        id: app-token
+        with:
+          app-id: ${{ vars.GH_APP_ID }}
+          private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Install Nix
@@ -26,8 +35,8 @@ jobs:
       # INFO: Latest `devenv` version is not compatible with `nixos-24.11`
       # channel
       - name: Install devenv
-        run: nix profile install --accept-flake-config github:cachix/devenv/v1.4.1
+        run: nix profile install --accept-flake-config github:cachix/devenv/v1.4
       - name: Run semantic-release
         run: devenv shell semantic-release
         env:
-          GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
