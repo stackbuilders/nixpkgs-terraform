@@ -1,9 +1,8 @@
 name: Publish
 
-# on:
-#   release:
-#     types: [released]
-on: push
+on:
+  release:
+    types: [released]
 
 concurrency:
   group: publish
@@ -20,24 +19,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: "v5.5.0"
+          ref: ${{ github.ref_name }}
       - name: Install Nix
         uses: cachix/install-nix-action@v31
-      - run: nix flake update
-      - run: git diff
       - name: Publish flake
         uses: DeterminateSystems/flakehub-push@v5
         with:
-          tag: "v5.5.0" 
+          tag: ${{ github.ref_name }}
           visibility: public
 
   # INFO: The following fork updates the Nix version used by the action to fix
   # the "lastModified" issue. https://flakehub.com/docs/faq#err-last-modified
   flakestry:
     runs-on: ubuntu-latest
-    if: false
     steps:
       - name: Publish flake
         uses: stackbuilders/flakestry-publish@update_install_nix_action
         with:
-          version: "v5.4.0" 
+          version: ${{ github.ref_name }}
