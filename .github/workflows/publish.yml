@@ -20,7 +20,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: "v5.4.0"
+          ref: "v5.5.0"
       - name: Install Nix
         uses: cachix/install-nix-action@v31
       - run: nix flake update
@@ -28,7 +28,7 @@ jobs:
       - name: Publish flake
         uses: DeterminateSystems/flakehub-push@v5
         with:
-          tag: "v5.4.0" 
+          tag: "v5.5.0" 
           visibility: public
 
   # INFO: The following fork updates the Nix version used by the action to fix
