@@ -23,6 +23,8 @@ jobs:
           ref: "v5.4.0"
       - name: Install Nix
         uses: cachix/install-nix-action@v31
+      - run: nix flake update
+      - run: git diff
       - name: Publish flake
         uses: DeterminateSystems/flakehub-push@v5
         with:
