@@ -52,6 +52,10 @@
           description = "Using nixpkgs-terraform with devenv";
           path = ./templates/devenv;
         };
+        nixpkgs-terraform-providers-bin = {
+          description = "Using nixpkgs-terraform with nixpkgs-terraform-providers-bin";
+          path = ./templates/nixpkgs-terraform-providers-bin;
+        };
         terranix = {
           description = "Using nixpkgs-terraform with terranix";
           path = ./templates/terranix;

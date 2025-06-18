@@ -17,6 +17,11 @@ let
             [ ../patches/provider-path-1_9.patch ]
           else
             [ ../patches/provider-path-0_15.patch ];
+        passthru.plugins = builtins.removeAttrs pkgs.terraform-providers [
+          "override"
+          "overrideDerivation"
+          "recurseForDerivations"
+        ];
       };
 
   __buildTerraformFor =
