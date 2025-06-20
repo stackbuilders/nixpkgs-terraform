@@ -4,10 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/Masterminds/semver/v3"
@@ -168,6 +171,60 @@ func updateVersions(
 	}
 
 	return addedVersions, nil
+}
+
+func getLatestVersionFromFile(versionsPath string) (string, error) {
+    content, err := os.ReadFile(versionsPath)
+    if err != nil {
+        return "", err
+    }
+    var versions Versions
+    if err := json.Unmarshal(content, &versions); err != nil {
+        return "", err
+    }
+
+    var versionList []*semver.Version
+    for v := range versions.Releases {
+        ver := v // v is semver.Version
+        versionList = append(versionList, &ver)
+    }
+    sort.Slice(versionList, func(i, j int) bool {
+        return versionList[i].LessThan(versionList[j])
+    })
+    latest := versionList[len(versionList)-1]
+    return latest.String(), nil
+}
+
+
+func updateTemplatesVersions(versionsPath string) error {
+	latest, err := getLatestVersionFromFile(versionsPath)
+	if err != nil {
+		return fmt.Errorf("Unable to get latest version: %w", err)
+	}
+	if latest != "" {
+		files, err := filepath.Glob("templates/**/flake.nix")
+		if err != nil {
+			return fmt.Errorf("Unable to find flake.nix files: %w", err)
+		}
+		re := regexp.MustCompile(`"(\d+\.\d+(\.\d+)?)"`)
+		for _, file := range files {
+			content, err := ioutil.ReadFile(file)
+			if err != nil {
+				return fmt.Errorf("Unable to read file %s: %w", file, err)
+			}
+			updatedContent := re.ReplaceAllString(string(content), fmt.Sprintf(`"%s"`, latest))
+			if string(content) != updatedContent {
+				err = ioutil.WriteFile(file, []byte(updatedContent), 0644)
+				if err != nil {
+					return fmt.Errorf("Unable to write file %s: %w", file, err)
+				}
+				log.Printf("Updated %s to version %s\n", file, latest)
+			} else {
+				log.Printf("No changes needed for %s\n", file)
+			}
+		}
+	}
+	return nil
 }
 
 func readVersions(versionsPath string) (*Versions, error) {
