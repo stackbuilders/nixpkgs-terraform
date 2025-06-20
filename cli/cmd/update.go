@@ -173,6 +173,34 @@ func updateVersions(
 	return newVersions, nil
 }
 
+func updateTemplatesVersions(versions *Versions) error {
+	latest := sort.Strings(versions.Latest)[len(versions.Latest)-1]
+	if latest != nil {
+		files, err := filepath.Glob("templates/**/flake.nix")
+		if err != nil {
+			return nil, fmt.Errorf("Unable to find flake.nix files: %w", err)
+		}
+		re := regexp.MustCompile(`"(\d+\.\d+(\.\d+)?)"`)
+		for _, file := range files {
+			content, err := ioutil.ReadFile(file)
+			if err != nil {
+				return fmt.Errorf("Unable to read file %s: %w", file, err)
+			}
+			updatedContent := re.ReplaceAllString(string(content), fmt.Sprintf(`"%s"`, latest))
+			if string(content) != updatedContent {
+				err = ioutil.WriteFile(file, []byte(updatedContent), 0644)
+				if err != nil {
+					return fmt.Errorf("Unable to write file %s: %w", file, err)
+				}
+				log.Printf("Updated %s to version %s\n", file, latest)
+			} else {
+				log.Printf("No changes needed for %s\n", file)
+			}
+		}
+	}
+	return nil
+}
+
 func readVersions(versionsPath string) (*Versions, error) {
 	content, err := os.ReadFile(versionsPath)
 	if err != nil {
