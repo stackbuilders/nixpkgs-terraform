@@ -42,7 +42,7 @@ type Alias struct {
 }
 
 func (a Alias) MarshalText() ([]byte, error) {
-	return []byte(fmt.Sprintf("%d.%d", a.Major(), a.Minor())), nil
+	return fmt.Appendf(nil, "%d.%d", a.Major(), a.Minor()), nil
 }
 
 var updateCmd = &cobra.Command{
@@ -170,12 +170,12 @@ func updateVersions(
 
 	content, err := json.MarshalIndent(versions, "", "  ")
 	if err != nil {
-		return nil, fmt.Errorf("Unable to marshall versions: ", err)
+		return nil, fmt.Errorf("Unable to marshall versions: %w", err)
 	}
 
 	err = os.WriteFile(versionsPath, content, 0644)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to write file: ", err)
+		return nil, fmt.Errorf("Unable to write file: %w", err)
 	}
 
 	return addedVersions, nil
