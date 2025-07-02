@@ -24,7 +24,6 @@ var (
 	vendorHashPath string
 	versionsPath   string
 	minVersionStr  string
-	maxVersionStr  string
 )
 
 type Versions struct {
@@ -80,29 +79,20 @@ var updateCmd = &cobra.Command{
 			return fmt.Errorf("Invalid min-version: %w", err)
 		}
 
-		var maxVersion *semver.Version
-		if maxVersionStr != "" {
-			maxVersion, err = semver.NewVersion(maxVersionStr)
-			if err != nil {
-				return fmt.Errorf("Invalid max-version: %w", err)
-			}
-		}
-
-		addedVersions, err := updateVersions(
+		newVersions, err := updateVersions(
 			nixPath,
 			nixPrefetchPath,
 			token,
 			versionsPath,
 			vendorHashPath,
 			minVersion,
-			maxVersion,
 		)
 		if err != nil {
 			return fmt.Errorf("Unable to update versions: %w", err)
 		}
-		if len(addedVersions) > 0 {
+		if len(newVersions) > 0 {
 			var formattedVersions []string
-			for _, addedVersion := range addedVersions {
+			for _, addedVersion := range newVersions {
 				formattedVersions = append(formattedVersions, addedVersion.String())
 			}
 			fmt.Printf("feat: Add Terraform version(s) %s", strings.Join(formattedVersions, ", "))
@@ -119,7 +109,6 @@ func updateVersions(
 	versionsPath string,
 	vendorHashPath string,
 	minVersion *semver.Version,
-	maxVersion *semver.Version,
 ) ([]*semver.Version, error) {
 	versions, err := readVersions(versionsPath)
 	if err != nil {
@@ -137,9 +126,7 @@ func updateVersions(
 		if err != nil {
 			return nil, fmt.Errorf("unable to parse version: %w", err)
 		}
-		if version.Compare(minVersion) >= 0 &&
-			(maxVersion == nil || version.Compare(maxVersion) <= 0) &&
-			version.Prerelease() == "" {
+		if version.Compare(minVersion) >= 0 && version.Prerelease() == "" {
 			if _, ok := versions.Releases[*version]; ok {
 				log.Printf("Version %s found in file\n", version)
 			} else {
@@ -286,6 +273,4 @@ func init() {
 		StringVarP(&versionsPath, "versions", "", "versions.json", "The file to be updated")
 	updateCmd.Flags().
 		StringVarP(&minVersionStr, "min-version", "", "1.0.0", "Min release version")
-	updateCmd.Flags().
-		StringVarP(&maxVersionStr, "max-version", "", "", "Max release version")
 }
