@@ -127,11 +127,15 @@ func updateVersions(
 	}
 
 	var addedVersions []*semver.Version
-	err = withReleases(token, func(release *github.RepositoryRelease) error {
+	releases, err := getRepoReleases(token)
+	if err != nil {
+		return nil, err
+	}
+	for _, release := range releases {
 		tagName := release.GetTagName()
 		version, err := semver.NewVersion(strings.TrimLeft(tagName, "v"))
 		if err != nil {
-			return fmt.Errorf("unable to parse version: %w", err)
+			return nil, fmt.Errorf("unable to parse version: %w", err)
 		}
 		if version.Compare(minVersion) >= 0 &&
 			(maxVersion == nil || version.Compare(maxVersion) <= 0) &&
@@ -142,22 +146,18 @@ func updateVersions(
 				log.Printf("Computing hashes for %s\n", version)
 				hash, err := computeHash(nixPath, tagName)
 				if err != nil {
-					return fmt.Errorf("Unable to compute hash: %w", err)
+					return nil, fmt.Errorf("Unable to compute hash: %w", err)
 				}
 				log.Printf("Computed hash: %s\n", hash)
 				vendorHash, err := computeVendorHash(nixPrefetchPath, vendorHashPath, version, hash)
 				if err != nil {
-					return fmt.Errorf("Unable to compute vendor hash: %w", err)
+					return nil, fmt.Errorf("Unable to compute vendor hash: %w", err)
 				}
 				log.Printf("Computed vendor hash: %s\n", vendorHash)
 				versions.Releases[*version] = Release{Hash: hash, VendorHash: vendorHash}
 				addedVersions = append(addedVersions, version)
 			}
 		}
-		return nil
-	})
-	if err != nil {
-		return nil, err
 	}
 
 	versions.Latest = make(map[Alias]semver.Version)
@@ -194,9 +194,10 @@ func readVersions(versionsPath string) (*Versions, error) {
 	return versions, nil
 }
 
-func withReleases(token string, f func(release *github.RepositoryRelease) error) error {
+func getRepoReleases(token string) ([]*github.RepositoryRelease, error) {
 	client := github.NewClient(nil).WithAuthToken(token)
 	opt := &github.ListOptions{Page: 1}
+	var allReleases []*github.RepositoryRelease
 	for {
 		releases, resp, err := client.Repositories.ListReleases(
 			context.Background(),
@@ -205,20 +206,15 @@ func withReleases(token string, f func(release *github.RepositoryRelease) error)
 			opt,
 		)
 		if err != nil {
-			return err
+			return nil, err
 		}
-		for _, release := range releases {
-			err = f(release)
-			if err != nil {
-				return err
-			}
-		}
+		allReleases = append(allReleases, releases...)
 		if resp.NextPage == 0 {
 			break
 		}
 		opt.Page = resp.NextPage
 	}
-	return nil
+	return allReleases, nil
 }
 
 func computeHash(nixPath string, tagName string) (string, error) {
