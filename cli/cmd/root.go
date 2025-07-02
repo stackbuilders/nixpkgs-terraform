@@ -8,8 +8,9 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "cli",
-	Short: "A set of tools for maintainers",
+	Use:          "cli",
+	Short:        "A set of tools for maintainers",
+	SilenceUsage: true,
 }
 
 func Execute() {
