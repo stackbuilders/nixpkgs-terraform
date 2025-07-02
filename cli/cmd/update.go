@@ -15,12 +15,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var owner string
-var repo string
-var vendorHashPath string
-var versionsPath string
-var minVersionStr string
-var maxVersionStr string
+const (
+	OWNER = "hashicorp"
+	REPO  = "terraform"
+)
+
+var (
+	vendorHashPath string
+	versionsPath   string
+	minVersionStr  string
+	maxVersionStr  string
+)
 
 type Versions struct {
 	Releases map[semver.Version]Release `json:"releases"`
@@ -40,40 +45,52 @@ func (a Alias) MarshalText() ([]byte, error) {
 	return []byte(fmt.Sprintf("%d.%d", a.Major(), a.Minor())), nil
 }
 
-var updateVersionsCmd = &cobra.Command{
-	Use:   "update-versions",
+var updateCmd = &cobra.Command{
+	Use:   "update",
 	Short: "Update versions file",
 	Long:  "Look up the most recent Terraform releases and calculate the needed hashes for new versions",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
+		nixPath, err := exec.LookPath("nix")
+		if err != nil {
+			return fmt.Errorf("nix not found: %w", err)
+		}
+
+		nixPrefetchPath, err := exec.LookPath("nix-prefetch")
+		if err != nil {
+			return fmt.Errorf("nix-prefetch not found: %w", err)
+		}
+
 		token := os.Getenv("CLI_GITHUB_TOKEN")
 		if token == "" {
-			log.Fatal("Environment variable CLI_GITHUB_TOKEN is missing")
+			return fmt.Errorf("Environment variable CLI_GITHUB_TOKEN is missing")
 		}
 
 		versionsPath, err := filepath.Abs(versionsPath)
 		if err != nil {
-			log.Fatal("File versions.json not found: ", err)
+			return fmt.Errorf("File versions.json not found: %w", err)
 		}
 
 		vendorHashPath, err := filepath.Abs(vendorHashPath)
 		if err != nil {
-			log.Fatal("File vendor-hash.nix not found: ", err)
+			return fmt.Errorf("File vendor-hash.nix not found: %w", err)
 		}
 
 		minVersion, err := semver.NewVersion(minVersionStr)
 		if err != nil {
-			log.Fatal("Invalid min-version: ", err)
+			return fmt.Errorf("Invalid min-version: %w", err)
 		}
 
 		var maxVersion *semver.Version
 		if maxVersionStr != "" {
 			maxVersion, err = semver.NewVersion(maxVersionStr)
 			if err != nil {
-				log.Fatal("Invalid max-version: ", err)
+				return fmt.Errorf("Invalid max-version: %w", err)
 			}
 		}
 
 		addedVersions, err := updateVersions(
+			nixPath,
+			nixPrefetchPath,
 			token,
 			versionsPath,
 			vendorHashPath,
@@ -81,7 +98,7 @@ var updateVersionsCmd = &cobra.Command{
 			maxVersion,
 		)
 		if err != nil {
-			log.Fatal("Unable to update versions: ", err)
+			return fmt.Errorf("Unable to update versions: %w", err)
 		}
 		if len(addedVersions) > 0 {
 			var formattedVersions []string
@@ -90,26 +107,20 @@ var updateVersionsCmd = &cobra.Command{
 			}
 			fmt.Printf("feat: Add Terraform version(s) %s", strings.Join(formattedVersions, ", "))
 		}
+
+		return nil
 	},
 }
 
 func updateVersions(
+	nixPath string,
+	nixPrefetchPath string,
 	token string,
 	versionsPath string,
 	vendorHashPath string,
 	minVersion *semver.Version,
 	maxVersion *semver.Version,
 ) ([]*semver.Version, error) {
-	nixPrefetchPath, err := exec.LookPath("nix-prefetch")
-	if err != nil {
-		return nil, fmt.Errorf("nix-prefetch not found: %w", err)
-	}
-
-	nixBinaryPath, err := exec.LookPath("nix")
-	if err != nil {
-		return nil, fmt.Errorf("nix not found: %w", err)
-	}
-
 	versions, err := readVersions(versionsPath)
 	if err != nil {
 		return nil, fmt.Errorf("unable to read versions: %w", err)
@@ -129,7 +140,7 @@ func updateVersions(
 				log.Printf("Version %s found in file\n", version)
 			} else {
 				log.Printf("Computing hashes for %s\n", version)
-				hash, err := computeHash(nixBinaryPath, tagName)
+				hash, err := computeHash(nixPath, tagName)
 				if err != nil {
 					return fmt.Errorf("Unable to compute hash: %w", err)
 				}
@@ -189,8 +200,8 @@ func withReleases(token string, f func(release *github.RepositoryRelease) error)
 	for {
 		releases, resp, err := client.Repositories.ListReleases(
 			context.Background(),
-			owner,
-			repo,
+			OWNER,
+			REPO,
 			opt,
 		)
 		if err != nil {
@@ -210,15 +221,15 @@ func withReleases(token string, f func(release *github.RepositoryRelease) error)
 	return nil
 }
 
-func computeHash(nixBinaryPath string, tagName string) (string, error) {
+func computeHash(nixPath string, tagName string) (string, error) {
 	cmd := exec.Command(
-		nixBinaryPath, "flake", "prefetch",
+		nixPath, "flake", "prefetch",
 		"--extra-experimental-features", "nix-command flakes",
-		"--json", fmt.Sprintf("github:%s/%s/%s", owner, repo, tagName),
+		"--json", fmt.Sprintf("github:%s/%s/%s", OWNER, REPO, tagName),
 	)
 
 	// Redirect stderr to the standard logger
-	cmd.Stderr = log.Writer()
+	cmd.Stderr = os.Stdout
 
 	// Get the output
 	output, err := cmd.Output()
@@ -271,18 +282,14 @@ func runNixPrefetch(nixPrefetchPath string, extraArgs ...string) (string, error)
 }
 
 func init() {
-	rootCmd.AddCommand(updateVersionsCmd)
+	rootCmd.AddCommand(updateCmd)
 
-	updateVersionsCmd.Flags().
-		StringVarP(&owner, "owner", "", "hashicorp", "The owner name of the repository on GitHub")
-	updateVersionsCmd.Flags().
-		StringVarP(&repo, "repo", "", "terraform", "The repository name on GitHub")
-	updateVersionsCmd.Flags().
+	updateCmd.Flags().
 		StringVarP(&vendorHashPath, "vendor-hash", "", "vendor-hash.nix", "Nix file required to compute vendorHash")
-	updateVersionsCmd.Flags().
+	updateCmd.Flags().
 		StringVarP(&versionsPath, "versions", "", "versions.json", "The file to be updated")
-	updateVersionsCmd.Flags().
+	updateCmd.Flags().
 		StringVarP(&minVersionStr, "min-version", "", "1.0.0", "Min release version")
-	updateVersionsCmd.Flags().
+	updateCmd.Flags().
 		StringVarP(&maxVersionStr, "max-version", "", "", "Max release version")
 }

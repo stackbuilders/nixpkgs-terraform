@@ -40,19 +40,19 @@ jobs:
       - name: Install devenv
         run: nix profile install --accept-flake-config github:cachix/devenv/v1.4
       - name: Update versions
-        id: update-versions
+        id: update
         run: |
           touch .env
-          commit_message=$(devenv shell -- go run . update-versions --versions ../versions.json --vendor-hash ../vendor-hash.nix)
+          commit_message=$(devenv shell -- go run . update --versions ../versions.json --vendor-hash ../vendor-hash.nix)
           echo "commit_message=$commit_message" >> "$GITHUB_OUTPUT"
         env:
           CLI_GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
       - name: Create pull request
-        if: ${{ steps.update-versions.outputs.commit_message }}
+        if: ${{ steps.update.outputs.commit_message }}
         uses: peter-evans/create-pull-request@v7
         with:
-          commit-message: ${{ steps.update-versions.outputs.commit_message }}
-          title: ${{ steps.update-versions.outputs.commit_message }}
+          commit-message: ${{ steps.update.outputs.commit_message }}
+          title: ${{ steps.update.outputs.commit_message }}
           body: |
             Automatically created pull-request to update Terraform versions.
 
@@ -60,7 +60,7 @@ jobs:
 
             ```
             cd cli
-            go run . update-versions --versions ../versions.json --vendor-hash ../vendor-hash.nix
+            go run . update --versions ../versions.json --vendor-hash ../vendor-hash.nix
             ```
           delete-branch: true
           reviewers: |
