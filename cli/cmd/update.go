@@ -66,7 +66,7 @@ var updateCmd = &cobra.Command{
 
 		versionsPath, err := filepath.Abs(versionsPath)
 		if err != nil {
-			return fmt.Errorf("File versions.json not found: %w", err)
+			return fmt.Errorf("file versions.json not found: %w", err)
 		}
 
 		vendorHashPath, err := filepath.Abs(vendorHashPath)
