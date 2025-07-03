@@ -185,11 +185,11 @@ func readVersions(versionsPath string) (*Versions, error) {
 	return versions, nil
 }
 
-func getRepoReleases(token string) ([]*github.RepositoryRelease, error) {
+func getRepoReleases(token string) ([]github.RepositoryRelease, error) {
 	client := github.NewClient(nil).WithAuthToken(token)
 	opt := &github.ListOptions{Page: 1}
 
-	var allReleases []*github.RepositoryRelease
+	var allReleases []github.RepositoryRelease
 	for {
 		releases, resp, err := client.Repositories.ListReleases(
 			context.Background(),
@@ -201,7 +201,9 @@ func getRepoReleases(token string) ([]*github.RepositoryRelease, error) {
 			return nil, err
 		}
 
-		allReleases = append(allReleases, releases...)
+		for _, release := range releases {
+			allReleases = append(allReleases, *release)
+		}
 		if resp.NextPage == 0 {
 			break
 		}
