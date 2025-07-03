@@ -10,7 +10,7 @@ import (
 func main() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Println(".env file not found")
+		log.Printf("Unable to load .env file: %v", err)
 	}
 
 	cmd.Execute()
