@@ -220,7 +220,7 @@ func computeHash(nixPath string, tagName string) (string, error) {
 	)
 
 	// Redirect stderr to the standard logger
-	cmd.Stderr = os.Stdout
+	cmd.Stderr = log.Writer()
 
 	// Get the output
 	output, err := cmd.Output()
