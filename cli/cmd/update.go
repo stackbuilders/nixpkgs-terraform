@@ -115,17 +115,19 @@ func updateVersions(
 		return nil, fmt.Errorf("unable to read versions: %w", err)
 	}
 
-	var addedVersions []*semver.Version
 	releases, err := getRepoReleases(token)
 	if err != nil {
 		return nil, err
 	}
+
+	var newVersions []*semver.Version
 	for _, release := range releases {
 		tagName := release.GetTagName()
 		version, err := semver.NewVersion(strings.TrimLeft(tagName, "v"))
 		if err != nil {
 			return nil, fmt.Errorf("unable to parse version: %w", err)
 		}
+
 		if version.Compare(minVersion) >= 0 && version.Prerelease() == "" {
 			if _, ok := versions.Releases[*version]; ok {
 				log.Printf("Version %s found in file\n", version)
@@ -135,14 +137,16 @@ func updateVersions(
 				if err != nil {
 					return nil, fmt.Errorf("Unable to compute hash: %w", err)
 				}
+
 				log.Printf("Computed hash: %s\n", hash)
 				vendorHash, err := computeVendorHash(nixPrefetchPath, vendorHashPath, version, hash)
 				if err != nil {
 					return nil, fmt.Errorf("Unable to compute vendor hash: %w", err)
 				}
+
 				log.Printf("Computed vendor hash: %s\n", vendorHash)
 				versions.Releases[*version] = Release{Hash: hash, VendorHash: vendorHash}
-				addedVersions = append(addedVersions, version)
+				newVersions = append(newVersions, version)
 			}
 		}
 	}
@@ -165,7 +169,7 @@ func updateVersions(
 		return nil, fmt.Errorf("Unable to write file: %w", err)
 	}
 
-	return addedVersions, nil
+	return newVersions, nil
 }
 
 func readVersions(versionsPath string) (*Versions, error) {
@@ -184,6 +188,7 @@ func readVersions(versionsPath string) (*Versions, error) {
 func getRepoReleases(token string) ([]*github.RepositoryRelease, error) {
 	client := github.NewClient(nil).WithAuthToken(token)
 	opt := &github.ListOptions{Page: 1}
+
 	var allReleases []*github.RepositoryRelease
 	for {
 		releases, resp, err := client.Repositories.ListReleases(
@@ -195,12 +200,15 @@ func getRepoReleases(token string) ([]*github.RepositoryRelease, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		allReleases = append(allReleases, releases...)
 		if resp.NextPage == 0 {
 			break
 		}
+
 		opt.Page = resp.NextPage
 	}
+
 	return allReleases, nil
 }
 
@@ -250,17 +258,21 @@ func computeVendorHash(
 	if err != nil {
 		return "", err
 	}
+
 	return vendorHash, nil
 }
 
 func runNixPrefetch(nixPrefetchPath string, extraArgs ...string) (string, error) {
 	args := append([]string{"--option", "extra-experimental-features", "flakes"}, extraArgs...)
+
 	cmd := exec.Command(nixPrefetchPath, args...)
 	cmd.Stderr = log.Writer()
+
 	output, err := cmd.Output()
 	if err != nil {
 		return "", err
 	}
+
 	return strings.TrimRight(string(output), "\n"), nil
 }
 
