@@ -125,7 +125,8 @@ func updateVersions(
 		tagName := release.GetTagName()
 		version, err := semver.NewVersion(strings.TrimLeft(tagName, "v"))
 		if err != nil {
-			return nil, fmt.Errorf("unable to parse version: %w", err)
+			log.Printf("Skipping invalid tag '%s': %v\n", tagName, err)
+			continue
 		}
 
 		if version.Compare(minVersion) >= 0 && version.Prerelease() == "" {
