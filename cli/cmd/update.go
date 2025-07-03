@@ -95,7 +95,7 @@ var updateCmd = &cobra.Command{
 			for _, newVersion := range newVersions {
 				formattedVersions = append(formattedVersions, newVersion.String())
 			}
-			fmt.Printf("feat: Add Terraform version(s) %s", strings.Join(formattedVersions, ", "))
+			fmt.Printf("feat: Add Terraform version(s) %s\n", strings.Join(formattedVersions, ", "))
 		}
 
 		return nil
