@@ -92,8 +92,8 @@ var updateCmd = &cobra.Command{
 		}
 		if len(newVersions) > 0 {
 			var formattedVersions []string
-			for _, addedVersion := range newVersions {
-				formattedVersions = append(formattedVersions, addedVersion.String())
+			for _, newVersion := range newVersions {
+				formattedVersions = append(formattedVersions, newVersion.String())
 			}
 			fmt.Printf("feat: Add Terraform version(s) %s", strings.Join(formattedVersions, ", "))
 		}
@@ -109,7 +109,7 @@ func updateVersions(
 	versionsPath string,
 	vendorHashPath string,
 	minVersion *semver.Version,
-) ([]*semver.Version, error) {
+) ([]semver.Version, error) {
 	versions, err := readVersions(versionsPath)
 	if err != nil {
 		return nil, fmt.Errorf("unable to read versions: %w", err)
@@ -120,7 +120,7 @@ func updateVersions(
 		return nil, err
 	}
 
-	var newVersions []*semver.Version
+	var newVersions []semver.Version
 	for _, release := range releases {
 		tagName := release.GetTagName()
 		version, err := semver.NewVersion(strings.TrimLeft(tagName, "v"))
@@ -146,7 +146,7 @@ func updateVersions(
 
 				log.Printf("Computed vendor hash: %s\n", vendorHash)
 				versions.Releases[*version] = Release{Hash: hash, VendorHash: vendorHash}
-				newVersions = append(newVersions, version)
+				newVersions = append(newVersions, *version)
 			}
 		}
 	}
