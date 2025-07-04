@@ -1,7 +1,7 @@
 { pkgs, ... }:
 
 {
-  dotenv.enable = true;
+  dotenv.disableHint = true;
 
   packages = [
     pkgs.cobra-cli
