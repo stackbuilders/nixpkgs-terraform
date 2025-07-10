@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -206,13 +205,13 @@ func updateTemplatesVersions(versions *Versions) error {
 
 	re := regexp.MustCompile(`"(\d+\.\d+(\.\d+)?)"`)
 	for _, file := range files {
-		content, err := ioutil.ReadFile(file)
+		content, err := os.ReadFile(file)
 		if err != nil {
 			return fmt.Errorf("Unable to read file %s: %w", file, err)
 		}
 		updatedContent := re.ReplaceAllString(string(content), fmt.Sprintf(`"%s"`, latest))
 		if string(content) != updatedContent {
-			err = ioutil.WriteFile(file, []byte(updatedContent), 0644)
+			err = os.WriteFile(file, []byte(updatedContent), 0644)
 			if err != nil {
 				return fmt.Errorf("Unable to write file %s: %w", file, err)
 			}
