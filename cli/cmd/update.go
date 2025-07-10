@@ -173,58 +173,46 @@ func updateVersions(
 		return nil, fmt.Errorf("Unable to write file: %w", err)
 	}
 
+	err = updateTemplatesVersions(versions)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to update templates versions: %w", err)
+	}
+
 	return newVersions, nil
 }
 
-func getLatestVersionFromFile(versionsPath string) (string, error) {
-    content, err := os.ReadFile(versionsPath)
-    if err != nil {
-        return "", err
-    }
-    var versions Versions
-    if err := json.Unmarshal(content, &versions); err != nil {
-        return "", err
-    }
+func getLatestVersion(versions *Versions) string {
+	var all []string
 
-    var versionList []*semver.Version
-    for v := range versions.Releases {
-        ver := v // v is semver.Version
-        versionList = append(versionList, &ver)
-    }
-    sort.Slice(versionList, func(i, j int) bool {
-        return versionList[i].LessThan(versionList[j])
-    })
-    latest := versionList[len(versionList)-1]
-    return latest.String(), nil
+	for _, v := range versions.Latest {
+		all = append(all, v.String())
+	}
+	sort.Strings(all)
+	return all[len(all)-1]
 }
 
-
-func updateTemplatesVersions(versionsPath string) error {
-	latest, err := getLatestVersionFromFile(versionsPath)
+func updateTemplatesVersions(versions *Versions) error {
+	latest := getLatestVersion(versions)
+	files, err := filepath.Glob("templates/**/flake.nix")
 	if err != nil {
-		return fmt.Errorf("Unable to get latest version: %w", err)
+		return fmt.Errorf("Unable to find flake.nix files: %w", err)
 	}
-	if latest != "" {
-		files, err := filepath.Glob("templates/**/flake.nix")
+
+	re := regexp.MustCompile(`"(\d+\.\d+(\.\d+)?)"`)
+	for _, file := range files {
+		content, err := ioutil.ReadFile(file)
 		if err != nil {
-			return fmt.Errorf("Unable to find flake.nix files: %w", err)
+			return fmt.Errorf("Unable to read file %s: %w", file, err)
 		}
-		re := regexp.MustCompile(`"(\d+\.\d+(\.\d+)?)"`)
-		for _, file := range files {
-			content, err := ioutil.ReadFile(file)
+		updatedContent := re.ReplaceAllString(string(content), fmt.Sprintf(`"%s"`, latest))
+		if string(content) != updatedContent {
+			err = ioutil.WriteFile(file, []byte(updatedContent), 0644)
 			if err != nil {
-				return fmt.Errorf("Unable to read file %s: %w", file, err)
+				return fmt.Errorf("Unable to write file %s: %w", file, err)
 			}
-			updatedContent := re.ReplaceAllString(string(content), fmt.Sprintf(`"%s"`, latest))
-			if string(content) != updatedContent {
-				err = ioutil.WriteFile(file, []byte(updatedContent), 0644)
-				if err != nil {
-					return fmt.Errorf("Unable to write file %s: %w", file, err)
-				}
-				log.Printf("Updated %s to version %s\n", file, latest)
-			} else {
-				log.Printf("No changes needed for %s\n", file)
-			}
+			log.Printf("Updated %s to version %s\n", file, latest)
+		} else {
+			log.Printf("No changes needed for %s\n", file)
 		}
 	}
 	return nil
