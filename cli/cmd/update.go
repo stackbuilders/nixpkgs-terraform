@@ -182,18 +182,24 @@ func updateVersions(
 }
 
 func getLatestVersion(versions *Versions) string {
-	var all []string
+	var all []*semver.Version
 
 	for _, v := range versions.Latest {
-		all = append(all, v.String())
+		ver := v
+		all = append(all, &ver)
 	}
-	sort.Strings(all)
-	return all[len(all)-1]
+	if len(all) == 0 {
+		return ""
+	}
+	sort.Slice(all, func(i, j int) bool {
+		return all[i].LessThan(all[j])
+	})
+	return all[len(all)-1].String()
 }
 
 func updateTemplatesVersions(versions *Versions) error {
 	latest := getLatestVersion(versions)
-	files, err := filepath.Glob("templates/**/flake.nix")
+	files, err := filepath.Glob("../templates/**/flake.nix")
 	if err != nil {
 		return fmt.Errorf("Unable to find flake.nix files: %w", err)
 	}
