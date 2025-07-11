@@ -45,6 +45,10 @@ func (a Alias) MarshalText() ([]byte, error) {
 	return fmt.Appendf(nil, "%d.%d", a.Major(), a.Minor()), nil
 }
 
+func (a Alias) GreaterThan(b *Alias) bool {
+	return a.Version.GreaterThan(&b.Version)
+}
+
 var updateCmd = &cobra.Command{
 	Use:   "update",
 	Short: "Update versions file",
@@ -179,23 +183,27 @@ func updateVersions(
 	return newVersions, nil
 }
 
-func getLatestVersion(versions map[Alias]semver.Version) (string, error) {
-	if len(versions) == 0 {
-		return "", fmt.Errorf("No latest versions found")
-	}
-
-	var latest semver.Version
-	for _, version := range versions {
-		if version.GreaterThan(&latest) {
-			latest = version
+func getLatestAlias(aliases []Alias) (*Alias, error) {
+	var latestAlias *Alias
+	for _, alias := range aliases {
+		if alias.GreaterThan(latestAlias) {
+			latestAlias = &alias
 		}
 	}
+	if latestAlias == nil {
+		return latestAlias, nil
+	}
 
-	return latest.String(), nil
+	return nil, fmt.Errorf("No latest version found")
 }
 
 func updateTemplatesVersions(versions *Versions) error {
-	latest, err := getLatestVersion(versions.Latest)
+	var aliases []Alias
+	for alias, _ := range versions.Latest {
+		aliases = append(aliases, alias)
+	}
+
+	latestAlias, err := getLatestAlias(aliases)
 	if err != nil {
 		return fmt.Errorf("Unable to get latest version: %w", err)
 	}
@@ -210,16 +218,18 @@ func updateTemplatesVersions(versions *Versions) error {
 		if err != nil {
 			return fmt.Errorf("Unable to read file %s: %w", file, err)
 		}
-		updatedContent := re.ReplaceAllString(string(content), fmt.Sprintf(`"%s"`, latest))
+		updatedContent := re.ReplaceAllString(string(content), fmt.Sprintf(`"%s"`, latestAlias))
 		if string(content) == updatedContent {
 			log.Printf("No changes needed for %s\n", file)
-		} else {
-			err = os.WriteFile(file, []byte(updatedContent), 0644)
-			if err != nil {
-				return fmt.Errorf("Unable to write file %s: %w", file, err)
-			}
-			log.Printf("Updated %s to version %s\n", file, latest)
+			continue
 		}
+
+		err = os.WriteFile(file, []byte(updatedContent), 0644)
+		if err != nil {
+			return fmt.Errorf("Unable to write file %s: %w", file, err)
+		}
+
+		log.Printf("Updated %s to version %s\n", file, latestAlias)
 	}
 	return nil
 }
