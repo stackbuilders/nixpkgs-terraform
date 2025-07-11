@@ -183,6 +183,7 @@ func getLatestVersion(versions map[Alias]semver.Version) (string, error) {
 	if len(versions) == 0 {
 		return "", fmt.Errorf("No latest versions found")
 	}
+
 	var latest semver.Version
 	for _, version := range versions {
 		if version.GreaterThan(&latest) {
@@ -210,14 +211,14 @@ func updateTemplatesVersions(versions *Versions) error {
 			return fmt.Errorf("Unable to read file %s: %w", file, err)
 		}
 		updatedContent := re.ReplaceAllString(string(content), fmt.Sprintf(`"%s"`, latest))
-		if string(content) != updatedContent {
+		if string(content) == updatedContent {
+			log.Printf("No changes needed for %s\n", file)
+		} else {
 			err = os.WriteFile(file, []byte(updatedContent), 0644)
 			if err != nil {
 				return fmt.Errorf("Unable to write file %s: %w", file, err)
 			}
 			log.Printf("Updated %s to version %s\n", file, latest)
-		} else {
-			log.Printf("No changes needed for %s\n", file)
 		}
 	}
 	return nil
