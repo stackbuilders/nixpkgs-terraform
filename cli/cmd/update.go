@@ -233,7 +233,7 @@ func updateTemplatesVersions(versions *Versions, templatesPath string) error {
 		if err != nil {
 			return fmt.Errorf("Unable to read file %s: %w", file, err)
 		}
-		updatedContent := re.ReplaceAllString(string(content), fmt.Sprintf(`"%s"`, latestAlias))
+		updatedContent := re.ReplaceAllString(string(content), fmt.Sprintf(`"%s"`, latestAlias.String()))
 		if string(content) == updatedContent {
 			log.Printf("No changes needed for %s\n", file)
 			continue
