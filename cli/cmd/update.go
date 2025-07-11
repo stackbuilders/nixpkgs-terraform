@@ -24,6 +24,7 @@ const (
 var (
 	vendorHashPath string
 	versionsPath   string
+	templatesPath  string
 	minVersionStr  string
 )
 
@@ -46,6 +47,9 @@ func (a Alias) MarshalText() ([]byte, error) {
 }
 
 func (a Alias) GreaterThan(b *Alias) bool {
+	if b == nil {
+		return true
+	}
 	return a.Version.GreaterThan(&b.Version)
 }
 
@@ -79,6 +83,15 @@ var updateCmd = &cobra.Command{
 			return fmt.Errorf("File vendor-hash.nix not found: %w", err)
 		}
 
+		templatesPath, err := filepath.Abs(templatesPath)
+		info, err := os.Stat(templatesPath)
+		if err != nil {
+			return fmt.Errorf("Directory templates not found: %w", err)
+		}
+		if !info.IsDir() {
+			return fmt.Errorf("Expected templates path to be a directory: %s", templatesPath)
+		}
+
 		minVersion, err := semver.NewVersion(minVersionStr)
 		if err != nil {
 			return fmt.Errorf("Invalid min-version: %w", err)
@@ -90,6 +103,7 @@ var updateCmd = &cobra.Command{
 			token,
 			versionsPath,
 			vendorHashPath,
+			templatesPath,
 			minVersion,
 		)
 		if err != nil {
@@ -113,6 +127,7 @@ func updateVersions(
 	token string,
 	versionsPath string,
 	vendorHashPath string,
+	templatesPath string,
 	minVersion *semver.Version,
 ) ([]semver.Version, error) {
 	versions, err := readVersions(versionsPath)
@@ -175,7 +190,7 @@ func updateVersions(
 		return nil, fmt.Errorf("Unable to write file: %w", err)
 	}
 
-	err = updateTemplatesVersions(versions)
+	err = updateTemplatesVersions(versions, templatesPath)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to update templates versions: %w", err)
 	}
@@ -197,9 +212,9 @@ func getLatestAlias(aliases []Alias) (*Alias, error) {
 	return latestAlias, nil
 }
 
-func updateTemplatesVersions(versions *Versions) error {
+func updateTemplatesVersions(versions *Versions, templatesPath string) error {
 	var aliases []Alias
-	for alias, _ := range versions.Latest {
+	for alias := range versions.Latest {
 		aliases = append(aliases, alias)
 	}
 
@@ -207,9 +222,7 @@ func updateTemplatesVersions(versions *Versions) error {
 	if err != nil {
 		return fmt.Errorf("Unable to get latest version: %w", err)
 	}
-	// TODO: parameterize this path
-	templatesDir := "fake dir"
-	files, err := filepath.Glob(fmt.Sprintf("%s/**/flake.nix", templatesDir))
+	files, err := filepath.Glob(fmt.Sprintf("%s/**/flake.nix", templatesPath))
 	if err != nil {
 		return fmt.Errorf("Unable to find flake.nix files: %w", err)
 	}
@@ -348,7 +361,7 @@ func init() {
 	updateCmd.Flags().
 		StringVarP(&versionsPath, "versions", "", "versions.json", "The file to be updated")
 	updateCmd.Flags().
-		StringVarP(&versionsPath, "templates-dir", "", "templates", "TODO")
+		StringVarP(&templatesPath, "templates-dir", "", "templates", "Directory containing templates to update versions")
 	updateCmd.Flags().
 		StringVarP(&minVersionStr, "min-version", "", "1.0.0", "Min release version")
 
