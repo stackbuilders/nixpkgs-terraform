@@ -9,7 +9,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
-	"sort"
 	"strings"
 
 	"github.com/Masterminds/semver/v3"
@@ -180,24 +179,25 @@ func updateVersions(
 	return newVersions, nil
 }
 
-func getLatestVersion(versions *Versions) string {
-	var all []*semver.Version
+func getLatestVersion(versions map[Alias]semver.Version) (string, error) {
+	if len(versions) == 0 {
+		return "", fmt.Errorf("No latest versions found")
+	}
+	var latest semver.Version
+	for _, version := range versions {
+		if version.GreaterThan(&latest) {
+			latest = version
+		}
+	}
 
-	for _, v := range versions.Latest {
-		ver := v
-		all = append(all, &ver)
-	}
-	if len(all) == 0 {
-		return ""
-	}
-	sort.Slice(all, func(i, j int) bool {
-		return all[i].LessThan(all[j])
-	})
-	return all[len(all)-1].String()
+	return latest.String(), nil
 }
 
 func updateTemplatesVersions(versions *Versions) error {
-	latest := getLatestVersion(versions)
+	latest, err := getLatestVersion(versions.Latest)
+	if err != nil {
+		return fmt.Errorf("Unable to get latest version: %w", err)
+	}
 	files, err := filepath.Glob("../templates/**/flake.nix")
 	if err != nil {
 		return fmt.Errorf("Unable to find flake.nix files: %w", err)
