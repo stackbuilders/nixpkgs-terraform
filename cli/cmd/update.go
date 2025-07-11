@@ -191,10 +191,10 @@ func getLatestAlias(aliases []Alias) (*Alias, error) {
 		}
 	}
 	if latestAlias == nil {
-		return latestAlias, nil
+		return nil, fmt.Errorf("No latest version found")
 	}
 
-	return nil, fmt.Errorf("No latest version found")
+	return latestAlias, nil
 }
 
 func updateTemplatesVersions(versions *Versions) error {
