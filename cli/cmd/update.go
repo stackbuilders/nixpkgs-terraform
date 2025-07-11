@@ -207,7 +207,9 @@ func updateTemplatesVersions(versions *Versions) error {
 	if err != nil {
 		return fmt.Errorf("Unable to get latest version: %w", err)
 	}
-	files, err := filepath.Glob("../templates/**/flake.nix")
+	// TODO: parameterize this path
+	templatesDir := "fake dir"
+	files, err := filepath.Glob(fmt.Sprintf("%s/**/flake.nix", templatesDir))
 	if err != nil {
 		return fmt.Errorf("Unable to find flake.nix files: %w", err)
 	}
@@ -341,12 +343,14 @@ func runNixPrefetch(nixPrefetchPath string, extraArgs ...string) (string, error)
 }
 
 func init() {
-	rootCmd.AddCommand(updateCmd)
-
 	updateCmd.Flags().
 		StringVarP(&vendorHashPath, "vendor-hash", "", "vendor-hash.nix", "Nix file required to compute vendorHash")
 	updateCmd.Flags().
 		StringVarP(&versionsPath, "versions", "", "versions.json", "The file to be updated")
 	updateCmd.Flags().
+		StringVarP(&versionsPath, "templates-dir", "", "templates", "TODO")
+	updateCmd.Flags().
 		StringVarP(&minVersionStr, "min-version", "", "1.0.0", "Min release version")
+
+	rootCmd.AddCommand(updateCmd)
 }
