@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/Masterminds/semver/v3"
@@ -23,6 +24,7 @@ const (
 var (
 	vendorHashPath string
 	versionsPath   string
+	templatesPath  string
 	minVersionStr  string
 )
 
@@ -42,6 +44,13 @@ type Alias struct {
 
 func (a Alias) MarshalText() ([]byte, error) {
 	return fmt.Appendf(nil, "%d.%d", a.Major(), a.Minor()), nil
+}
+
+func (a Alias) GreaterThan(b *Alias) bool {
+	if b == nil {
+		return true
+	}
+	return a.Version.GreaterThan(&b.Version)
 }
 
 var updateCmd = &cobra.Command{
@@ -74,6 +83,19 @@ var updateCmd = &cobra.Command{
 			return fmt.Errorf("File vendor-hash.nix not found: %w", err)
 		}
 
+		templatesPath, err := filepath.Abs(templatesPath)
+		if err != nil {
+			return fmt.Errorf("Directory templates not found: %w", err)
+		}
+
+		templatesInfo, err := os.Stat(templatesPath)
+		if err != nil {
+			return fmt.Errorf("Path doesn't exist or can't be accessed: %w", err)
+		}
+		if !templatesInfo.IsDir() {
+			return fmt.Errorf("Path exists but is not a directory: %s", templatesPath)
+		}
+
 		minVersion, err := semver.NewVersion(minVersionStr)
 		if err != nil {
 			return fmt.Errorf("Invalid min-version: %w", err)
@@ -85,6 +107,7 @@ var updateCmd = &cobra.Command{
 			token,
 			versionsPath,
 			vendorHashPath,
+			templatesPath,
 			minVersion,
 		)
 		if err != nil {
@@ -108,6 +131,7 @@ func updateVersions(
 	token string,
 	versionsPath string,
 	vendorHashPath string,
+	templatesPath string,
 	minVersion *semver.Version,
 ) ([]semver.Version, error) {
 	versions, err := readVersions(versionsPath)
@@ -170,7 +194,63 @@ func updateVersions(
 		return nil, fmt.Errorf("Unable to write file: %w", err)
 	}
 
+	err = updateTemplatesVersions(versions, templatesPath)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to update templates versions: %w", err)
+	}
+
 	return newVersions, nil
+}
+
+func getLatestAlias(aliases []Alias) (*Alias, error) {
+	var latestAlias *Alias
+	for _, alias := range aliases {
+		if alias.GreaterThan(latestAlias) {
+			latestAlias = &alias
+		}
+	}
+	if latestAlias == nil {
+		return nil, fmt.Errorf("No latest version found")
+	}
+
+	return latestAlias, nil
+}
+
+func updateTemplatesVersions(versions *Versions, templatesPath string) error {
+	var aliases []Alias
+	for alias := range versions.Latest {
+		aliases = append(aliases, alias)
+	}
+
+	latestAlias, err := getLatestAlias(aliases)
+	if err != nil {
+		return fmt.Errorf("Unable to get latest version: %w", err)
+	}
+	files, err := filepath.Glob(fmt.Sprintf("%s/**/flake.nix", templatesPath))
+	if err != nil {
+		return fmt.Errorf("Unable to find flake.nix files: %w", err)
+	}
+
+	re := regexp.MustCompile(`"(\d+\.\d+(\.\d+)?)"`)
+	for _, file := range files {
+		content, err := os.ReadFile(file)
+		if err != nil {
+			return fmt.Errorf("Unable to read file %s: %w", file, err)
+		}
+		updatedContent := re.ReplaceAllString(string(content), fmt.Sprintf(`"%s"`, latestAlias.String()))
+		if string(content) == updatedContent {
+			log.Printf("No changes needed for %s\n", file)
+			continue
+		}
+
+		err = os.WriteFile(file, []byte(updatedContent), 0644)
+		if err != nil {
+			return fmt.Errorf("Unable to write file %s: %w", file, err)
+		}
+
+		log.Printf("Updated %s to version %s\n", file, latestAlias)
+	}
+	return nil
 }
 
 func readVersions(versionsPath string) (*Versions, error) {
@@ -280,12 +360,14 @@ func runNixPrefetch(nixPrefetchPath string, extraArgs ...string) (string, error)
 }
 
 func init() {
-	rootCmd.AddCommand(updateCmd)
-
 	updateCmd.Flags().
 		StringVarP(&vendorHashPath, "vendor-hash", "", "vendor-hash.nix", "Nix file required to compute vendorHash")
 	updateCmd.Flags().
 		StringVarP(&versionsPath, "versions", "", "versions.json", "The file to be updated")
 	updateCmd.Flags().
+		StringVarP(&templatesPath, "templates-dir", "", "templates", "Directory containing templates to update versions")
+	updateCmd.Flags().
 		StringVarP(&minVersionStr, "min-version", "", "1.0.0", "Min release version")
+
+	rootCmd.AddCommand(updateCmd)
 }
