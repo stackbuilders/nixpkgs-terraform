@@ -84,12 +84,16 @@ var updateCmd = &cobra.Command{
 		}
 
 		templatesPath, err := filepath.Abs(templatesPath)
-		info, err := os.Stat(templatesPath)
 		if err != nil {
 			return fmt.Errorf("Directory templates not found: %w", err)
 		}
-		if !info.IsDir() {
-			return fmt.Errorf("Expected templates path to be a directory: %s", templatesPath)
+
+		templatesInfo, err := os.Stat(templatesPath)
+		if err != nil {
+			return fmt.Errorf("Path doesn't exist or can't be accessed: %w", err)
+		}
+		if !templatesInfo.IsDir() {
+			return fmt.Errorf("Path exists but is not a directory: %s", templatesPath)
 		}
 
 		minVersion, err := semver.NewVersion(minVersionStr)
