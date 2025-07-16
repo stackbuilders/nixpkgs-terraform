@@ -40,7 +40,7 @@ jobs:
       - name: Update versions
         id: update
         run: |
-          commit_message=$(devenv shell -- go run . update --versions ../versions.json --vendor-hash ../vendor-hash.nix)
+          commit_message=$(devenv shell -- go run . update --versions ../versions.json --vendor-hash ../vendor-hash.nix --templates-dir ../templates)
           echo "commit_message=$commit_message" >> "$GITHUB_OUTPUT"
         env:
           CLI_GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
@@ -57,7 +57,7 @@ jobs:
 
             ```
             cd cli
-            go run . update --versions ../versions.json --vendor-hash ../vendor-hash.nix
+            go run . update --versions ../versions.json --vendor-hash ../vendor-hash.nix --templates-dir ../templates
             ```
           delete-branch: true
           reviewers: |
