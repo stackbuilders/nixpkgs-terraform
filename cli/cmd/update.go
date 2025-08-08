@@ -42,6 +42,11 @@ type Alias struct {
 	semver.Version
 }
 
+type LastestChanges struct {
+	versions    []semver.Version
+	latestAlias *Alias
+}
+
 func (a Alias) MarshalText() ([]byte, error) {
 	return fmt.Appendf(nil, "%d.%d", a.Major(), a.Minor()), nil
 }
@@ -101,7 +106,7 @@ var updateCmd = &cobra.Command{
 			return fmt.Errorf("Invalid min-version: %w", err)
 		}
 
-		newVersions, newTemplatesVersion, err := updateVersions(
+		latestChanges, err := updateVersions(
 			nixPath,
 			nixPrefetchPath,
 			token,
@@ -114,18 +119,18 @@ var updateCmd = &cobra.Command{
 			return fmt.Errorf("Unable to update versions: %w", err)
 		}
 		var messages []string
-		if len(newVersions) > 0 {
+		if len(latestChanges.versions) > 0 {
 			var formattedVersions []string
-			for _, newVersion := range newVersions {
+			for _, newVersion := range latestChanges.versions {
 				formattedVersions = append(formattedVersions, newVersion.String())
 			}
 			versions := strings.Join(formattedVersions, ", ")
 			messages = append(messages, fmt.Sprintf("Add Terraform version(s) %s", versions))
 		}
-		if newTemplatesVersion != nil {
+		if latestChanges.latestAlias != nil {
 			messages = append(
 				messages,
-				fmt.Sprintf("Update templates to use version %s", newTemplatesVersion),
+				fmt.Sprintf("Update templates to use version %s", latestChanges.latestAlias),
 			)
 		}
 
@@ -144,15 +149,15 @@ func updateVersions(
 	vendorHashPath string,
 	templatesPath string,
 	minVersion *semver.Version,
-) ([]semver.Version, *Alias, error) {
+) (*LastestChanges, error) {
 	versions, err := readVersions(versionsPath)
 	if err != nil {
-		return nil, nil, fmt.Errorf("unable to read versions: %w", err)
+		return nil, fmt.Errorf("unable to read versions: %w", err)
 	}
 
 	releases, err := getRepoReleases(token)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	var newVersions []semver.Version
@@ -171,13 +176,13 @@ func updateVersions(
 				log.Printf("Computing hashes for %s\n", version)
 				hash, err := computeHash(nixPath, tagName)
 				if err != nil {
-					return nil, nil, fmt.Errorf("Unable to compute hash: %w", err)
+					return nil, fmt.Errorf("Unable to compute hash: %w", err)
 				}
 
 				log.Printf("Computed hash: %s\n", hash)
 				vendorHash, err := computeVendorHash(nixPrefetchPath, vendorHashPath, version, hash)
 				if err != nil {
-					return nil, nil, fmt.Errorf("Unable to compute vendor hash: %w", err)
+					return nil, fmt.Errorf("Unable to compute vendor hash: %w", err)
 				}
 
 				log.Printf("Computed vendor hash: %s\n", vendorHash)
@@ -197,20 +202,23 @@ func updateVersions(
 
 	content, err := json.MarshalIndent(versions, "", "  ")
 	if err != nil {
-		return nil, nil, fmt.Errorf("Unable to marshall versions: %w", err)
+		return nil, fmt.Errorf("Unable to marshall versions: %w", err)
 	}
 
 	err = os.WriteFile(versionsPath, content, 0644)
 	if err != nil {
-		return nil, nil, fmt.Errorf("Unable to write file: %w", err)
+		return nil, fmt.Errorf("Unable to write file: %w", err)
 	}
 
-	newTemplatesVersion, err := updateTemplatesVersions(versions, templatesPath)
+	latestAlias, err := updateTemplatesVersions(versions, templatesPath)
 	if err != nil {
-		return nil, nil, fmt.Errorf("Unable to update templates versions: %w", err)
+		return nil, fmt.Errorf("Unable to update templates versions: %w", err)
 	}
 
-	return newVersions, newTemplatesVersion, nil
+	return &LastestChanges{
+		versions:    newVersions,
+		latestAlias: latestAlias,
+	}, nil
 }
 
 func getLatestAlias(aliases []Alias) (*Alias, error) {
