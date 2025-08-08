@@ -58,7 +58,6 @@ var updateCmd = &cobra.Command{
 	Short: "Update versions file",
 	Long:  "Look up the most recent Terraform releases and calculate the needed hashes for new versions",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		var returnMessage string
 		nixPath, err := exec.LookPath("nix")
 		if err != nil {
 			return fmt.Errorf("nix not found: %w", err)
@@ -114,24 +113,24 @@ var updateCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("Unable to update versions: %w", err)
 		}
+		var messages []string
 		if len(newVersions) > 0 {
 			var formattedVersions []string
 			for _, newVersion := range newVersions {
 				formattedVersions = append(formattedVersions, newVersion.String())
 			}
-			returnMessage = "feat: Add Terraform version(s) " + strings.Join(formattedVersions, ", ")
+			versions := strings.Join(formattedVersions, ", ")
+			messages = append(messages, fmt.Sprintf("Add Terraform version(s) %s", versions))
 		}
 		if newTemplatesVersion != nil {
-			if len(newVersions) <= 0 {
-				returnMessage = "feat: "
-			} else {
-				returnMessage += " / "
-			}
-			returnMessage += "Update templates to use version " + newTemplatesVersion.String()
+			messages = append(
+				messages,
+				fmt.Sprintf("Update templates to use version %s", newTemplatesVersion),
+			)
 		}
 
-		if returnMessage != "" {
-			fmt.Println(returnMessage)
+		if len(messages) > 0 {
+			fmt.Printf("feat: %s\n", strings.Join(messages, "/"))
 		}
 		return nil
 	},
@@ -251,7 +250,10 @@ func updateTemplatesVersions(versions *Versions, templatesPath string) (*Alias, 
 		if err != nil {
 			return nil, fmt.Errorf("Unable to read file %s: %w", file, err)
 		}
-		updatedContent := re.ReplaceAllString(string(content), fmt.Sprintf(`"%s"`, latestVersion.String()))
+		updatedContent := re.ReplaceAllString(
+			string(content),
+			fmt.Sprintf(`"%s"`, latestVersion.String()),
+		)
 		if string(content) == updatedContent {
 			log.Printf("No changes needed for %s\n", file)
 			continue
