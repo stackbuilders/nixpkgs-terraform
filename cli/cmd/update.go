@@ -58,6 +58,7 @@ var updateCmd = &cobra.Command{
 	Short: "Update versions file",
 	Long:  "Look up the most recent Terraform releases and calculate the needed hashes for new versions",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		var returnMessage string
 		nixPath, err := exec.LookPath("nix")
 		if err != nil {
 			return fmt.Errorf("nix not found: %w", err)
@@ -101,7 +102,7 @@ var updateCmd = &cobra.Command{
 			return fmt.Errorf("Invalid min-version: %w", err)
 		}
 
-		newVersions, err := updateVersions(
+		newVersions, newTemplatesVersion, err := updateVersions(
 			nixPath,
 			nixPrefetchPath,
 			token,
@@ -118,9 +119,20 @@ var updateCmd = &cobra.Command{
 			for _, newVersion := range newVersions {
 				formattedVersions = append(formattedVersions, newVersion.String())
 			}
-			fmt.Printf("feat: Add Terraform version(s) %s\n", strings.Join(formattedVersions, ", "))
+			returnMessage = "feat: Add Terraform version(s) " + strings.Join(formattedVersions, ", ")
+		}
+		if newTemplatesVersion != nil {
+			if len(newVersions) <= 0 {
+				returnMessage = "feat:"
+			} else {
+				returnMessage += " / "
+			}
+			returnMessage += "Update templates to use version " + newTemplatesVersion.String()
 		}
 
+		if returnMessage != "" {
+			fmt.Println(returnMessage)
+		}
 		return nil
 	},
 }
@@ -133,15 +145,15 @@ func updateVersions(
 	vendorHashPath string,
 	templatesPath string,
 	minVersion *semver.Version,
-) ([]semver.Version, error) {
+) ([]semver.Version, *Alias, error) {
 	versions, err := readVersions(versionsPath)
 	if err != nil {
-		return nil, fmt.Errorf("unable to read versions: %w", err)
+		return nil, nil, fmt.Errorf("unable to read versions: %w", err)
 	}
 
 	releases, err := getRepoReleases(token)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	var newVersions []semver.Version
@@ -160,13 +172,13 @@ func updateVersions(
 				log.Printf("Computing hashes for %s\n", version)
 				hash, err := computeHash(nixPath, tagName)
 				if err != nil {
-					return nil, fmt.Errorf("Unable to compute hash: %w", err)
+					return nil, nil, fmt.Errorf("Unable to compute hash: %w", err)
 				}
 
 				log.Printf("Computed hash: %s\n", hash)
 				vendorHash, err := computeVendorHash(nixPrefetchPath, vendorHashPath, version, hash)
 				if err != nil {
-					return nil, fmt.Errorf("Unable to compute vendor hash: %w", err)
+					return nil, nil, fmt.Errorf("Unable to compute vendor hash: %w", err)
 				}
 
 				log.Printf("Computed vendor hash: %s\n", vendorHash)
@@ -186,23 +198,20 @@ func updateVersions(
 
 	content, err := json.MarshalIndent(versions, "", "  ")
 	if err != nil {
-		return nil, fmt.Errorf("Unable to marshall versions: %w", err)
+		return nil, nil, fmt.Errorf("Unable to marshall versions: %w", err)
 	}
 
 	err = os.WriteFile(versionsPath, content, 0644)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to write file: %w", err)
+		return nil, nil, fmt.Errorf("Unable to write file: %w", err)
 	}
 
-	latestAlias, err := updateTemplatesVersions(versions, templatesPath)
+	newTemplatesVersion, err := updateTemplatesVersions(versions, templatesPath)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to update templates versions: %w", err)
-	}
-	if latestAlias != nil && len(newVersions) == 0 {
-		newVersions = []semver.Version{latestAlias.Version}
+		return nil, nil, fmt.Errorf("Unable to update templates versions: %w", err)
 	}
 
-	return newVersions, nil
+	return newVersions, newTemplatesVersion, nil
 }
 
 func getLatestAlias(aliases []Alias) (*Alias, error) {
@@ -220,6 +229,7 @@ func getLatestAlias(aliases []Alias) (*Alias, error) {
 }
 
 func updateTemplatesVersions(versions *Versions, templatesPath string) (*Alias, error) {
+	var newTemplatesVersion *Alias
 	var aliases []Alias
 	for alias := range versions.Latest {
 		aliases = append(aliases, alias)
@@ -250,10 +260,10 @@ func updateTemplatesVersions(versions *Versions, templatesPath string) (*Alias, 
 		if err != nil {
 			return nil, fmt.Errorf("Unable to write file %s: %w", file, err)
 		}
-
 		log.Printf("Updated %s to version %s\n", file, latestAlias)
+		newTemplatesVersion = latestAlias
 	}
-	return latestAlias, nil
+	return newTemplatesVersion, nil
 }
 
 func readVersions(versionsPath string) (*Versions, error) {
