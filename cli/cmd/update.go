@@ -42,6 +42,11 @@ type Alias struct {
 	semver.Version
 }
 
+type LastestChanges struct {
+	versions    []semver.Version
+	latestAlias *Alias
+}
+
 func (a Alias) MarshalText() ([]byte, error) {
 	return fmt.Appendf(nil, "%d.%d", a.Major(), a.Minor()), nil
 }
@@ -101,7 +106,7 @@ var updateCmd = &cobra.Command{
 			return fmt.Errorf("Invalid min-version: %w", err)
 		}
 
-		newVersions, err := updateVersions(
+		latestChanges, err := updateVersions(
 			nixPath,
 			nixPrefetchPath,
 			token,
@@ -113,14 +118,25 @@ var updateCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("Unable to update versions: %w", err)
 		}
-		if len(newVersions) > 0 {
+		var messages []string
+		if len(latestChanges.versions) > 0 {
 			var formattedVersions []string
-			for _, newVersion := range newVersions {
+			for _, newVersion := range latestChanges.versions {
 				formattedVersions = append(formattedVersions, newVersion.String())
 			}
-			fmt.Printf("feat: Add Terraform version(s) %s\n", strings.Join(formattedVersions, ", "))
+			versions := strings.Join(formattedVersions, ", ")
+			messages = append(messages, fmt.Sprintf("Add Terraform version(s) %s", versions))
+		}
+		if latestChanges.latestAlias != nil {
+			messages = append(
+				messages,
+				fmt.Sprintf("Update templates to use version %s", latestChanges.latestAlias),
+			)
 		}
 
+		if len(messages) > 0 {
+			fmt.Printf("feat: %s\n", strings.Join(messages, "/"))
+		}
 		return nil
 	},
 }
@@ -133,7 +149,7 @@ func updateVersions(
 	vendorHashPath string,
 	templatesPath string,
 	minVersion *semver.Version,
-) ([]semver.Version, error) {
+) (*LastestChanges, error) {
 	versions, err := readVersions(versionsPath)
 	if err != nil {
 		return nil, fmt.Errorf("unable to read versions: %w", err)
@@ -194,12 +210,15 @@ func updateVersions(
 		return nil, fmt.Errorf("Unable to write file: %w", err)
 	}
 
-	err = updateTemplatesVersions(versions, templatesPath)
+	latestAlias, err := updateTemplatesVersions(versions, templatesPath)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to update templates versions: %w", err)
 	}
 
-	return newVersions, nil
+	return &LastestChanges{
+		versions:    newVersions,
+		latestAlias: latestAlias,
+	}, nil
 }
 
 func getLatestAlias(aliases []Alias) (*Alias, error) {
@@ -216,7 +235,8 @@ func getLatestAlias(aliases []Alias) (*Alias, error) {
 	return latestAlias, nil
 }
 
-func updateTemplatesVersions(versions *Versions, templatesPath string) error {
+func updateTemplatesVersions(versions *Versions, templatesPath string) (*Alias, error) {
+	var newTemplatesVersion *Alias
 	var aliases []Alias
 	for alias := range versions.Latest {
 		aliases = append(aliases, alias)
@@ -224,20 +244,24 @@ func updateTemplatesVersions(versions *Versions, templatesPath string) error {
 
 	latestAlias, err := getLatestAlias(aliases)
 	if err != nil {
-		return fmt.Errorf("Unable to get latest version: %w", err)
+		return nil, fmt.Errorf("Unable to get latest version: %w", err)
 	}
+	latestVersion := versions.Latest[*latestAlias]
 	files, err := filepath.Glob(fmt.Sprintf("%s/**/flake.nix", templatesPath))
 	if err != nil {
-		return fmt.Errorf("Unable to find flake.nix files: %w", err)
+		return nil, fmt.Errorf("Unable to find flake.nix files: %w", err)
 	}
 
 	re := regexp.MustCompile(`"(\d+\.\d+(\.\d+)?)"`)
 	for _, file := range files {
 		content, err := os.ReadFile(file)
 		if err != nil {
-			return fmt.Errorf("Unable to read file %s: %w", file, err)
+			return nil, fmt.Errorf("Unable to read file %s: %w", file, err)
 		}
-		updatedContent := re.ReplaceAllString(string(content), fmt.Sprintf(`"%s"`, latestAlias.String()))
+		updatedContent := re.ReplaceAllString(
+			string(content),
+			fmt.Sprintf(`"%s"`, latestVersion.String()),
+		)
 		if string(content) == updatedContent {
 			log.Printf("No changes needed for %s\n", file)
 			continue
@@ -245,12 +269,12 @@ func updateTemplatesVersions(versions *Versions, templatesPath string) error {
 
 		err = os.WriteFile(file, []byte(updatedContent), 0644)
 		if err != nil {
-			return fmt.Errorf("Unable to write file %s: %w", file, err)
+			return nil, fmt.Errorf("Unable to write file %s: %w", file, err)
 		}
-
-		log.Printf("Updated %s to version %s\n", file, latestAlias)
+		log.Printf("Updated %s to version %s\n", file, latestVersion)
+		newTemplatesVersion = &Alias{latestVersion}
 	}
-	return nil
+	return newTemplatesVersion, nil
 }
 
 func readVersions(versionsPath string) (*Versions, error) {
