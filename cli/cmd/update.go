@@ -123,7 +123,7 @@ var updateCmd = &cobra.Command{
 		}
 		if newTemplatesVersion != nil {
 			if len(newVersions) <= 0 {
-				returnMessage = "feat:"
+				returnMessage = "feat: "
 			} else {
 				returnMessage += " / "
 			}
@@ -236,6 +236,7 @@ func updateTemplatesVersions(versions *Versions, templatesPath string) (*Alias, 
 	}
 
 	latestAlias, err := getLatestAlias(aliases)
+	latestVersion := versions.Latest[*latestAlias]
 	if err != nil {
 		return nil, fmt.Errorf("Unable to get latest version: %w", err)
 	}
@@ -250,7 +251,7 @@ func updateTemplatesVersions(versions *Versions, templatesPath string) (*Alias, 
 		if err != nil {
 			return nil, fmt.Errorf("Unable to read file %s: %w", file, err)
 		}
-		updatedContent := re.ReplaceAllString(string(content), fmt.Sprintf(`"%s"`, latestAlias.String()))
+		updatedContent := re.ReplaceAllString(string(content), fmt.Sprintf(`"%s"`, latestVersion.String()))
 		if string(content) == updatedContent {
 			log.Printf("No changes needed for %s\n", file)
 			continue
@@ -260,8 +261,8 @@ func updateTemplatesVersions(versions *Versions, templatesPath string) (*Alias, 
 		if err != nil {
 			return nil, fmt.Errorf("Unable to write file %s: %w", file, err)
 		}
-		log.Printf("Updated %s to version %s\n", file, latestAlias)
-		newTemplatesVersion = latestAlias
+		log.Printf("Updated %s to version %s\n", file, latestVersion)
+		newTemplatesVersion = &Alias{latestVersion}
 	}
 	return newTemplatesVersion, nil
 }
