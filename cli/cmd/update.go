@@ -243,10 +243,10 @@ func updateTemplatesVersions(versions *Versions, templatesPath string) (*Alias, 
 	}
 
 	latestAlias, err := getLatestAlias(aliases)
-	latestVersion := versions.Latest[*latestAlias]
 	if err != nil {
 		return nil, fmt.Errorf("Unable to get latest version: %w", err)
 	}
+	latestVersion := versions.Latest[*latestAlias]
 	files, err := filepath.Glob(fmt.Sprintf("%s/**/flake.nix", templatesPath))
 	if err != nil {
 		return nil, fmt.Errorf("Unable to find flake.nix files: %w", err)
