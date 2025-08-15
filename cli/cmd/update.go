@@ -58,6 +58,10 @@ func (a Alias) GreaterThan(b *Alias) bool {
 	return a.Version.GreaterThan(&b.Version)
 }
 
+func (a Alias) String() string {
+	return fmt.Sprintf("%d.%d", a.Major(), a.Minor())
+}
+
 var updateCmd = &cobra.Command{
 	Use:   "update",
 	Short: "Update versions file",
@@ -236,7 +240,6 @@ func getLatestAlias(aliases []Alias) (*Alias, error) {
 }
 
 func updateTemplatesVersions(versions *Versions, templatesPath string) (*Alias, error) {
-	var newTemplatesVersion *Alias
 	var aliases []Alias
 	for alias := range versions.Latest {
 		aliases = append(aliases, alias)
@@ -246,12 +249,13 @@ func updateTemplatesVersions(versions *Versions, templatesPath string) (*Alias, 
 	if err != nil {
 		return nil, fmt.Errorf("Unable to get latest version: %w", err)
 	}
-	latestVersion := versions.Latest[*latestAlias]
+
 	files, err := filepath.Glob(fmt.Sprintf("%s/**/flake.nix", templatesPath))
 	if err != nil {
 		return nil, fmt.Errorf("Unable to find flake.nix files: %w", err)
 	}
 
+	updated := false
 	re := regexp.MustCompile(`"(\d+\.\d+(\.\d+)?)"`)
 	for _, file := range files {
 		content, err := os.ReadFile(file)
@@ -260,7 +264,7 @@ func updateTemplatesVersions(versions *Versions, templatesPath string) (*Alias, 
 		}
 		updatedContent := re.ReplaceAllString(
 			string(content),
-			fmt.Sprintf(`"%s"`, latestVersion.String()),
+			fmt.Sprintf(`"%s"`, latestAlias),
 		)
 		if string(content) == updatedContent {
 			log.Printf("No changes needed for %s\n", file)
@@ -271,10 +275,15 @@ func updateTemplatesVersions(versions *Versions, templatesPath string) (*Alias, 
 		if err != nil {
 			return nil, fmt.Errorf("Unable to write file %s: %w", file, err)
 		}
-		log.Printf("Updated %s to version %s\n", file, latestVersion)
-		newTemplatesVersion = &Alias{latestVersion}
+		log.Printf("Updated %s to version %s\n", file, latestAlias)
+		updated = true
 	}
-	return newTemplatesVersion, nil
+
+	if updated {
+		return latestAlias, nil
+	}
+
+	return nil, nil
 }
 
 func readVersions(versionsPath string) (*Versions, error) {
