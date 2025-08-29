@@ -77,3 +77,7 @@ jobs:
         with:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
           webhook-type: webhook-trigger
+          payload: |
+            {
+              "text": ":x: *${{ github.workflow }}* failed on *${{ github.ref_name }}* (<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|open run>)"
+            }
