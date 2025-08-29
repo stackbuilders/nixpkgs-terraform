@@ -2,11 +2,9 @@
 name: Update
 
 on:
-  push
-
-  # workflow_dispatch:
-  # schedule:
-  #   - cron: "0 0 * * *"
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * *"
 
 concurrency:
   group: update
@@ -23,7 +21,6 @@ jobs:
       run:
         working-directory: cli
     steps:
-      - run: exit 1
       - name: Create GH App token
         uses: actions/create-github-app-token@v2
         id: app-token
@@ -79,5 +76,5 @@ jobs:
           webhook-type: webhook-trigger
           payload: |
             {
-              "text": "*nixpkgs-terraform*: :elmofire: *${{ github.workflow }}* failed on *${{ github.ref_name }}* (<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|open run>)"
+              "text": "*nixpkgs-terraform*: :elmofire: *${{ github.workflow }}* workflow failed on *${{ github.ref_name }}* (<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|open run>)"
             }
