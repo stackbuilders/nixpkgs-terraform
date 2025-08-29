@@ -23,6 +23,7 @@ jobs:
       run:
         working-directory: cli
     steps:
+      - run: exit 1
       - name: Create GH App token
         uses: actions/create-github-app-token@v2
         id: app-token
@@ -41,10 +42,9 @@ jobs:
         run: nix profile install --accept-flake-config github:cachix/devenv/latest
       - name: Update versions
         id: update
-        run: exit 1
-        # run: |
-        #   commit_message=$(devenv shell -- go run . update --versions ../versions.json --vendor-hash ../vendor-hash.nix --templates-dir ../templates)
-        #   echo "commit_message=$commit_message" >> "$GITHUB_OUTPUT"
+        run: |
+          commit_message=$(devenv shell -- go run . update --versions ../versions.json --vendor-hash ../vendor-hash.nix --templates-dir ../templates)
+          echo "commit_message=$commit_message" >> "$GITHUB_OUTPUT"
         env:
           CLI_GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
       - name: Create pull request
