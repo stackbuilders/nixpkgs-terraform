@@ -79,5 +79,5 @@ jobs:
           webhook-type: webhook-trigger
           payload: |
             {
-              "text": ":x: *${{ github.workflow }}* failed on *${{ github.ref_name }}* (<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|open run>)"
+              "text": "*nixpkgs-terraform*: :elmofire: *${{ github.workflow }}* failed on *${{ github.ref_name }}* (<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|open run>)"
             }
