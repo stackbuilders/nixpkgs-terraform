@@ -144,6 +144,14 @@
       "hash": "sha256-ilQ1rscGD66OT6lHsBgWELayC24B2D7l6iH6vtvqzFI=",
       "vendorHash": "sha256-zWNLIurNP5e/AWr84kQCb2+gZIn6EAsuvr0ZnfSq7Zw="
     },
+    "1.13.0": {
+      "hash": "sha256-ZZFwzGCB6IS/SJQJoApC7blDhTqT9aZkeMmPimdcj7Q=",
+      "vendorHash": "sha256-UcsB5cTae55meJ945fvgowch4EBdaTET2+t5KWvpPQ8="
+    },
+    "1.13.1": {
+      "hash": "sha256-PuC2wOEEMFaiR9eyF3yI6PLSkqnT/MWdy6RZo6B9zWM=",
+      "vendorHash": "sha256-UcsB5cTae55meJ945fvgowch4EBdaTET2+t5KWvpPQ8="
+    },
     "1.2.0": {
       "hash": "sha256-5um+zS7MVL59SlxchjXdlhBGNdacbQgvg7BRAWnW5XU=",
       "vendorHash": "sha256-6x1cv+DKXH2yyMjIA6JY5EkTmWbwH4LBammXKtw2EZo="
@@ -411,6 +419,7 @@
     "1.10": "1.10.5",
     "1.11": "1.11.4",
     "1.12": "1.12.2",
+    "1.13": "1.13.1",
     "1.2": "1.2.9",
     "1.3": "1.3.10",
     "1.4": "1.4.7",
