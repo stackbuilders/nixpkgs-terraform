@@ -79,7 +79,7 @@ var updateCmd = &cobra.Command{
 
 		token := os.Getenv("CLI_GITHUB_TOKEN")
 		if token == "" {
-			return fmt.Errorf("Environment variable CLI_GITHUB_TOKEN is missing")
+			log.Println("Warning: CLI_GITHUB_TOKEN is not set. Requests to GitHub API may be rate limited.")
 		}
 
 		versionsPath, err := filepath.Abs(versionsPath)
@@ -139,7 +139,7 @@ var updateCmd = &cobra.Command{
 		}
 
 		if len(messages) > 0 {
-			fmt.Printf("feat: %s\n", strings.Join(messages, "/"))
+			fmt.Printf("feat: %s\n", strings.Join(messages, " / "))
 		}
 		return nil
 	},
@@ -300,7 +300,10 @@ func readVersions(versionsPath string) (*Versions, error) {
 }
 
 func getRepoReleases(token string) ([]github.RepositoryRelease, error) {
-	client := github.NewClient(nil).WithAuthToken(token)
+	client := github.NewClient(nil)
+	if token != "" {
+		client = client.WithAuthToken(token)
+	}
 	opt := &github.ListOptions{Page: 1}
 
 	var allReleases []github.RepositoryRelease
