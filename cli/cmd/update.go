@@ -69,12 +69,12 @@ var updateCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		nixPath, err := exec.LookPath("nix")
 		if err != nil {
-			return fmt.Errorf("nix not found: %w", err)
+			return fmt.Errorf("unable to find 'nix' executable: %w", err)
 		}
 
 		nixPrefetchPath, err := exec.LookPath("nix-prefetch")
 		if err != nil {
-			return fmt.Errorf("nix-prefetch not found: %w", err)
+			return fmt.Errorf("unable to find 'nix-prefetch' executable: %w", err)
 		}
 
 		token := os.Getenv("CLI_GITHUB_TOKEN")
@@ -84,30 +84,30 @@ var updateCmd = &cobra.Command{
 
 		versionsPath, err := filepath.Abs(versionsPath)
 		if err != nil {
-			return fmt.Errorf("file versions.json not found: %w", err)
+			return fmt.Errorf("unable to find versions.json file: %w", err)
 		}
 
 		vendorHashPath, err := filepath.Abs(vendorHashPath)
 		if err != nil {
-			return fmt.Errorf("File vendor-hash.nix not found: %w", err)
+			return fmt.Errorf("unable to find vendor-hash.nix file: %w", err)
 		}
 
 		templatesPath, err := filepath.Abs(templatesPath)
 		if err != nil {
-			return fmt.Errorf("Directory templates not found: %w", err)
+			return fmt.Errorf("unable to find templates directory: %w", err)
 		}
 
 		templatesInfo, err := os.Stat(templatesPath)
 		if err != nil {
-			return fmt.Errorf("Path doesn't exist or can't be accessed: %w", err)
+			return fmt.Errorf("path does not exist or cannot be accessed: %w", err)
 		}
 		if !templatesInfo.IsDir() {
-			return fmt.Errorf("Path exists but is not a directory: %s", templatesPath)
+			return fmt.Errorf("path exists but is not a directory: %s", templatesPath)
 		}
 
 		minVersion, err := semver.NewVersion(minVersionStr)
 		if err != nil {
-			return fmt.Errorf("Invalid min-version: %w", err)
+			return fmt.Errorf("invalid min-version: %w", err)
 		}
 
 		latestChanges, err := updateVersions(
@@ -120,7 +120,7 @@ var updateCmd = &cobra.Command{
 			minVersion,
 		)
 		if err != nil {
-			return fmt.Errorf("Unable to update versions: %w", err)
+			return fmt.Errorf("unable to update versions: %w", err)
 		}
 		var messages []string
 		if len(latestChanges.versions) > 0 {
@@ -180,13 +180,13 @@ func updateVersions(
 				log.Printf("Computing hashes for %s\n", version)
 				hash, err := computeHash(nixPath, tagName)
 				if err != nil {
-					return nil, fmt.Errorf("Unable to compute hash: %w", err)
+					return nil, fmt.Errorf("unable to compute hash: %w", err)
 				}
 
 				log.Printf("Computed hash: %s\n", hash)
 				vendorHash, err := computeVendorHash(nixPrefetchPath, vendorHashPath, version, hash)
 				if err != nil {
-					return nil, fmt.Errorf("Unable to compute vendor hash: %w", err)
+					return nil, fmt.Errorf("unable to compute vendor hash: %w", err)
 				}
 
 				log.Printf("Computed vendor hash: %s\n", vendorHash)
@@ -206,17 +206,17 @@ func updateVersions(
 
 	content, err := json.MarshalIndent(versions, "", "  ")
 	if err != nil {
-		return nil, fmt.Errorf("Unable to marshall versions: %w", err)
+		return nil, fmt.Errorf("unable to marshal versions: %w", err)
 	}
 
 	err = os.WriteFile(versionsPath, content, 0644)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to write file: %w", err)
+		return nil, fmt.Errorf("unable to write file: %w", err)
 	}
 
 	latestAlias, err := updateTemplatesVersions(versions, templatesPath)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to update templates versions: %w", err)
+		return nil, fmt.Errorf("unable to update templates versions: %w", err)
 	}
 
 	return &LastestChanges{
@@ -233,7 +233,7 @@ func getLatestAlias(aliases []Alias) (*Alias, error) {
 		}
 	}
 	if latestAlias == nil {
-		return nil, fmt.Errorf("No latest version found")
+		return nil, fmt.Errorf("no latest version found")
 	}
 
 	return latestAlias, nil
@@ -247,12 +247,12 @@ func updateTemplatesVersions(versions *Versions, templatesPath string) (*Alias, 
 
 	latestAlias, err := getLatestAlias(aliases)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to get latest version: %w", err)
+		return nil, fmt.Errorf("unable to get latest version: %w", err)
 	}
 
 	files, err := filepath.Glob(fmt.Sprintf("%s/**/flake.nix", templatesPath))
 	if err != nil {
-		return nil, fmt.Errorf("Unable to find flake.nix files: %w", err)
+		return nil, fmt.Errorf("unable to find flake.nix files: %w", err)
 	}
 
 	updated := false
@@ -260,7 +260,7 @@ func updateTemplatesVersions(versions *Versions, templatesPath string) (*Alias, 
 	for _, file := range files {
 		content, err := os.ReadFile(file)
 		if err != nil {
-			return nil, fmt.Errorf("Unable to read file %s: %w", file, err)
+			return nil, fmt.Errorf("unable to read file %s: %w", file, err)
 		}
 		updatedContent := re.ReplaceAllString(
 			string(content),
@@ -273,7 +273,7 @@ func updateTemplatesVersions(versions *Versions, templatesPath string) (*Alias, 
 
 		err = os.WriteFile(file, []byte(updatedContent), 0644)
 		if err != nil {
-			return nil, fmt.Errorf("Unable to write file %s: %w", file, err)
+			return nil, fmt.Errorf("unable to write file %s: %w", file, err)
 		}
 		log.Printf("Updated %s to version %s\n", file, latestAlias)
 		updated = true
