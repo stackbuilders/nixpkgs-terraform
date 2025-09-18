@@ -42,26 +42,26 @@ jobs:
           echo "commit_message=$commit_message" >> "$GITHUB_OUTPUT"
         env:
           CLI_GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
-      - name: Create pull request
-        if: ${{ steps.update.outputs.commit_message }}
-        uses: peter-evans/create-pull-request@v7
-        with:
-          commit-message: ${{ steps.update.outputs.commit_message }}
-          title: ${{ steps.update.outputs.commit_message }}
-          body: |
-            Automatically created pull-request to update Terraform versions.
+      # - name: Create pull request
+      #   if: ${{ steps.update.outputs.commit_message }}
+      #   uses: peter-evans/create-pull-request@v7
+      #   with:
+      #     commit-message: ${{ steps.update.outputs.commit_message }}
+      #     title: ${{ steps.update.outputs.commit_message }}
+      #     body: |
+      #       Automatically created pull-request to update Terraform versions.
 
-            This is the result of configuring a CLI_GITHUB_TOKEN in `.env` and running:
+      #       This is the result of configuring a CLI_GITHUB_TOKEN in `.env` and running:
 
-            ```
-            cd cli
-            go run . update --versions ../versions.json --vendor-hash ../vendor-hash.nix --templates-dir ../templates
-            ```
-          delete-branch: true
-          reviewers: |
-            oscar-izval
-            sestrella
-          token: ${{ steps.app-token.outputs.token }}
+      #       ```
+      #       cd cli
+      #       go run . update --versions ../versions.json --vendor-hash ../vendor-hash.nix --templates-dir ../templates
+      #       ```
+      #     delete-branch: true
+      #     reviewers: |
+      #       oscar-izval
+      #       sestrella
+      #     token: ${{ steps.app-token.outputs.token }}
 
   # notify:
   #   if: failure()
