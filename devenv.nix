@@ -5,5 +5,5 @@
     pkgs.semantic-release
   ];
 
-  pre-commit.hooks.nixpkgs-fmt.enable = true;
+  git-hooks.hooks.nixpkgs-fmt.enable = true;
 }
