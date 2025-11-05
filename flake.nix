@@ -12,10 +12,11 @@
   };
 
   outputs =
-    inputs@{ self
-    , nixpkgs
-    , systems
-    , ...
+    inputs@{
+      self,
+      nixpkgs,
+      systems,
+      ...
     }:
     let
       forAllSystems = nixpkgs.lib.genAttrs (import systems);
@@ -34,34 +35,28 @@
 
       terraformAliases = forAllSystems (
         system:
-        nixpkgs.lib.mapAttrs'
-          (cycle: version: {
-            name = "terraform-${cycle}";
-            value = terraformReleases.${system}."terraform-${version}";
-          })
-          terraformVersions.aliases
+        nixpkgs.lib.mapAttrs' (cycle: version: {
+          name = "terraform-${cycle}";
+          value = terraformReleases.${system}."terraform-${version}";
+        }) terraformVersions.aliases
       );
 
       deprecatedReleases = forAllSystems (
         system:
-        builtins.mapAttrs
-          (
-            version: _:
-              builtins.warn "package \"${version}\" is deprecated; use \"terraform-${version}\" instead"
-                terraformReleases.${system}."terraform-${version}"
-          )
-          terraformVersions.releases
+        builtins.mapAttrs (
+          version: _:
+          builtins.warn "package \"${version}\" is deprecated; use \"terraform-${version}\" instead"
+            terraformReleases.${system}."terraform-${version}"
+        ) terraformVersions.releases
       );
 
       deprecatedAliases = forAllSystems (
         system:
-        builtins.mapAttrs
-          (
-            cycle: _:
-              builtins.warn "package \"${cycle}\" is deprecated; use \"terraform-${cycle}\" instead"
-                terraformAliases.${system}."terraform-${cycle}"
-          )
-          terraformVersions.aliases
+        builtins.mapAttrs (
+          cycle: _:
+          builtins.warn "package \"${cycle}\" is deprecated; use \"terraform-${cycle}\" instead"
+            terraformAliases.${system}."terraform-${cycle}"
+        ) terraformVersions.aliases
       );
     in
     {
