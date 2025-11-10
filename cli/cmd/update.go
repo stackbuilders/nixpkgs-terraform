@@ -16,12 +16,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const (
-	OWNER = "hashicorp"
-	REPO  = "terraform"
-)
-
 var (
+	owner          string
+	repo           string
 	vendorHashPath string
 	versionsPath   string
 	templatesPath  string
@@ -118,6 +115,8 @@ var updateCmd = &cobra.Command{
 			vendorHashPath,
 			templatesPath,
 			minVersion,
+			owner,
+			repo,
 		)
 		if err != nil {
 			return fmt.Errorf("unable to update versions: %w", err)
@@ -153,13 +152,15 @@ func updateVersions(
 	vendorHashPath string,
 	templatesPath string,
 	minVersion *semver.Version,
+	owner string,
+	repo string,
 ) (*LastestChanges, error) {
 	versions, err := readVersions(versionsPath)
 	if err != nil {
 		return nil, fmt.Errorf("unable to read versions: %w", err)
 	}
 
-	releases, err := getRepoReleases(token)
+	releases, err := getRepoReleases(token, owner, repo)
 	if err != nil {
 		return nil, err
 	}
@@ -178,7 +179,7 @@ func updateVersions(
 				log.Printf("Version %s found in file\n", version)
 			} else {
 				log.Printf("Computing hashes for %s\n", version)
-				hash, err := computeHash(nixPath, tagName)
+				hash, err := computeHash(nixPath, tagName, owner, repo)
 				if err != nil {
 					return nil, fmt.Errorf("unable to compute hash: %w", err)
 				}
@@ -299,7 +300,7 @@ func readVersions(versionsPath string) (*Versions, error) {
 	return versions, nil
 }
 
-func getRepoReleases(token string) ([]github.RepositoryRelease, error) {
+func getRepoReleases(token string, owner string, repo string) ([]github.RepositoryRelease, error) {
 	client := github.NewClient(nil)
 	if token != "" {
 		client = client.WithAuthToken(token)
@@ -310,8 +311,8 @@ func getRepoReleases(token string) ([]github.RepositoryRelease, error) {
 	for {
 		releases, resp, err := client.Repositories.ListReleases(
 			context.Background(),
-			OWNER,
-			REPO,
+			owner,
+			repo,
 			opt,
 		)
 		if err != nil {
@@ -331,11 +332,11 @@ func getRepoReleases(token string) ([]github.RepositoryRelease, error) {
 	return allReleases, nil
 }
 
-func computeHash(nixPath string, tagName string) (string, error) {
+func computeHash(nixPath string, tagName string, owner string, repo string) (string, error) {
 	cmd := exec.Command(
 		nixPath, "flake", "prefetch",
 		"--extra-experimental-features", "nix-command flakes",
-		"--json", fmt.Sprintf("github:%s/%s/%s", OWNER, REPO, tagName),
+		"--json", fmt.Sprintf("github:%s/%s/%s", owner, repo, tagName),
 	)
 
 	// Redirect stderr to the standard logger
@@ -404,6 +405,10 @@ func init() {
 		StringVarP(&templatesPath, "templates-dir", "", "templates", "Directory containing templates to update versions")
 	updateCmd.Flags().
 		StringVarP(&minVersionStr, "min-version", "", "1.0.0", "Min release version")
+	updateCmd.Flags().
+		StringVarP(&owner, "owner", "", "hashicorp", "GitHub repository owner")
+	updateCmd.Flags().
+		StringVarP(&repo, "repo", "", "terraform", "GitHub repository name")
 
 	rootCmd.AddCommand(updateCmd)
 }
