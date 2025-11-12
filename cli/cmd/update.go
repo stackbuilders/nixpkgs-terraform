@@ -160,34 +160,29 @@ func updateVersions(
 		return nil, fmt.Errorf("unable to read versions: %w", err)
 	}
 
-	releases, err := getRepoReleases(token, owner, repo)
-	if err != nil {
-		return nil, err
-	}
-
 	var newVersions []semver.Version
-	for _, release := range releases {
+	err = withRepoReleases(token, owner, repo, func(release *github.RepositoryRelease) error {
 		tagName := release.GetTagName()
 		version, err := semver.NewVersion(strings.TrimLeft(tagName, "v"))
 		if err != nil {
 			log.Printf("Skipping invalid tag '%s': %v\n", tagName, err)
-			continue
+			return nil
 		}
 
-		if version.Compare(minVersion) >= 0 && version.Prerelease() == "" {
+		if version.Compare(minVersion) >= 0 {
 			if _, ok := versions.Releases[*version]; ok {
 				log.Printf("Version %s found in file\n", version)
 			} else {
 				log.Printf("Computing hashes for %s\n", version)
 				hash, err := computeHash(nixPath, tagName, owner, repo)
 				if err != nil {
-					return nil, fmt.Errorf("unable to compute hash: %w", err)
+					return fmt.Errorf("unable to compute hash: %w", err)
 				}
 
 				log.Printf("Computed hash: %s\n", hash)
 				vendorHash, err := computeVendorHash(nixPrefetchPath, vendorHashPath, version, hash)
 				if err != nil {
-					return nil, fmt.Errorf("unable to compute vendor hash: %w", err)
+					return fmt.Errorf("unable to compute vendor hash: %w", err)
 				}
 
 				log.Printf("Computed vendor hash: %s\n", vendorHash)
@@ -195,6 +190,10 @@ func updateVersions(
 				newVersions = append(newVersions, *version)
 			}
 		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
 	}
 
 	versions.Latest = make(map[Alias]semver.Version)
@@ -300,14 +299,13 @@ func readVersions(versionsPath string) (*Versions, error) {
 	return versions, nil
 }
 
-func getRepoReleases(token string, owner string, repo string) ([]github.RepositoryRelease, error) {
+func withRepoReleases(token string, owner string, repo string, callback func(release *github.RepositoryRelease) error) error {
 	client := github.NewClient(nil)
 	if token != "" {
 		client = client.WithAuthToken(token)
 	}
 	opt := &github.ListOptions{Page: 1}
 
-	var allReleases []github.RepositoryRelease
 	for {
 		releases, resp, err := client.Repositories.ListReleases(
 			context.Background(),
@@ -316,11 +314,17 @@ func getRepoReleases(token string, owner string, repo string) ([]github.Reposito
 			opt,
 		)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		for _, release := range releases {
-			allReleases = append(allReleases, *release)
+			if release.GetPrerelease() {
+				log.Printf("Skipping prerelease: %s", release.GetTagName())
+				continue
+			}
+			if err := callback(release); err != nil {
+				return err
+			}
 		}
 		if resp.NextPage == 0 {
 			break
@@ -329,7 +333,7 @@ func getRepoReleases(token string, owner string, repo string) ([]github.Reposito
 		opt.Page = resp.NextPage
 	}
 
-	return allReleases, nil
+	return nil
 }
 
 func computeHash(nixPath string, tagName string, owner string, repo string) (string, error) {
