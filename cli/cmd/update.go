@@ -317,7 +317,6 @@ func withRepoReleases(
 
 		for _, release := range releases {
 			if release.GetPrerelease() {
-				log.Printf("Skipping prerelease: %s", release.GetTagName())
 				continue
 			}
 
@@ -328,7 +327,7 @@ func withRepoReleases(
 				continue
 			}
 
-			if version.Compare(minVersion) >= 0 {
+			if version.Compare(minVersion) <= 0 {
 				continue
 			}
 
