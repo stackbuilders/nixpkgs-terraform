@@ -12,8 +12,8 @@
   };
 
   outputs =
-    inputs@{ nixpkgs
-    , self
+    inputs@{ self
+    , nixpkgs
     , systems
     , ...
     }:
@@ -26,22 +26,52 @@
         system:
         self.lib.mkReleases {
           inherit system;
-          mkRelease = self.lib.mkTerraform;
           releases = terraformVersions.releases;
+          namePrefix = "terraform";
+          mkRelease = self.lib.mkTerraform;
         }
       );
 
       terraformAliases = forAllSystems (
         system:
+        nixpkgs.lib.mapAttrs'
+          (cycle: version: {
+            name = "terraform-${cycle}";
+            value = terraformReleases.${system}."terraform-${version}";
+          })
+          terraformVersions.aliases
+      );
+
+      deprecatedReleases = forAllSystems (
+        system:
         builtins.mapAttrs
           (
-            _cycle: version: terraformReleases.${system}.${version}
+            version: _:
+              builtins.warn "package \"${version}\" is deprecated use \"terraform-${version}\" instead"
+                terraformReleases.${system}."terraform-${version}"
+          )
+          terraformVersions.releases
+      );
+
+      deprecatedAliases = forAllSystems (
+        system:
+        builtins.mapAttrs
+          (
+            cycle: _:
+              builtins.warn "package \"${cycle}\" is deprecated use \"terraform-${cycle}\" instead"
+                terraformAliases.${system}."terraform-${cycle}"
           )
           terraformVersions.aliases
       );
     in
     {
-      packages = forAllSystems (system: terraformReleases.${system} // terraformAliases.${system});
+      packages = forAllSystems (
+        system:
+        terraformReleases.${system}
+        // terraformAliases.${system}
+        // deprecatedReleases.${system}
+        // deprecatedAliases.${system}
+      );
 
       checks = terraformAliases;
 

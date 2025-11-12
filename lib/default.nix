@@ -49,21 +49,25 @@
 
   mkReleases =
     { system
-    , mkRelease
     , releases
+    , namePrefix
+    , mkRelease
     ,
     }:
-    builtins.mapAttrs
+    inputs.nixpkgs.lib.mapAttrs'
       (
         version:
         { hash, vendorHash }:
-        mkRelease {
-          inherit
-            system
-            version
-            hash
-            vendorHash
-            ;
+        {
+          name = "${namePrefix}-${version}";
+          value = mkRelease {
+            inherit
+              system
+              version
+              hash
+              vendorHash
+              ;
+          };
         }
       )
       releases;
