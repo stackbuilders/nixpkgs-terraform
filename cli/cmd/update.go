@@ -161,36 +161,27 @@ func updateVersions(
 	}
 
 	var newVersions []semver.Version
-	err = withRepoReleases(token, owner, repo, func(release *github.RepositoryRelease) error {
-		tagName := release.GetTagName()
-		version, err := semver.NewVersion(strings.TrimLeft(tagName, "v"))
-		if err != nil {
-			log.Printf("Skipping invalid tag '%s': %v\n", tagName, err)
+	err = withRepoReleases(token, owner, repo, minVersion, func(version *semver.Version, release *github.RepositoryRelease) error {
+		if _, ok := versions.Releases[*version]; ok {
+			log.Printf("Version %s found in file\n", version)
 			return nil
 		}
 
-		if version.Compare(minVersion) >= 0 {
-			if _, ok := versions.Releases[*version]; ok {
-				log.Printf("Version %s found in file\n", version)
-				return nil
-			}
-
-			log.Printf("Computing hashes for %s\n", version)
-			hash, err := computeHash(nixPath, tagName, owner, repo)
-			if err != nil {
-				return fmt.Errorf("unable to compute hash: %w", err)
-			}
-
-			log.Printf("Computed hash: %s\n", hash)
-			vendorHash, err := computeVendorHash(nixPrefetchPath, vendorHashPath, version, hash)
-			if err != nil {
-				return fmt.Errorf("unable to compute vendor hash: %w", err)
-			}
-
-			log.Printf("Computed vendor hash: %s\n", vendorHash)
-			versions.Releases[*version] = Release{Hash: hash, VendorHash: vendorHash}
-			newVersions = append(newVersions, *version)
+		log.Printf("Computing hashes for %s\n", version)
+		hash, err := computeHash(nixPath, release.GetTagName(), owner, repo)
+		if err != nil {
+			return fmt.Errorf("unable to compute hash: %w", err)
 		}
+
+		log.Printf("Computed hash: %s\n", hash)
+		vendorHash, err := computeVendorHash(nixPrefetchPath, vendorHashPath, version, hash)
+		if err != nil {
+			return fmt.Errorf("unable to compute vendor hash: %w", err)
+		}
+
+		log.Printf("Computed vendor hash: %s\n", vendorHash)
+		versions.Releases[*version] = Release{Hash: hash, VendorHash: vendorHash}
+		newVersions = append(newVersions, *version)
 		return nil
 	})
 	if err != nil {
@@ -300,7 +291,13 @@ func readVersions(versionsPath string) (*Versions, error) {
 	return versions, nil
 }
 
-func withRepoReleases(token string, owner string, repo string, callback func(release *github.RepositoryRelease) error) error {
+func withRepoReleases(
+	token string,
+	owner string,
+	repo string,
+	minVersion *semver.Version,
+	callback func(version *semver.Version, release *github.RepositoryRelease) error,
+) error {
 	client := github.NewClient(nil)
 	if token != "" {
 		client = client.WithAuthToken(token)
@@ -323,7 +320,19 @@ func withRepoReleases(token string, owner string, repo string, callback func(rel
 				log.Printf("Skipping prerelease: %s", release.GetTagName())
 				continue
 			}
-			if err := callback(release); err != nil {
+
+			tagName := release.GetTagName()
+			version, err := semver.NewVersion(strings.TrimLeft(tagName, "v"))
+			if err != nil {
+				log.Printf("Skipping invalid tag '%s': %v\n", tagName, err)
+				continue
+			}
+
+			if version.Compare(minVersion) >= 0 {
+				continue
+			}
+
+			if err := callback(version, release); err != nil {
 				return err
 			}
 		}
