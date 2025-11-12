@@ -27,7 +27,7 @@ var (
 
 type Versions struct {
 	Releases map[semver.Version]Release `json:"releases"`
-	Latest   map[Alias]semver.Version   `json:"latest"`
+	Aliases  map[Alias]semver.Version   `json:"aliases"`
 }
 
 type Release struct {
@@ -188,11 +188,11 @@ func updateVersions(
 		return nil, err
 	}
 
-	versions.Latest = make(map[Alias]semver.Version)
+	versions.Aliases = make(map[Alias]semver.Version)
 	for version := range versions.Releases {
 		alias := Alias{*semver.New(version.Major(), version.Minor(), 0, "", "")}
-		if latest, ok := versions.Latest[alias]; !ok || version.Compare(&latest) > 0 {
-			versions.Latest[alias] = version
+		if latest, ok := versions.Aliases[alias]; !ok || version.Compare(&latest) > 0 {
+			versions.Aliases[alias] = version
 		}
 	}
 
@@ -233,7 +233,7 @@ func getLatestAlias(aliases []Alias) (*Alias, error) {
 
 func updateTemplatesVersions(versions *Versions, templatesPath string) (*Alias, error) {
 	var aliases []Alias
-	for alias := range versions.Latest {
+	for alias := range versions.Aliases {
 		aliases = append(aliases, alias)
 	}
 
