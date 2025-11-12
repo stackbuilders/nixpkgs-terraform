@@ -283,11 +283,12 @@ func readVersions(versionsPath string) (*Versions, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	var versions *Versions
-	err = json.Unmarshal(content, &versions)
-	if err != nil {
+	if err = json.Unmarshal(content, &versions); err != nil {
 		return nil, err
 	}
+
 	return versions, nil
 }
 
@@ -335,6 +336,7 @@ func withRepoReleases(
 				return err
 			}
 		}
+
 		if resp.NextPage == 0 {
 			break
 		}
