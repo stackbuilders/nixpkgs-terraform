@@ -75,8 +75,17 @@
 
       checks = terraformAliases;
 
-      overlays.default = final: prev: {
-        terraform-versions = self.packages.${prev.system};
+      overlays = {
+        default =
+          final: prev:
+          {
+            terraform-versions =
+              builtins.warn
+                "\"terraform-versions\" is deprecated use packages prefixed with \"terraform-\" instead"
+                self.packages.${prev.system};
+          }
+          // self.overlays.terraform final prev;
+        terraform = final: prev: terraformReleases.${prev.system} // terraformAliases.${prev.system};
       };
 
       lib = import ./lib { inherit inputs; };
