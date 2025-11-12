@@ -380,8 +380,11 @@ func computeVendorHash(
 	version *semver.Version,
 	hash string,
 ) (string, error) {
-	vendorHash, err := runNixPrefetch(
+	cmd := exec.Command(
 		nixPrefetchPath,
+		"--option",
+		"extra-experimental-features",
+		"flakes",
 		"--file",
 		vendorHashFile,
 		"--argstr",
@@ -389,20 +392,9 @@ func computeVendorHash(
 		version.String(),
 		"--argstr",
 		"hash",
-		hash)
-	if err != nil {
-		return "", err
-	}
-
-	return vendorHash, nil
-}
-
-func runNixPrefetch(nixPrefetchPath string, extraArgs ...string) (string, error) {
-	args := append([]string{"--option", "extra-experimental-features", "flakes"}, extraArgs...)
-
-	cmd := exec.Command(nixPrefetchPath, args...)
+		hash,
+	)
 	cmd.Stderr = log.Writer()
-
 	output, err := cmd.Output()
 	if err != nil {
 		return "", err
