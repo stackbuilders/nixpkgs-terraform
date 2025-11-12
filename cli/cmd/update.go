@@ -327,7 +327,7 @@ func withRepoReleases(
 				continue
 			}
 
-			if version.Compare(minVersion) <= 0 {
+			if version.Compare(minVersion) < 0 {
 				continue
 			}
 
