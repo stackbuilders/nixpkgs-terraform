@@ -1,14 +1,37 @@
+{ inputs }:
+
 let
-  buildTerraform =
-    { pkgs
+  mkTerraform =
+    { system ? builtins.currentSystem
     , version
     , hash
-    , vendorHash
+    , vendorHash ? "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
     ,
     }:
 
+    let
+      pkgs =
+        if builtins.compareVersions version "1.9.0" >= 0 then
+          import inputs.nixpkgs
+            {
+              inherit system;
+              config.allowUnfree = true;
+            }
+        else if builtins.compareVersions version "1.6.0" >= 0 then
+          import inputs.nixpkgs-24_05
+            {
+              inherit system;
+              config.allowUnfree = true;
+            }
+        else
+          import inputs.nixpkgs-23_05 {
+            inherit system;
+            config.allowUnfree = false;
+          };
+    in
+
     pkgs.lib.warnIf (builtins.compareVersions version "1.6.0" >= 0)
-      ("allowUnfree is enabled to build version " + version)
+      "allowUnfree is enabled to build version ${version}"
       pkgs.mkTerraform
       {
         inherit version hash vendorHash;
@@ -24,45 +47,10 @@ let
         ];
       };
 
-  __buildTerraformFor =
-    { inputs
-    , system
-    , version
-    , hash
-    , vendorHash
-    ,
-    }:
-
-    let
-      pkgs-1_9 = import inputs.nixpkgs {
-        inherit system;
-        config.allowUnfree = true;
-      };
-      pkgs-1_6 = import inputs.nixpkgs-1_6 {
-        inherit system;
-        config.allowUnfree = true;
-      };
-      pkgs-1_0 = import inputs.nixpkgs-1_0 { inherit system; };
-    in
-    buildTerraform {
-      inherit
-        version
-        hash
-        vendorHash
-        ;
-      pkgs =
-        if builtins.compareVersions version "1.9.0" >= 0 then
-          pkgs-1_9
-        else if builtins.compareVersions version "1.6.0" >= 0 then
-          pkgs-1_6
-        else
-          pkgs-1_0;
-    };
-
-  __mkPackages =
-    { inputs
-    , system
+  mkReleases =
+    { system
     , releases
+    , mkRelease ? mkTerraform
     ,
     }:
 
@@ -70,9 +58,8 @@ let
       (
         version:
         { hash, vendorHash }:
-        __buildTerraformFor {
+        mkRelease {
           inherit
-            inputs
             system
             version
             hash
@@ -83,5 +70,5 @@ let
       releases;
 in
 {
-  inherit buildTerraform __buildTerraformFor __mkPackages;
+  inherit mkTerraform mkReleases;
 }

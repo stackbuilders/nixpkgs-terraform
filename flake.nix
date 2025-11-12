@@ -3,9 +3,9 @@
 
   inputs = {
     # INFO: Channel used for building versions from 1.0 up to 1.5
-    nixpkgs-1_0.url = "github:nixos/nixpkgs/nixos-23.05-small";
+    nixpkgs-23_05.url = "github:nixos/nixpkgs/nixos-23.05-small";
     # INFO: Channel used for building versions from 1.6 up to 1.8
-    nixpkgs-1_6.url = "github:nixos/nixpkgs/nixos-24.05-small";
+    nixpkgs-24_05.url = "github:nixos/nixpkgs/nixos-24.05-small";
     # INFO: Channel used for building versions from 1.9 onwards
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     systems.url = "github:nix-systems/default";
@@ -22,29 +22,28 @@
 
       versions = builtins.fromJSON (builtins.readFile ./versions.json);
 
-      # Create packages for each system
-      releasesFor = forAllSystems (
+      terraformReleases = forAllSystems (
         system:
-        self.lib.__mkPackages {
-          inherit inputs system;
+        self.lib.mkReleases {
+          inherit system;
           releases = versions.releases;
         }
       );
 
-      latestFor = forAllSystems (
-        system: builtins.mapAttrs (_cycle: version: releasesFor.${system}.${version}) versions.latest
+      terraformAliases = forAllSystems (
+        system: builtins.mapAttrs (_cycle: version: terraformReleases.${system}.${version}) versions.latest
       );
     in
     {
-      packages = forAllSystems (system: releasesFor.${system} // latestFor.${system});
+      packages = forAllSystems (system: terraformReleases.${system} // terraformAliases.${system});
 
-      checks = latestFor;
+      checks = terraformAliases;
 
       overlays.default = final: prev: {
         terraform-versions = self.packages.${prev.system};
       };
 
-      lib = import ./lib;
+      lib = import ./lib { inherit inputs; };
 
       templates = {
         default = {

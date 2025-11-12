@@ -1,16 +1,10 @@
 { version, hash }:
-{ sha256 }:
-let
-  flake = builtins.getFlake (toString ./.);
-  system = builtins.currentSystem;
 
-  terraform = flake.lib.__buildTerraformFor {
-    inherit
-      system
-      version
-      hash
-      ;
-    inputs = flake.inputs;
+{ sha256 }:
+
+let
+  terraform = (builtins.getFlake (toString ./.)).lib.mkTerraform {
+    inherit version hash;
     vendorHash = sha256;
   };
 in

@@ -302,8 +302,8 @@ func withRepoReleases(
 	if token != "" {
 		client = client.WithAuthToken(token)
 	}
-	opt := &github.ListOptions{Page: 1}
 
+	opt := &github.ListOptions{Page: 1}
 	for {
 		releases, resp, err := client.Repositories.ListReleases(
 			context.Background(),
