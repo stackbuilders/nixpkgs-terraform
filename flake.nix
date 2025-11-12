@@ -12,26 +12,32 @@
   };
 
   outputs =
-    inputs@{ self
-    , nixpkgs
+    inputs@{ nixpkgs
+    , self
     , systems
     , ...
     }:
     let
       forAllSystems = nixpkgs.lib.genAttrs (import systems);
 
-      versions = builtins.fromJSON (builtins.readFile ./versions.json);
+      terraformVersions = builtins.fromJSON (builtins.readFile ./versions.json);
 
       terraformReleases = forAllSystems (
         system:
         self.lib.mkReleases {
           inherit system;
-          releases = versions.releases;
+          mkRelease = self.lib.mkTerraform;
+          releases = terraformVersions.releases;
         }
       );
 
       terraformAliases = forAllSystems (
-        system: builtins.mapAttrs (_cycle: version: terraformReleases.${system}.${version}) versions.latest
+        system:
+        builtins.mapAttrs
+          (
+            _cycle: version: terraformReleases.${system}.${version}
+          )
+          terraformVersions.aliases
       );
     in
     {

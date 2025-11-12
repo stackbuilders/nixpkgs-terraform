@@ -1,6 +1,6 @@
 { inputs }:
 
-let
+{
   mkTerraform =
     { system ? builtins.currentSystem
     , version
@@ -49,11 +49,10 @@ let
 
   mkReleases =
     { system
+    , mkRelease
     , releases
-    , mkRelease ? mkTerraform
     ,
     }:
-
     builtins.mapAttrs
       (
         version:
@@ -68,7 +67,4 @@ let
         }
       )
       releases;
-in
-{
-  inherit mkTerraform mkReleases;
 }
