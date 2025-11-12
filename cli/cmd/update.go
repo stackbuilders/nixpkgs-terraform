@@ -172,23 +172,24 @@ func updateVersions(
 		if version.Compare(minVersion) >= 0 {
 			if _, ok := versions.Releases[*version]; ok {
 				log.Printf("Version %s found in file\n", version)
-			} else {
-				log.Printf("Computing hashes for %s\n", version)
-				hash, err := computeHash(nixPath, tagName, owner, repo)
-				if err != nil {
-					return fmt.Errorf("unable to compute hash: %w", err)
-				}
-
-				log.Printf("Computed hash: %s\n", hash)
-				vendorHash, err := computeVendorHash(nixPrefetchPath, vendorHashPath, version, hash)
-				if err != nil {
-					return fmt.Errorf("unable to compute vendor hash: %w", err)
-				}
-
-				log.Printf("Computed vendor hash: %s\n", vendorHash)
-				versions.Releases[*version] = Release{Hash: hash, VendorHash: vendorHash}
-				newVersions = append(newVersions, *version)
+				return nil
 			}
+
+			log.Printf("Computing hashes for %s\n", version)
+			hash, err := computeHash(nixPath, tagName, owner, repo)
+			if err != nil {
+				return fmt.Errorf("unable to compute hash: %w", err)
+			}
+
+			log.Printf("Computed hash: %s\n", hash)
+			vendorHash, err := computeVendorHash(nixPrefetchPath, vendorHashPath, version, hash)
+			if err != nil {
+				return fmt.Errorf("unable to compute vendor hash: %w", err)
+			}
+
+			log.Printf("Computed vendor hash: %s\n", vendorHash)
+			versions.Releases[*version] = Release{Hash: hash, VendorHash: vendorHash}
+			newVersions = append(newVersions, *version)
 		}
 		return nil
 	})
@@ -340,7 +341,7 @@ func computeHash(nixPath string, tagName string, owner string, repo string) (str
 	cmd := exec.Command(
 		nixPath, "flake", "prefetch",
 		"--extra-experimental-features", "nix-command flakes",
-		"--json", fmt.Sprintf("github:%s/%s/%s", owner, repo, tagName),
+		"--json", fmt.Sprintf("github:%s/%s?ref=%s", owner, repo, tagName),
 	)
 
 	// Redirect stderr to the standard logger
