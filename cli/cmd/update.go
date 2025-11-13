@@ -191,7 +191,7 @@ func updateVersions(
 	versions.Aliases = make(map[Alias]semver.Version)
 	for version := range versions.Releases {
 		alias := Alias{*semver.New(version.Major(), version.Minor(), 0, "", "")}
-		if latest, ok := versions.Aliases[alias]; !ok || version.Compare(&latest) > 0 {
+		if latest, ok := versions.Aliases[alias]; !ok || version.GreaterThan(&latest) {
 			versions.Aliases[alias] = version
 		}
 	}
@@ -328,7 +328,7 @@ func withRepoReleases(
 				continue
 			}
 
-			if minVersion.Compare(version) >= 0 {
+			if version.LessThan(minVersion) {
 				continue
 			}
 
