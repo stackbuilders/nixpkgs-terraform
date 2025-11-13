@@ -16,12 +16,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const (
-	OWNER = "hashicorp"
-	REPO  = "terraform"
-)
-
 var (
+	owner          string
+	repo           string
 	vendorHashPath string
 	versionsPath   string
 	templatesPath  string
@@ -30,7 +27,7 @@ var (
 
 type Versions struct {
 	Releases map[semver.Version]Release `json:"releases"`
-	Latest   map[Alias]semver.Version   `json:"latest"`
+	Aliases  map[Alias]semver.Version   `json:"aliases"`
 }
 
 type Release struct {
@@ -118,6 +115,8 @@ var updateCmd = &cobra.Command{
 			vendorHashPath,
 			templatesPath,
 			minVersion,
+			owner,
+			repo,
 		)
 		if err != nil {
 			return fmt.Errorf("unable to update versions: %w", err)
@@ -153,54 +152,47 @@ func updateVersions(
 	vendorHashPath string,
 	templatesPath string,
 	minVersion *semver.Version,
+	owner string,
+	repo string,
 ) (*LastestChanges, error) {
 	versions, err := readVersions(versionsPath)
 	if err != nil {
 		return nil, fmt.Errorf("unable to read versions: %w", err)
 	}
 
-	releases, err := getRepoReleases(token)
+	var newVersions []semver.Version
+	err = withRepoReleases(token, owner, repo, minVersion, func(version *semver.Version, release *github.RepositoryRelease) error {
+		if _, ok := versions.Releases[*version]; ok {
+			log.Printf("Version %s found in file\n", version)
+			return nil
+		}
+
+		log.Printf("Computing hashes for %s\n", version)
+		hash, err := computeHash(nixPath, release.GetTagName(), owner, repo)
+		if err != nil {
+			return fmt.Errorf("unable to compute hash: %w", err)
+		}
+
+		log.Printf("Computed hash: %s\n", hash)
+		vendorHash, err := computeVendorHash(nixPrefetchPath, vendorHashPath, version, hash)
+		if err != nil {
+			return fmt.Errorf("unable to compute vendor hash: %w", err)
+		}
+
+		log.Printf("Computed vendor hash: %s\n", vendorHash)
+		versions.Releases[*version] = Release{Hash: hash, VendorHash: vendorHash}
+		newVersions = append(newVersions, *version)
+		return nil
+	})
 	if err != nil {
 		return nil, err
 	}
 
-	var newVersions []semver.Version
-	for _, release := range releases {
-		tagName := release.GetTagName()
-		version, err := semver.NewVersion(strings.TrimLeft(tagName, "v"))
-		if err != nil {
-			log.Printf("Skipping invalid tag '%s': %v\n", tagName, err)
-			continue
-		}
-
-		if version.Compare(minVersion) >= 0 && version.Prerelease() == "" {
-			if _, ok := versions.Releases[*version]; ok {
-				log.Printf("Version %s found in file\n", version)
-			} else {
-				log.Printf("Computing hashes for %s\n", version)
-				hash, err := computeHash(nixPath, tagName)
-				if err != nil {
-					return nil, fmt.Errorf("unable to compute hash: %w", err)
-				}
-
-				log.Printf("Computed hash: %s\n", hash)
-				vendorHash, err := computeVendorHash(nixPrefetchPath, vendorHashPath, version, hash)
-				if err != nil {
-					return nil, fmt.Errorf("unable to compute vendor hash: %w", err)
-				}
-
-				log.Printf("Computed vendor hash: %s\n", vendorHash)
-				versions.Releases[*version] = Release{Hash: hash, VendorHash: vendorHash}
-				newVersions = append(newVersions, *version)
-			}
-		}
-	}
-
-	versions.Latest = make(map[Alias]semver.Version)
+	versions.Aliases = make(map[Alias]semver.Version)
 	for version := range versions.Releases {
 		alias := Alias{*semver.New(version.Major(), version.Minor(), 0, "", "")}
-		if latest, ok := versions.Latest[alias]; !ok || version.Compare(&latest) > 0 {
-			versions.Latest[alias] = version
+		if latest, ok := versions.Aliases[alias]; !ok || version.GreaterThan(&latest) {
+			versions.Aliases[alias] = version
 		}
 	}
 
@@ -241,7 +233,7 @@ func getLatestAlias(aliases []Alias) (*Alias, error) {
 
 func updateTemplatesVersions(versions *Versions, templatesPath string) (*Alias, error) {
 	var aliases []Alias
-	for alias := range versions.Latest {
+	for alias := range versions.Aliases {
 		aliases = append(aliases, alias)
 	}
 
@@ -291,36 +283,60 @@ func readVersions(versionsPath string) (*Versions, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	var versions *Versions
-	err = json.Unmarshal(content, &versions)
-	if err != nil {
+	if err = json.Unmarshal(content, &versions); err != nil {
 		return nil, err
 	}
+
 	return versions, nil
 }
 
-func getRepoReleases(token string) ([]github.RepositoryRelease, error) {
+func withRepoReleases(
+	token string,
+	owner string,
+	repo string,
+	minVersion *semver.Version,
+	callback func(version *semver.Version, release *github.RepositoryRelease) error,
+) error {
 	client := github.NewClient(nil)
 	if token != "" {
 		client = client.WithAuthToken(token)
 	}
-	opt := &github.ListOptions{Page: 1}
 
-	var allReleases []github.RepositoryRelease
+	opt := &github.ListOptions{Page: 1}
 	for {
 		releases, resp, err := client.Repositories.ListReleases(
 			context.Background(),
-			OWNER,
-			REPO,
+			owner,
+			repo,
 			opt,
 		)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		for _, release := range releases {
-			allReleases = append(allReleases, *release)
+			if release.GetPrerelease() {
+				continue
+			}
+
+			tagName := release.GetTagName()
+			version, err := semver.NewVersion(strings.TrimLeft(tagName, "v"))
+			if err != nil {
+				log.Printf("Skipping invalid tag '%s': %v\n", tagName, err)
+				continue
+			}
+
+			if version.LessThan(minVersion) {
+				continue
+			}
+
+			if err := callback(version, release); err != nil {
+				return err
+			}
 		}
+
 		if resp.NextPage == 0 {
 			break
 		}
@@ -328,14 +344,14 @@ func getRepoReleases(token string) ([]github.RepositoryRelease, error) {
 		opt.Page = resp.NextPage
 	}
 
-	return allReleases, nil
+	return nil
 }
 
-func computeHash(nixPath string, tagName string) (string, error) {
+func computeHash(nixPath string, tagName string, owner string, repo string) (string, error) {
 	cmd := exec.Command(
 		nixPath, "flake", "prefetch",
 		"--extra-experimental-features", "nix-command flakes",
-		"--json", fmt.Sprintf("github:%s/%s/%s", OWNER, REPO, tagName),
+		"--json", fmt.Sprintf("github:%s/%s?ref=%s", owner, repo, tagName),
 	)
 
 	// Redirect stderr to the standard logger
@@ -364,8 +380,11 @@ func computeVendorHash(
 	version *semver.Version,
 	hash string,
 ) (string, error) {
-	vendorHash, err := runNixPrefetch(
+	cmd := exec.Command(
 		nixPrefetchPath,
+		"--option",
+		"extra-experimental-features",
+		"flakes",
 		"--file",
 		vendorHashFile,
 		"--argstr",
@@ -373,20 +392,9 @@ func computeVendorHash(
 		version.String(),
 		"--argstr",
 		"hash",
-		hash)
-	if err != nil {
-		return "", err
-	}
-
-	return vendorHash, nil
-}
-
-func runNixPrefetch(nixPrefetchPath string, extraArgs ...string) (string, error) {
-	args := append([]string{"--option", "extra-experimental-features", "flakes"}, extraArgs...)
-
-	cmd := exec.Command(nixPrefetchPath, args...)
+		hash,
+	)
 	cmd.Stderr = log.Writer()
-
 	output, err := cmd.Output()
 	if err != nil {
 		return "", err
@@ -404,6 +412,10 @@ func init() {
 		StringVarP(&templatesPath, "templates-dir", "", "templates", "Directory containing templates to update versions")
 	updateCmd.Flags().
 		StringVarP(&minVersionStr, "min-version", "", "1.0.0", "Min release version")
+	updateCmd.Flags().
+		StringVarP(&owner, "owner", "", "hashicorp", "GitHub repository owner")
+	updateCmd.Flags().
+		StringVarP(&repo, "repo", "", "terraform", "GitHub repository name")
 
 	rootCmd.AddCommand(updateCmd)
 }

@@ -3,9 +3,9 @@
 
   inputs = {
     # INFO: Channel used for building versions from 1.0 up to 1.5
-    nixpkgs-1_0.url = "github:nixos/nixpkgs/nixos-23.05-small";
+    nixpkgs-23_05.url = "github:nixos/nixpkgs/nixos-23.05-small";
     # INFO: Channel used for building versions from 1.6 up to 1.8
-    nixpkgs-1_6.url = "github:nixos/nixpkgs/nixos-24.05-small";
+    nixpkgs-24_05.url = "github:nixos/nixpkgs/nixos-24.05-small";
     # INFO: Channel used for building versions from 1.9 onwards
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     systems.url = "github:nix-systems/default";
@@ -20,31 +20,75 @@
     let
       forAllSystems = nixpkgs.lib.genAttrs (import systems);
 
-      versions = builtins.fromJSON (builtins.readFile ./versions.json);
+      terraformVersions = builtins.fromJSON (builtins.readFile ./versions.json);
 
-      # Create packages for each system
-      releasesFor = forAllSystems (
+      terraformReleases = forAllSystems (
         system:
-        self.lib.__mkPackages {
-          inherit inputs system;
-          releases = versions.releases;
+        self.lib.mkReleases {
+          inherit system;
+          releases = terraformVersions.releases;
+          namePrefix = "terraform";
+          mkRelease = self.lib.mkTerraform;
         }
       );
 
-      latestFor = forAllSystems (
-        system: builtins.mapAttrs (_cycle: version: releasesFor.${system}.${version}) versions.latest
+      terraformAliases = forAllSystems (
+        system:
+        nixpkgs.lib.mapAttrs'
+          (cycle: version: {
+            name = "terraform-${cycle}";
+            value = terraformReleases.${system}."terraform-${version}";
+          })
+          terraformVersions.aliases
+      );
+
+      deprecatedReleases = forAllSystems (
+        system:
+        builtins.mapAttrs
+          (
+            version: _:
+              builtins.warn "package \"${version}\" is deprecated; use \"terraform-${version}\" instead"
+                terraformReleases.${system}."terraform-${version}"
+          )
+          terraformVersions.releases
+      );
+
+      deprecatedAliases = forAllSystems (
+        system:
+        builtins.mapAttrs
+          (
+            cycle: _:
+              builtins.warn "package \"${cycle}\" is deprecated; use \"terraform-${cycle}\" instead"
+                terraformAliases.${system}."terraform-${cycle}"
+          )
+          terraformVersions.aliases
       );
     in
     {
-      packages = forAllSystems (system: releasesFor.${system} // latestFor.${system});
+      packages = forAllSystems (
+        system:
+        terraformReleases.${system}
+        // terraformAliases.${system}
+        // deprecatedReleases.${system}
+        // deprecatedAliases.${system}
+      );
 
-      checks = latestFor;
+      checks = terraformAliases;
 
-      overlays.default = final: prev: {
-        terraform-versions = self.packages.${prev.system};
+      overlays = {
+        default =
+          final: prev:
+          {
+            terraform-versions =
+              builtins.warn
+                "\"terraform-versions\" packages are deprecated; use the prefixed \"terraform-\" packages instead"
+                self.packages.${prev.system};
+          }
+          // self.overlays.terraform final prev;
+        terraform = final: prev: terraformReleases.${prev.system} // terraformAliases.${prev.system};
       };
 
-      lib = import ./lib;
+      lib = import ./lib { inherit inputs; };
 
       templates = {
         default = {
