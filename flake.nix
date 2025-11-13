@@ -47,7 +47,7 @@
         builtins.mapAttrs
           (
             version: _:
-              builtins.warn "package \"${version}\" is deprecated use \"terraform-${version}\" instead"
+              builtins.warn "package \"${version}\" is deprecated; use \"terraform-${version}\" instead"
                 terraformReleases.${system}."terraform-${version}"
           )
           terraformVersions.releases
@@ -58,7 +58,7 @@
         builtins.mapAttrs
           (
             cycle: _:
-              builtins.warn "package \"${cycle}\" is deprecated use \"terraform-${cycle}\" instead"
+              builtins.warn "package \"${cycle}\" is deprecated; use \"terraform-${cycle}\" instead"
                 terraformAliases.${system}."terraform-${cycle}"
           )
           terraformVersions.aliases
@@ -81,7 +81,7 @@
           {
             terraform-versions =
               builtins.warn
-                "\"terraform-versions\" is deprecated use packages prefixed with \"terraform-\" instead"
+                "\"terraform-versions\" packages are deprecated; use the prefixed \"terraform-\" packages instead"
                 self.packages.${prev.system};
           }
           // self.overlays.terraform final prev;
