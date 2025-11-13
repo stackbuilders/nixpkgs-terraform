@@ -12,16 +12,37 @@
   };
 
   outputs =
-    inputs@{
-      self,
-      nixpkgs,
-      systems,
-      ...
+    inputs@{ self
+    , nixpkgs
+    , systems
+    , ...
     }:
     let
       forAllSystems = nixpkgs.lib.genAttrs (import systems);
 
-      terraformVersions = builtins.fromJSON (builtins.readFile ./versions.json);
+      opentofuVersions = builtins.fromJSON (builtins.readFile ./opentofu.json);
+
+      opentofuReleases = forAllSystems (
+        system:
+        self.lib.mkReleases {
+          inherit system;
+          releases = opentofuVersions.releases;
+          namePrefix = "opentofu";
+          mkRelease = self.lib.mkOpentofu;
+        }
+      );
+
+      opentofuAliases = forAllSystems (
+        system:
+        nixpkgs.lib.mapAttrs'
+          (cycle: version: {
+            name = "opentofu-${cycle}";
+            value = opentofuReleases.${system}."opentofu-${version}";
+          })
+          opentofuVersions.aliases
+      );
+
+      terraformVersions = builtins.fromJSON (builtins.readFile ./terraform.json);
 
       terraformReleases = forAllSystems (
         system:
@@ -35,34 +56,42 @@
 
       terraformAliases = forAllSystems (
         system:
-        nixpkgs.lib.mapAttrs' (cycle: version: {
-          name = "terraform-${cycle}";
-          value = terraformReleases.${system}."terraform-${version}";
-        }) terraformVersions.aliases
+        nixpkgs.lib.mapAttrs'
+          (cycle: version: {
+            name = "terraform-${cycle}";
+            value = terraformReleases.${system}."terraform-${version}";
+          })
+          terraformVersions.aliases
       );
 
       deprecatedReleases = forAllSystems (
         system:
-        builtins.mapAttrs (
-          version: _:
-          builtins.warn "package \"${version}\" is deprecated; use \"terraform-${version}\" instead"
-            terraformReleases.${system}."terraform-${version}"
-        ) terraformVersions.releases
+        builtins.mapAttrs
+          (
+            version: _:
+              builtins.warn "package \"${version}\" is deprecated; use \"terraform-${version}\" instead"
+                terraformReleases.${system}."terraform-${version}"
+          )
+          terraformVersions.releases
       );
 
       deprecatedAliases = forAllSystems (
         system:
-        builtins.mapAttrs (
-          cycle: _:
-          builtins.warn "package \"${cycle}\" is deprecated; use \"terraform-${cycle}\" instead"
-            terraformAliases.${system}."terraform-${cycle}"
-        ) terraformVersions.aliases
+        builtins.mapAttrs
+          (
+            cycle: _:
+              builtins.warn "package \"${cycle}\" is deprecated; use \"terraform-${cycle}\" instead"
+                terraformAliases.${system}."terraform-${cycle}"
+          )
+          terraformVersions.aliases
       );
     in
     {
       packages = forAllSystems (
         system:
-        terraformReleases.${system}
+        opentofuReleases.${system}
+        // opentofuAliases.${system}
+        // terraformReleases.${system}
         // terraformAliases.${system}
         // deprecatedReleases.${system}
         // deprecatedAliases.${system}
