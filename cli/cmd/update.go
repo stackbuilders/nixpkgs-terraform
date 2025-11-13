@@ -407,7 +407,7 @@ func init() {
 	updateCmd.Flags().
 		StringVarP(&vendorHashPath, "vendor-hash", "", "vendor-hash.nix", "Nix file required to compute vendorHash")
 	updateCmd.Flags().
-		StringVarP(&versionsPath, "versions", "", "versions.json", "The file to be updated")
+		StringVarP(&versionsPath, "versions", "", "terraform.json", "The file to be updated")
 	updateCmd.Flags().
 		StringVarP(&templatesPath, "templates-dir", "", "templates", "Directory containing templates to update versions")
 	updateCmd.Flags().
