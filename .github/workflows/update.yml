@@ -20,21 +20,21 @@ jobs:
     strategy:
       matrix:
         update:
-          - command: >
+          - command: >-
               go run . update
-                --owner opentofu
-                --repo opentofu
-                --tool-name OpenTofu
-                --versions ../opentofu.json
-                --vendor-hash ../opentofu.nix
-          - command: >
+              --owner opentofu
+              --repo opentofu
+              --tool-name OpenTofu
+              --versions ../opentofu.json
+              --vendor-hash ../opentofu.nix
+          - command: >-
               go run . update
-                --owner hashicorp
-                --repo terraform
-                --tool-name Terraform
-                --versions ../terraform.json
-                --vendor-hash ../terraform.nix
-                --templates-dir ../templates
+              --owner hashicorp
+              --repo terraform
+              --tool-name Terraform
+              --versions ../terraform.json
+              --vendor-hash ../terraform.nix
+              --templates-dir ../templates
     defaults:
       run:
         working-directory: cli
