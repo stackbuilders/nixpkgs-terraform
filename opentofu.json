@@ -27,9 +27,30 @@
     "1.10.6": {
       "hash": "sha256-IEdnESrhDT2rDha7TNgUnGnPioNPnKrUuOXSGRnUOBI=",
       "vendorHash": "sha256-ZnQDRiLdg12Dx9RdK1xBWUrAm3QQLGhwH1vxh4ieVv0="
+    },
+    "1.9.0": {
+      "hash": "sha256-e0ZzbQdex0DD7Bj9WpcVI5roh0cMbJuNr5nsSVaOSu4=",
+      "vendorHash": "sha256-fMTbLSeW+pw6GK8/JLZzG2ER90ss2g1FSDX5+f292do="
+    },
+    "1.9.1": {
+      "hash": "sha256-YZMv17fnvzgzm35MXFkvMc5JAuPnyapa41H8Ob4t88c=",
+      "vendorHash": "sha256-avfyMwYv8nKLCUHSExsPvYQrt9sMKZNPHFB/YFGQs2s="
+    },
+    "1.9.2": {
+      "hash": "sha256-MPALCZxu/0UOQuwlCiTsOktDk3xoT//He+TxyLrFuf0=",
+      "vendorHash": "sha256-avfyMwYv8nKLCUHSExsPvYQrt9sMKZNPHFB/YFGQs2s="
+    },
+    "1.9.3": {
+      "hash": "sha256-UPvXC0HfNi4JFRIqC1pyU9sxRcYxHhWFVnm7HYlommw=",
+      "vendorHash": "sha256-L8InAfOCgz0qFIkCBjqS3dS+xOun9wpV52kYAvNgdR4="
+    },
+    "1.9.4": {
+      "hash": "sha256-tJayHLxaVRpML2PUcjHGpypgYqCP+USwd8t3yGWWh6c=",
+      "vendorHash": "sha256-L8InAfOCgz0qFIkCBjqS3dS+xOun9wpV52kYAvNgdR4="
     }
   },
   "aliases": {
-    "1.10": "1.10.6"
+    "1.10": "1.10.6",
+    "1.9": "1.9.4"
   }
 }
