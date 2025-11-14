@@ -97,7 +97,7 @@
         // deprecatedAliases.${system}
       );
 
-      checks = terraformAliases;
+      checks = opentofuAliases // terraformAliases;
 
       overlays = {
         default =
