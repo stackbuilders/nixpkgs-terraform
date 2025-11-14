@@ -23,6 +23,7 @@ var (
 	versionsPath   string
 	templatesPath  string
 	minVersionStr  string
+	maxVersionStr  string
 )
 
 type Versions struct {
@@ -107,6 +108,14 @@ var updateCmd = &cobra.Command{
 			return fmt.Errorf("invalid min-version: %w", err)
 		}
 
+		var maxVersion *semver.Version
+		if maxVersionStr != "" {
+			maxVersion, err = semver.NewVersion(maxVersionStr)
+			if err != nil {
+				return fmt.Errorf("invalid max-version: %w", err)
+			}
+		}
+
 		latestChanges, err := updateVersions(
 			nixPath,
 			nixPrefetchPath,
@@ -115,6 +124,7 @@ var updateCmd = &cobra.Command{
 			vendorHashPath,
 			templatesPath,
 			minVersion,
+			maxVersion,
 			owner,
 			repo,
 		)
@@ -152,6 +162,7 @@ func updateVersions(
 	vendorHashPath string,
 	templatesPath string,
 	minVersion *semver.Version,
+	maxVersion *semver.Version,
 	owner string,
 	repo string,
 ) (*LastestChanges, error) {
@@ -161,7 +172,7 @@ func updateVersions(
 	}
 
 	var newVersions []semver.Version
-	err = withRepoReleases(token, owner, repo, minVersion, func(version *semver.Version, release *github.RepositoryRelease) error {
+	err = withRepoReleases(token, owner, repo, minVersion, maxVersion, func(version *semver.Version, release *github.RepositoryRelease) error {
 		if _, ok := versions.Releases[*version]; ok {
 			log.Printf("Version %s found in file\n", version)
 			return nil
@@ -206,9 +217,14 @@ func updateVersions(
 		return nil, fmt.Errorf("unable to write file: %w", err)
 	}
 
-	latestAlias, err := updateTemplatesVersions(versions, templatesPath)
-	if err != nil {
-		return nil, fmt.Errorf("unable to update templates versions: %w", err)
+	var latestAlias *Alias
+	if templatesPath == "" {
+		log.Println("Skipping templates update")
+	} else {
+		latestAlias, err = updateTemplatesVersions(versions, templatesPath)
+		if err != nil {
+			return nil, fmt.Errorf("unable to update templates versions: %w", err)
+		}
 	}
 
 	return &LastestChanges{
@@ -297,6 +313,7 @@ func withRepoReleases(
 	owner string,
 	repo string,
 	minVersion *semver.Version,
+	maxVersion *semver.Version,
 	callback func(version *semver.Version, release *github.RepositoryRelease) error,
 ) error {
 	client := github.NewClient(nil)
@@ -329,6 +346,10 @@ func withRepoReleases(
 			}
 
 			if version.LessThan(minVersion) {
+				continue
+			}
+
+			if maxVersion != nil && version.GreaterThan(maxVersion) {
 				continue
 			}
 
@@ -405,13 +426,15 @@ func computeVendorHash(
 
 func init() {
 	updateCmd.Flags().
-		StringVarP(&vendorHashPath, "vendor-hash", "", "vendor-hash.nix", "Nix file required to compute vendorHash")
+		StringVarP(&vendorHashPath, "vendor-hash", "", "terraform.nix", "Nix file required to compute vendorHash")
 	updateCmd.Flags().
 		StringVarP(&versionsPath, "versions", "", "terraform.json", "The file to be updated")
 	updateCmd.Flags().
-		StringVarP(&templatesPath, "templates-dir", "", "templates", "Directory containing templates to update versions")
+		StringVarP(&templatesPath, "templates-dir", "", "", "Directory containing templates to update versions")
 	updateCmd.Flags().
 		StringVarP(&minVersionStr, "min-version", "", "1.0.0", "Min release version")
+	updateCmd.Flags().
+		StringVarP(&maxVersionStr, "max-version", "", "", "Max release version")
 	updateCmd.Flags().
 		StringVarP(&owner, "owner", "", "hashicorp", "GitHub repository owner")
 	updateCmd.Flags().
