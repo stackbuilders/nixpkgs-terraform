@@ -20,8 +20,8 @@ jobs:
     strategy:
       matrix:
         update:
-          - command: go run . update --versions ../opentofu.json --vendor-hash ../opentofu.nix
-          - command: go run . update --versions ../terraform.json --vendor-hash ../terraform.nix --templates-dir ../templates
+          - command: go run . update --tool-name OpenTofu --versions ../opentofu.json --vendor-hash ../opentofu.nix
+          - command: go run . update --tool-name Terraform --versions ../terraform.json --vendor-hash ../terraform.nix --templates-dir ../templates
     defaults:
       run:
         working-directory: cli

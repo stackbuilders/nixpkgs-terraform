@@ -24,6 +24,7 @@ var (
 	templatesPath  string
 	minVersionStr  string
 	maxVersionStr  string
+	toolName       string
 )
 
 type Versions struct {
@@ -63,7 +64,7 @@ func (a Alias) String() string {
 var updateCmd = &cobra.Command{
 	Use:   "update",
 	Short: "Update versions file",
-	Long:  "Look up the most recent Terraform releases and calculate the needed hashes for new versions",
+	Long:  "Look up the most recent OpenTofu/Terraform releases and calculate the needed hashes for new versions",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		nixPath, err := exec.LookPath("nix")
 		if err != nil {
@@ -138,7 +139,7 @@ var updateCmd = &cobra.Command{
 				formattedVersions = append(formattedVersions, newVersion.String())
 			}
 			versions := strings.Join(formattedVersions, ", ")
-			messages = append(messages, fmt.Sprintf("Add Terraform version(s) %s", versions))
+			messages = append(messages, fmt.Sprintf("Add %s version(s) %s", toolName, versions))
 		}
 		if latestChanges.latestAlias != nil {
 			messages = append(
@@ -439,6 +440,8 @@ func init() {
 		StringVarP(&owner, "owner", "", "hashicorp", "GitHub repository owner")
 	updateCmd.Flags().
 		StringVarP(&repo, "repo", "", "terraform", "GitHub repository name")
+	updateCmd.Flags().
+		StringVarP(&toolName, "tool-name", "", "Terraform", "Name of the tool (OpenTofu/Terraform)")
 
 	rootCmd.AddCommand(updateCmd)
 }
