@@ -28,6 +28,22 @@
       "hash": "sha256-IEdnESrhDT2rDha7TNgUnGnPioNPnKrUuOXSGRnUOBI=",
       "vendorHash": "sha256-ZnQDRiLdg12Dx9RdK1xBWUrAm3QQLGhwH1vxh4ieVv0="
     },
+    "1.6.0": {
+      "hash": "sha256-S/D2qaXdBGEJS1/ihPJAEueUvD2bmqG1hpv+HTXCJSQ=",
+      "vendorHash": "sha256-kSm5RZqQRgbmPaKt5IWmuMhHwAu+oJKTX1q1lbE7hWk="
+    },
+    "1.6.1": {
+      "hash": "sha256-wEDxZtmC+SLIYbN+mGTmefcD6VZu87E9E0XhiJPGmK0=",
+      "vendorHash": "sha256-kSm5RZqQRgbmPaKt5IWmuMhHwAu+oJKTX1q1lbE7hWk="
+    },
+    "1.6.2": {
+      "hash": "sha256-CYiwn2NDIAx30J8tmbrV45dbCIGoA3U+yBdMj4RX5Ho=",
+      "vendorHash": "sha256-kSm5RZqQRgbmPaKt5IWmuMhHwAu+oJKTX1q1lbE7hWk="
+    },
+    "1.6.3": {
+      "hash": "sha256-AsqxcEzr3LUpCkB4d65GItnuipD2ECLlk+NlQN9TEt0=",
+      "vendorHash": "sha256-kSm5RZqQRgbmPaKt5IWmuMhHwAu+oJKTX1q1lbE7hWk="
+    },
     "1.7.0": {
       "hash": "sha256-e0u8aFua3oMsBafwRPYuWQ9M6DtC7f9LlCDGJ5vdAWE=",
       "vendorHash": "sha256-cML742FfWFNIwGyIdRd3JWcfDlOXnJVgUXz4j5fa74Q="
@@ -143,6 +159,7 @@
   },
   "aliases": {
     "1.10": "1.10.6",
+    "1.6": "1.6.3",
     "1.7": "1.7.10",
     "1.8": "1.8.11",
     "1.9": "1.9.4"
