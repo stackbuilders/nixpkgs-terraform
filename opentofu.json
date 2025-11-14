@@ -28,6 +28,54 @@
       "hash": "sha256-IEdnESrhDT2rDha7TNgUnGnPioNPnKrUuOXSGRnUOBI=",
       "vendorHash": "sha256-ZnQDRiLdg12Dx9RdK1xBWUrAm3QQLGhwH1vxh4ieVv0="
     },
+    "1.8.0": {
+      "hash": "sha256-c12CkfJyA5NjsOm/85QS41RfpBRW4pDX/vH6lk+d+9M=",
+      "vendorHash": "sha256-cM2DSP2ss3vleUhPBIdyxKeWJxtHpdjL5b5HVS/iC6o="
+    },
+    "1.8.1": {
+      "hash": "sha256-mMp3X2jXBQi/lRbqdiBa1UMYPKXl4jEvTHXxbPji5D8=",
+      "vendorHash": "sha256-cM2DSP2ss3vleUhPBIdyxKeWJxtHpdjL5b5HVS/iC6o="
+    },
+    "1.8.10": {
+      "hash": "sha256-uXPrJufFNGq/rzGlB7zrDsBV540PxWjU2e9kOt6Vo1E=",
+      "vendorHash": "sha256-9ebh6HtHXzHBAsfkyRJmO5rdqY5eF54KiFdNwL4XnSs="
+    },
+    "1.8.11": {
+      "hash": "sha256-Hu++R4xIM2P92+ZXTSFAzxqvBsH5PdnjonkBYWvR/DY=",
+      "vendorHash": "sha256-LN3d/HM6dLwp+1kY3zkcYMaJ7wiyqnH5Bizg35IrtAc="
+    },
+    "1.8.2": {
+      "hash": "sha256-kBI3Jgi4fDOx5bknTMlcI2K3LxKj6Q4dunbG9N33Ps0=",
+      "vendorHash": "sha256-cM2DSP2ss3vleUhPBIdyxKeWJxtHpdjL5b5HVS/iC6o="
+    },
+    "1.8.3": {
+      "hash": "sha256-+1ctvUz1Prhon+w5fGO+IQCYl7uEMZwAYMfQut7fmO4=",
+      "vendorHash": "sha256-cM2DSP2ss3vleUhPBIdyxKeWJxtHpdjL5b5HVS/iC6o="
+    },
+    "1.8.4": {
+      "hash": "sha256-YUN+JBYn8Bq4glZNBdlr++WJgGpGSKK1PjWqaduF8bg=",
+      "vendorHash": "sha256-cM2DSP2ss3vleUhPBIdyxKeWJxtHpdjL5b5HVS/iC6o="
+    },
+    "1.8.5": {
+      "hash": "sha256-sZGKM6Dxz0bZkHIITujojSsKtRD4E+q1uReWRg5EfC8=",
+      "vendorHash": "sha256-cM2DSP2ss3vleUhPBIdyxKeWJxtHpdjL5b5HVS/iC6o="
+    },
+    "1.8.6": {
+      "hash": "sha256-yJCUWRAntye3Dx2a+s/gNVa+XuCQak24TnFjSY+/3zc=",
+      "vendorHash": "sha256-MHdEY2nlUGTKybMPran5mTXlAlTFilfrY5K2sMlPe5U="
+    },
+    "1.8.7": {
+      "hash": "sha256-OLXR9aA94KcIsZxk8gOZxZsljMKuymScuYcoj9W5Hj4=",
+      "vendorHash": "sha256-6M/uqwhNruIPx5srbimKuDJaFiZkyosoZQXWjxa6GxY="
+    },
+    "1.8.8": {
+      "hash": "sha256-qH08gSQijn/o+YlMUXKdNaSY8lBk0u/pN28TBcevDvE=",
+      "vendorHash": "sha256-Ijgr5XhsFM3M8f4bnMAQ691kNnQPAGQ8pHv1BCqZU3I="
+    },
+    "1.8.9": {
+      "hash": "sha256-5BhPPchgKfSUPNLfXEoSXH3Rw8lkkDIOhJEx9TLl4SY=",
+      "vendorHash": "sha256-9ebh6HtHXzHBAsfkyRJmO5rdqY5eF54KiFdNwL4XnSs="
+    },
     "1.9.0": {
       "hash": "sha256-e0ZzbQdex0DD7Bj9WpcVI5roh0cMbJuNr5nsSVaOSu4=",
       "vendorHash": "sha256-fMTbLSeW+pw6GK8/JLZzG2ER90ss2g1FSDX5+f292do="
@@ -51,6 +99,7 @@
   },
   "aliases": {
     "1.10": "1.10.6",
+    "1.8": "1.8.11",
     "1.9": "1.9.4"
   }
 }
