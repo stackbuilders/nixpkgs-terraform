@@ -37,6 +37,7 @@ jobs:
               --versions ../terraform.json
               --vendor-hash ../terraform.nix
               --templates-dir ../templates
+      fail-fast: false
     defaults:
       run:
         working-directory: cli
