@@ -22,16 +22,18 @@ jobs:
         update:
           - command: >-
               go run . update
+              --tool-name OpenTofu
               --owner opentofu
               --repo opentofu
-              --tool-name OpenTofu
+              --min-version 1.6.0
               --versions ../opentofu.json
               --vendor-hash ../opentofu.nix
           - command: >-
               go run . update
+              --tool-name Terraform
               --owner hashicorp
               --repo terraform
-              --tool-name Terraform
+              --min-version 1.0.0
               --versions ../terraform.json
               --vendor-hash ../terraform.nix
               --templates-dir ../templates
