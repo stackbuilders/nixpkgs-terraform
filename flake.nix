@@ -20,7 +20,29 @@
     let
       forAllSystems = nixpkgs.lib.genAttrs (import systems);
 
-      terraformVersions = builtins.fromJSON (builtins.readFile ./versions.json);
+      opentofuVersions = builtins.fromJSON (builtins.readFile ./opentofu.json);
+
+      opentofuReleases = forAllSystems (
+        system:
+        self.lib.mkReleases {
+          inherit system;
+          releases = opentofuVersions.releases;
+          namePrefix = "opentofu";
+          mkRelease = self.lib.mkOpentofu;
+        }
+      );
+
+      opentofuAliases = forAllSystems (
+        system:
+        nixpkgs.lib.mapAttrs'
+          (cycle: version: {
+            name = "opentofu-${cycle}";
+            value = opentofuReleases.${system}."opentofu-${version}";
+          })
+          opentofuVersions.aliases
+      );
+
+      terraformVersions = builtins.fromJSON (builtins.readFile ./terraform.json);
 
       terraformReleases = forAllSystems (
         system:
@@ -67,13 +89,15 @@
     {
       packages = forAllSystems (
         system:
-        terraformReleases.${system}
+        opentofuReleases.${system}
+        // opentofuAliases.${system}
+        // terraformReleases.${system}
         // terraformAliases.${system}
         // deprecatedReleases.${system}
         // deprecatedAliases.${system}
       );
 
-      checks = terraformAliases;
+      checks = forAllSystems (system: opentofuAliases.${system} // terraformAliases.${system});
 
       overlays = {
         default =

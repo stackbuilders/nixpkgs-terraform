@@ -24,10 +24,7 @@
               config.allowUnfree = true;
             }
         else
-          import inputs.nixpkgs-23_05 {
-            inherit system;
-            config.allowUnfree = false;
-          };
+          inputs.nixpkgs-23_05.legacyPackages.${system};
     in
 
     pkgs.lib.warnIf (builtins.compareVersions version "1.6.0" >= 0)
@@ -46,6 +43,26 @@
           "recurseForDerivations"
         ];
       };
+
+  mkOpentofu =
+    { system ? builtins.currentSystem
+    , version
+    , hash
+    , vendorHash
+    ,
+    }:
+    let
+      pkgs = inputs.nixpkgs.legacyPackages.${system};
+    in
+    pkgs.opentofu.overrideAttrs {
+      inherit version vendorHash;
+      src = pkgs.fetchFromGitHub {
+        inherit hash;
+        owner = "opentofu";
+        repo = "opentofu";
+        tag = "v${version}";
+      };
+    };
 
   mkReleases =
     { system
