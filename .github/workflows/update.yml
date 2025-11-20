@@ -21,7 +21,7 @@ jobs:
       # - uses: cachix/cachix-action@v16
       #   with:
       #     name: devenv
-      - run: nix profile add nixpkgs#devenv
+      - run: nix profile install nixpkgs#devenv
       - run: |
            devenv shell nix-prefetch -- \
              --option extra-experimental-features flakes \
