@@ -52,7 +52,7 @@
     let
       pkgs = inputs.nixpkgs.legacyPackages.${system};
     in
-    pkgs.opentofu.overrideAttrs (_: {
+    pkgs.opentofu.overrideAttrs {
       inherit version vendorHash;
       src = pkgs.fetchFromGitHub {
         inherit hash;
@@ -60,7 +60,7 @@
         repo = "opentofu";
         tag = "v${version}";
       };
-    });
+    };
 
   mkReleases =
     {

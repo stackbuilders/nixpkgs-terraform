@@ -11,7 +11,26 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: cachix/install-nix-action@v31
+      - uses: cachix/cachix-action@v16
+        with:
+          name: devenv
+      - run: nix profile install nixpkgs#devenv
+      - run: |
+           devenv shell nix-prefetch -- \
+             --option extra-experimental-features flakes \
+             --file ../opentofu.nix \
+             --argstr version "1.10.0" \
+             --argstr hash "sha256-4/Z09iJK37ofWKLQ9+uUitkcGfMBTYzunOOeDZjrDOM="
+        working-directory: cli
+
+    
   update:
+    if: false
     runs-on: ubuntu-latest
     permissions:
       contents: write
