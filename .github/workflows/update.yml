@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: cachix/install-nix-action@v31
-      - run: nix profile install nixpkgs#devenv
+      - run: nix profile add nixpkgs#devenv
       - run: |
            devenv shell nix-prefetch -- \
              --option extra-experimental-features flakes \
