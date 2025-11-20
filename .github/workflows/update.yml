@@ -16,10 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: cachix/install-nix-action@v31
-      - uses: cachix/cachix-action@v16
-        with:
-          name: devenv
-      - run: nix profile add nixpkgs#devenv
+      - run: nix profile install --accept-flake-config github:cachix/devenv/latest
       - run: |
            devenv shell nix-prefetch -- \
              --option extra-experimental-features flakes \
