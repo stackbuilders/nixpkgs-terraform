@@ -93,7 +93,7 @@ your own flake. This is useful for testing or one-off commands.
 To start a shell with a specific Terraform version:
 
 ```sh
-nix shell github:stackbuilders/nixpkgs-terraform#'"terraform-1.5.7"'
+nix shell github:stackbuilders/nixpkgs-terraform#'"terraform-1.9.8"'
 ```
 
 ### Using nix run
@@ -101,12 +101,12 @@ nix shell github:stackbuilders/nixpkgs-terraform#'"terraform-1.5.7"'
 To run Terraform directly:
 
 ```sh
-nix run github:stackbuilders/nixpkgs-terraform#'"terraform-1.5.7"' -- version
+nix run github:stackbuilders/nixpkgs-terraform#'"terraform-1.9.8"' -- version
 ```
 
 ### Note on shell quoting
 
-Because Terraform version numbers contain dots (e.g., `1.5.7`), the package names
+Because Terraform version numbers contain dots (e.g., `1.9.8`), the package names
 must be quoted in Nix flake references. To pass these quotes correctly through
 your shell, wrap the double quotes with single quotes as shown in the examples above.
 
