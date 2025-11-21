@@ -88,15 +88,12 @@ Currently, the binary cache supports the following systems:
 You can use `nix shell` or `nix run` to quickly access Terraform without creating
 your own flake. This is useful for testing or one-off commands.
 
-Replace `X.Y.Z` with one of the supported versions in the [versions.json](versions.json)
-file (e.g., `1.1.3`, `1.5.7`, etc.).
-
 ### Using nix shell
 
 To start a shell with a specific Terraform version:
 
 ```sh
-nix shell github:stackbuilders/nixpkgs-terraform#terraform-X.Y.Z
+nix shell github:stackbuilders/nixpkgs-terraform#'"terraform-1.5.7"'
 ```
 
 ### Using nix run
@@ -104,24 +101,18 @@ nix shell github:stackbuilders/nixpkgs-terraform#terraform-X.Y.Z
 To run Terraform directly:
 
 ```sh
-nix run github:stackbuilders/nixpkgs-terraform#terraform-X.Y.Z -- <terraform-args>
+nix run github:stackbuilders/nixpkgs-terraform#'"terraform-1.5.7"' -- version
 ```
 
 ### Note on shell quoting
 
-When using version numbers that contain dots, the package name must be quoted.
-To pass the quotes correctly through your shell, wrap double quotes with single
-quotes:
+Because Terraform version numbers contain dots (e.g., `1.5.7`), the package names
+must be quoted in Nix flake references. To pass these quotes correctly through
+your shell, wrap the double quotes with single quotes as shown in the examples above.
 
-```sh
-nix shell github:stackbuilders/nixpkgs-terraform#'"terraform-1.1.3"'
-```
-
-or
-
-```sh
-nix run github:stackbuilders/nixpkgs-terraform#'"terraform-1.1.3"' -- version
-```
+Without proper quoting, your shell may interpret the dots incorrectly. The pattern
+is: `#'"terraform-X.Y.Z"'` where `X.Y.Z` is one of the supported versions in the
+[versions.json](versions.json) file.
 
 ## Usage
 
