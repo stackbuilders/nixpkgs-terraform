@@ -83,6 +83,45 @@ Currently, the binary cache supports the following systems:
 - x86_64-darwin
 - x86_64-linux
 
+## Quick Start (without a flake)
+
+You can use `nix shell` or `nix run` to quickly access Terraform without creating
+your own flake. This is useful for testing or one-off commands.
+
+### Using nix shell
+
+To start a shell with a specific Terraform version:
+
+```sh
+nix shell github:stackbuilders/nixpkgs-terraform#terraform-X.Y.Z
+```
+
+### Using nix run
+
+To run Terraform directly:
+
+```sh
+nix run github:stackbuilders/nixpkgs-terraform#terraform-X.Y.Z -- <terraform-args>
+```
+
+### Note on shell quoting
+
+When using version numbers that contain dots (like `1.1.3`), the package name must
+be quoted. To pass the quotes correctly through your shell, wrap double quotes
+with single quotes:
+
+```sh
+nix shell github:stackbuilders/nixpkgs-terraform#'"terraform-1.1.3"'
+```
+
+or
+
+```sh
+nix run github:stackbuilders/nixpkgs-terraform#'"terraform-1.1.3"' -- version
+```
+
+Where `X.Y.Z` is one of the supported versions in the [versions.json](versions.json) file.
+
 ## Usage
 
 After configuring the inputs from the [Install](#install) section, a common use
