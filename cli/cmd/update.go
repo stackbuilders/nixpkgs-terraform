@@ -159,7 +159,7 @@ func updateVersions(
 		}
 
 		log.Printf("Computed hash: %s\n", hash)
-		versions.Releases[versionCopy] = Release{Hash: hash, VendorHash: "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="}
+		versions.Releases[versionCopy] = Release{Hash: hash, VendorHash: ""}
 		newSemverVersions = append(newSemverVersions, &versionCopy)
 		return nil
 	})
@@ -391,6 +391,7 @@ func computeVendorHash(nixPath string, version *semver.Version) (string, error) 
 		"--no-link",
 		fmt.Sprintf(".#'\"terraform-%s\"'", version.String()),
 	)
+	// TODO: remove hard-coded dir
 	cmd.Dir = "/Users/sestrella/code/stackbuilders/nixpkgs-terraform"
 
 	output, err := cmd.CombinedOutput()
