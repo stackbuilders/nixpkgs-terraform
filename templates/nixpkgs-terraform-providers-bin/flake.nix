@@ -21,7 +21,7 @@
         system:
         let
           pkgs = nixpkgs.legacyPackages.${system};
-          terraform = nixpkgs-terraform.packages.${system}."1.13";
+          terraform = nixpkgs-terraform.packages.${system}."1.14";
           terraform-providers-bin = nixpkgs-terraform-providers-bin.legacyPackages.${system};
         in
         {

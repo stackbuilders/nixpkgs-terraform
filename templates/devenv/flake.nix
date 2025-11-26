@@ -27,7 +27,7 @@
               modules = [
                 ({ pkgs, config, ... }: {
                   languages.terraform.enable = true;
-                  languages.terraform.version = "1.13";
+                  languages.terraform.version = "1.14";
                 })
               ];
             };

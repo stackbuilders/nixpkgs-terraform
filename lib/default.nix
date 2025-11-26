@@ -2,27 +2,25 @@
 
 {
   mkTerraform =
-    { system ? builtins.currentSystem
-    , version
-    , hash
-    , vendorHash
-    ,
+    {
+      system ? builtins.currentSystem,
+      version,
+      hash,
+      vendorHash,
     }:
 
     let
       pkgs =
         if builtins.compareVersions version "1.9.0" >= 0 then
-          import inputs.nixpkgs
-            {
-              inherit system;
-              config.allowUnfree = true;
-            }
+          import inputs.nixpkgs {
+            inherit system;
+            config.allowUnfree = true;
+          }
         else if builtins.compareVersions version "1.6.0" >= 0 then
-          import inputs.nixpkgs-24_05
-            {
-              inherit system;
-              config.allowUnfree = true;
-            }
+          import inputs.nixpkgs-24_05 {
+            inherit system;
+            config.allowUnfree = true;
+          }
         else
           import inputs.nixpkgs-23_05 {
             inherit system;
@@ -36,7 +34,9 @@
       {
         inherit version hash vendorHash;
         patches =
-          if builtins.compareVersions version "1.9.0" >= 0 then
+          if builtins.compareVersions version "1.14.0" >= 0 then
+            [ ../patches/provider-path-1_14.patch ]
+          else if builtins.compareVersions version "1.9.0" >= 0 then
             [ ../patches/provider-path-1_9.patch ]
           else
             [ ../patches/provider-path-0_15.patch ];
@@ -48,27 +48,25 @@
       };
 
   mkReleases =
-    { system
-    , releases
-    , namePrefix
-    , mkRelease
-    ,
+    {
+      system,
+      releases,
+      namePrefix,
+      mkRelease,
     }:
-    inputs.nixpkgs.lib.mapAttrs'
-      (
-        version:
-        { hash, vendorHash }:
-        {
-          name = "${namePrefix}-${version}";
-          value = mkRelease {
-            inherit
-              system
-              version
-              hash
-              vendorHash
-              ;
-          };
-        }
-      )
-      releases;
+    inputs.nixpkgs.lib.mapAttrs' (
+      version:
+      { hash, vendorHash }:
+      {
+        name = "${namePrefix}-${version}";
+        value = mkRelease {
+          inherit
+            system
+            version
+            hash
+            vendorHash
+            ;
+        };
+      }
+    ) releases;
 }
