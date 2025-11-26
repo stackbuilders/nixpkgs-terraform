@@ -24,7 +24,7 @@ jobs:
         run: devenv test
 
   build:
-    name: ${{ matrix.runner.system }}
+    name: "build (system: ${{ matrix.runner.system }})"
     strategy:
       matrix:
         runner:
