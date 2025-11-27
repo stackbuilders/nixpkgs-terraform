@@ -145,29 +145,31 @@ func updateVersions(
 		return nil, fmt.Errorf("unable to read versions: %w", err)
 	}
 
-	var newSemverVersions []*semver.Version
+	var newVersions []*semver.Version
 	err = withRepoReleases(token, owner, repo, minVersion, func(version *semver.Version, release *github.RepositoryRelease) error {
-		versionCopy := *version
-		if _, ok := versions.Releases[versionCopy]; ok {
-			return nil
+		if release, ok := versions.Releases[*version]; ok {
+			if release.VendorHash != "" {
+				return nil
+			}
+			log.Printf("versionHash for %s release is empty\n", version)
 		}
 
-		log.Printf("Computing hash for %s\n", version)
+		log.Printf("Computing hash for %s release\n", version)
 		hash, err := computeHash(nixPath, release.GetTagName(), owner, repo)
 		if err != nil {
 			return fmt.Errorf("unable to compute hash: %w", err)
 		}
 
-		log.Printf("Computed hash: %s\n", hash)
-		versions.Releases[versionCopy] = Release{Hash: hash, VendorHash: ""}
-		newSemverVersions = append(newSemverVersions, &versionCopy)
+		log.Printf("Computed hash for %s release: %s\n", version, hash)
+		versions.Releases[*version] = Release{Hash: hash, VendorHash: ""}
+		newVersions = append(newVersions, version)
 		return nil
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	if len(newSemverVersions) > 0 {
+	if len(newVersions) > 0 {
 		log.Println("Writing versions.json with new versions to compute vendor hashes")
 		content, err := json.MarshalIndent(versions, "", "  ")
 		if err != nil {
@@ -177,14 +179,14 @@ func updateVersions(
 			return nil, fmt.Errorf("unable to write file: %w", err)
 		}
 
-		for _, version := range newSemverVersions {
-			log.Printf("Computing vendor hash for %s\n", version)
+		for _, version := range newVersions {
+			log.Printf("Computing vendorHash for %s release\n", version)
 			vendorHash, err := computeVendorHash(nixPath, version)
 			if err != nil {
 				return nil, fmt.Errorf("unable to compute vendor hash for %s: %w", version, err)
 			}
 
-			log.Printf("Computed vendor hash: %s\n", vendorHash)
+			log.Printf("Computed vendorHash for %s release: %s\n", version, vendorHash)
 			release := versions.Releases[*version]
 			release.VendorHash = vendorHash
 			versions.Releases[*version] = release
@@ -217,7 +219,7 @@ func updateVersions(
 	}
 
 	var newVersionsValues []semver.Version
-	for _, v := range newSemverVersions {
+	for _, v := range newVersions {
 		newVersionsValues = append(newVersionsValues, *v)
 	}
 
@@ -389,10 +391,8 @@ func computeVendorHash(nixPath string, version *semver.Version) (string, error) 
 		nixPath, "build",
 		"--extra-experimental-features", "nix-command flakes",
 		"--no-link",
-		fmt.Sprintf(".#'\"terraform-%s\"'", version.String()),
+		fmt.Sprintf(".#\"terraform-%s\"", version.String()),
 	)
-	// TODO: remove hard-coded dir
-	cmd.Dir = "/Users/sestrella/code/stackbuilders/nixpkgs-terraform"
 
 	output, err := cmd.CombinedOutput()
 	if err == nil {
