@@ -104,14 +104,14 @@ To run Terraform directly:
 nix run github:stackbuilders/nixpkgs-terraform#'"terraform-1.9.8"' -- version
 ```
 
-### Note on shell quoting
+### Note on quoting
 
-Because Terraform version numbers contain dots (e.g., `1.9.8`), the package names
-must be quoted in Nix flake references. To pass these quotes correctly through
-your shell, wrap the double quotes with single quotes as shown in the examples above.
+Nix interprets dots in attribute names as nested attribute paths. To use a
+literal attribute name containing dots (e.g., `terraform-1.9.8`), you must wrap
+it in double quotes. Since the shell also interprets double quotes, we use single
+quotes to escape them: `#'"terraform-X.Y.Z"'`.
 
-Without proper quoting, your shell may interpret the dots incorrectly. The pattern
-is: `#'"terraform-X.Y.Z"'` where `X.Y.Z` is one of the supported versions in the
+Replace `X.Y.Z` with one of the supported versions in the
 [versions.json](versions.json) file.
 
 ## Usage
