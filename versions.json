@@ -1,5 +1,9 @@
 {
   "releases": {
+    "1.0.0": {
+      "hash": "sha256-ddcT/I2Qn1pKFyhXgh+CcD3fSv2steSNmjyyiS2SE/o=",
+      "vendorHash": "sha256-oFvoEsDunJR4IULdGwS6nHBKWEgUehgT+nNM41W/GYo="
+    },
     "1.0.1": {
       "hash": "sha256-QPrUWojUHwTP3mNnC2aOiAcT2VHU16pLXh5KLhwfw2s=",
       "vendorHash": "sha256-vUIaNTBs/wmpVfJuSP3CXipealqQUALwgbR14AqCJyo="
