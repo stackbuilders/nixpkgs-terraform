@@ -39,7 +39,7 @@ type Alias struct {
 }
 
 type LastestChanges struct {
-	versions    []semver.Version
+	versions    []*semver.Version
 	latestAlias *Alias
 }
 
@@ -217,13 +217,8 @@ func updateVersions(
 		return nil, fmt.Errorf("unable to update templates versions: %w", err)
 	}
 
-	var newVersionsValues []semver.Version
-	for _, v := range newVersions {
-		newVersionsValues = append(newVersionsValues, *v)
-	}
-
 	return &LastestChanges{
-		versions:    newVersionsValues,
+		versions:    newVersions,
 		latestAlias: latestAlias,
 	}, nil
 }
