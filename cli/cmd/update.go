@@ -197,10 +197,9 @@ func updateVersions(
 	// to ensure aliases are correct.
 	versions.Aliases = make(map[Alias]semver.Version)
 	for version := range versions.Releases {
-		vCopy := version
-		alias := Alias{*semver.New(vCopy.Major(), vCopy.Minor(), 0, "", "")}
-		if latest, ok := versions.Aliases[alias]; !ok || vCopy.GreaterThan(&latest) {
-			versions.Aliases[alias] = vCopy
+		alias := Alias{*semver.New(version.Major(), version.Minor(), 0, "", "")}
+		if latest, ok := versions.Aliases[alias]; !ok || version.GreaterThan(&latest) {
+			versions.Aliases[alias] = version
 		}
 	}
 
