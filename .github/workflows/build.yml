@@ -25,6 +25,7 @@ jobs:
 
   build:
     name: "build (system: ${{ matrix.runner.system }})"
+    runs-on: ${{ matrix.runner.os }}
     strategy:
       matrix:
         runner:
@@ -32,7 +33,6 @@ jobs:
           - { system: x86_64-darwin, os: macos-15-intel }
           - { system: x86_64-linux, os: ubuntu-latest }
       fail-fast: false
-    runs-on: ${{ matrix.runner.os }}
     needs: [check]
     steps:
       - name: Checkout code
