@@ -17,9 +17,6 @@ jobs:
       contents: write
       id-token: write
       pull-requests: write
-    defaults:
-      run:
-        working-directory: cli
     steps:
       - name: Create GH App token
         uses: actions/create-github-app-token@v2
@@ -33,14 +30,15 @@ jobs:
           ref: main
       - name: Install Nix
         uses: cachix/install-nix-action@v31
-        with:
-          nix_path: nixpkgs=channel:nixos-unstable
       - name: Install devenv
         run: nix profile add --accept-flake-config github:cachix/devenv/latest
+      - name: Compile cli
+        run: devenv shell -- go build .
+        working-directory: cli
       - name: Update versions
         id: update
         run: |
-          commit_message=$(devenv shell -- go run . update --versions ../versions.json --vendor-hash ../vendor-hash.nix --templates-dir ../templates)
+          commit_message=$(cli/cli)
           echo "commit_message=$commit_message" >> "$GITHUB_OUTPUT"
         env:
           CLI_GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
@@ -55,9 +53,11 @@ jobs:
 
             This is the result of configuring a CLI_GITHUB_TOKEN in `.env` and running:
 
-            ```
-            cd cli
-            go run . update --versions ../versions.json --vendor-hash ../vendor-hash.nix --templates-dir ../templates
+            ```sh
+            pushd cli
+            go build .
+            popd
+            cli/cli
             ```
           delete-branch: true
           reviewers: |
