@@ -42,32 +42,31 @@ jobs:
           echo "commit_message=$commit_message" >> "$GITHUB_OUTPUT"
         env:
           CLI_GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
-      - run: git diff
-      # - name: Create pull request
-      #   if: ${{ steps.update.outputs.commit_message }}
-      #   uses: peter-evans/create-pull-request@v7
-      #   with:
-      #     commit-message: ${{ steps.update.outputs.commit_message }}
-      #     title: ${{ steps.update.outputs.commit_message }}
-      #     body: |
-      #       Automatically created pull-request to update Terraform versions.
-      #       This is the result of configuring a CLI_GITHUB_TOKEN in `.env` and running:
+      - name: Create pull request
+        if: ${{ steps.update.outputs.commit_message }}
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: ${{ steps.update.outputs.commit_message }}
+          title: ${{ steps.update.outputs.commit_message }}
+          body: |
+            Automatically created pull-request to update Terraform versions.
 
-      #       ```sh
-      #       pushd cli
-      #       go build .
-      #       popd
-      #       cli/cli
-      #       ```
-      #     delete-branch: true
-      #     reviewers: |
-      #       oscar-izval
-      #       sestrella
-      #     token: ${{ steps.app-token.outputs.token }}
+            This is the result of configuring a CLI_GITHUB_TOKEN in `.env` and running:
+
+            ```sh
+            pushd cli
+            go build .
+            popd
+            cli/cli update
+            ```
+          delete-branch: true
+          reviewers: |
+            oscar-izval
+            sestrella
+          token: ${{ steps.app-token.outputs.token }}
 
   notify:
-    if: false
-    # if: failure()
+    if: failure()
     runs-on: ubuntu-latest
     needs: [update]
     steps:
