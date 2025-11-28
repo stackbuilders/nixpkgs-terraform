@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Install Nix
         uses: cachix/install-nix-action@v31
       - name: Install devenv
@@ -24,18 +24,19 @@ jobs:
         run: devenv test
 
   build:
+    name: "build (system: ${{ matrix.runner.system }})"
+    runs-on: ${{ matrix.runner.os }}
     strategy:
       matrix:
-        os:
-          - macos-13      # x86_64-darwin
-          - macos-latest  # aarch64-darwin
-          - ubuntu-latest # x86_64-linux
+        runner:
+          - { system: aarch64-darwin, os: macos-latest }
+          - { system: x86_64-darwin, os: macos-15-intel }
+          - { system: x86_64-linux, os: ubuntu-latest }
       fail-fast: false
-    runs-on: ${{ matrix.os }}
     needs: [check]
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Install Nix
         uses: cachix/install-nix-action@v31
       - name: Setup Cachix
@@ -64,7 +65,7 @@ jobs:
             test: nix develop --accept-flake-config --impure -c terraform --version
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Install Nix
         uses: cachix/install-nix-action@v31
       - name: Setup Cachix
