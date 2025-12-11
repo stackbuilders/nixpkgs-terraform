@@ -42,7 +42,6 @@ jobs:
           echo "commit_message=$commit_message" >> "$GITHUB_OUTPUT"
         env:
           CLI_GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
-      - run: git diff
       - name: Create pull request
         if: ${{ steps.update.outputs.commit_message }}
         uses: peter-evans/create-pull-request@v7
