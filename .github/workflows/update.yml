@@ -38,7 +38,7 @@ jobs:
       - name: Update versions
         id: update
         run: |
-          commit_message=$(cli/cli)
+          commit_message=$(cli/cli update)
           echo "commit_message=$commit_message" >> "$GITHUB_OUTPUT"
         env:
           CLI_GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
