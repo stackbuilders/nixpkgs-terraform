@@ -30,6 +30,7 @@ jobs:
         run: devenv test
 
   build:
+    if: false
     name: "build (system: ${{ matrix.runner.system }})"
     runs-on: ${{ matrix.runner.os }}
     strategy:
