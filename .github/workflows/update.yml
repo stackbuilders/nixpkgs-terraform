@@ -46,7 +46,7 @@ jobs:
           CLI_GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
       - name: Create pull request
         if: ${{ steps.update.outputs.commit_message }}
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           commit-message: ${{ steps.update.outputs.commit_message }}
           title: ${{ steps.update.outputs.commit_message }}
