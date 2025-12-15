@@ -30,6 +30,8 @@ jobs:
       - name: Install devenv
         # run: nix profile add --accept-flake-config github:cachix/devenv/v1.8
         run: nix profile add github:cachix/devenv/latest
+      # INFO This operation should fail if nixpkgs-terraform cache is not configured
+      - run: devenv shell -- terraform --version
       - name: Run tests
         run: devenv test
 
