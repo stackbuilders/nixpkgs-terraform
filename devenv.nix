@@ -5,5 +5,9 @@
     pkgs.semantic-release
   ];
 
-  git-hooks.hooks.nixpkgs-fmt.enable = true;
+  git-hooks.hooks = {
+    action-validator.enable = true;
+    actionlint.enable = true;
+    nixpkgs-fmt.enable = true;
+  };
 }
