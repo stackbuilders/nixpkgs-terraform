@@ -16,7 +16,7 @@ jobs:
     strategy:
       matrix:
         command:
-          - devenv shell terraform -- --version
+          - devenv --max-jobs=0 shell terraform -- --version
           - nix run github:stackbuilders/nixpkgs-terraform#'"1.14"' -- --version
       fail-fast: false
     steps:
