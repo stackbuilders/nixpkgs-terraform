@@ -13,11 +13,14 @@ concurrency:
 jobs:
   check:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        command:
+          - devenv shell terraform -- --version
+          - nix run github:stackbuilders/nixpkgs-terraform#'"1.14"' -- --version
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-      - name: Install Nix
-        uses: cachix/install-nix-action@v31
+      - uses: actions/checkout@v6
+      - uses: cachix/install-nix-action@v31
         with:
           extra_nix_config: |
             max-jobs = 0
@@ -26,15 +29,9 @@ jobs:
         with:
           name: devenv
       - run: cat /etc/nix/nix.conf
-        # TODO: devenv cache is missing (on purpose for testing)
-      - name: Install devenv
-        # run: nix profile add --accept-flake-config github:cachix/devenv/v1.8
-        run: nix profile add github:cachix/devenv/latest
+      - run: nix profile add github:cachix/devenv/latest
       # INFO This operation should fail if nixpkgs-terraform cache is not configured
-      - run: nix build github:stackbuilders/nixpkgs-terraform#'"1.14"'
-      - run: devenv shell -- terraform --version
-      - name: Run tests
-        run: devenv test
+      - run: ${{ matrix.command }}
 
   build:
     if: false
