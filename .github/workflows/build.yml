@@ -18,12 +18,12 @@ jobs:
         command:
           - devenv shell terraform -- --version
           - nix run github:stackbuilders/nixpkgs-terraform#'"1.14"' -- --version
+      fail-fast: false
     steps:
       - uses: actions/checkout@v6
       - uses: cachix/install-nix-action@v31
         with:
-          extra_nix_config: |
-            max-jobs = 0
+          extra_nix_config: max-jobs = 0
       - run: cat /etc/nix/nix.conf
       - uses: cachix/cachix-action@v15
         with:
