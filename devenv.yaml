@@ -1,3 +1,5 @@
 inputs:
   nixpkgs:
     url: github:cachix/devenv-nixpkgs/rolling
+  nixpkgs-terraform:
+    url: github:stackbuilders/nixpkgs-terraform

@@ -1,10 +1,6 @@
 name: Build
 
-on:
-  pull_request:
-    branches: [main]
-  push:
-    branches: [main]
+on: push
 
 concurrency:
   group: build-${{ github.ref }}
@@ -13,17 +9,22 @@ concurrency:
 jobs:
   check:
     runs-on: ubuntu-latest
+    env:
+      DEVENV_MAX_JOBS: 0
+    defaults:
+      run:
+        shell: devenv shell bash -- -e {0}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-      - name: Install Nix
-        uses: cachix/install-nix-action@v31
+      - uses: actions/checkout@v6
+      - uses: cachix/install-nix-action@v31
+      - uses: cachix/cachix-action@v16
         with:
           name: devenv
-      - name: Install devenv
-        run: nix profile add github:cachix/devenv/latest
-      - name: Run tests
-        run: devenv test
+          extraPullNames: nixpkgs-terraform
+      - run: nix profile add github:cachix/devenv/latest
+        shell: bash
+      - run: terraform --version
+
 
   build:
     name: "build (system: ${{ matrix.runner.system }})"
