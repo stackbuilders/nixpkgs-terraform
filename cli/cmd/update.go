@@ -17,12 +17,11 @@ import (
 )
 
 var (
-	owner          string
-	repo           string
-	vendorHashPath string
-	versionsPath   string
-	templatesPath  string
-	minVersionStr  string
+	owner         string
+	repo          string
+	versionsPath  string
+	templatesPath string
+	minVersionStr string
 )
 
 type Versions struct {
@@ -40,7 +39,7 @@ type Alias struct {
 }
 
 type LastestChanges struct {
-	versions    []semver.Version
+	versions    []*semver.Version
 	latestAlias *Alias
 }
 
@@ -69,11 +68,6 @@ var updateCmd = &cobra.Command{
 			return fmt.Errorf("unable to find 'nix' executable: %w", err)
 		}
 
-		nixPrefetchPath, err := exec.LookPath("nix-prefetch")
-		if err != nil {
-			return fmt.Errorf("unable to find 'nix-prefetch' executable: %w", err)
-		}
-
 		token := os.Getenv("CLI_GITHUB_TOKEN")
 		if token == "" {
 			log.Println("Warning: CLI_GITHUB_TOKEN is not set. Requests to GitHub API may be rate limited.")
@@ -82,11 +76,6 @@ var updateCmd = &cobra.Command{
 		versionsPath, err := filepath.Abs(versionsPath)
 		if err != nil {
 			return fmt.Errorf("unable to find versions.json file: %w", err)
-		}
-
-		vendorHashPath, err := filepath.Abs(vendorHashPath)
-		if err != nil {
-			return fmt.Errorf("unable to find vendor-hash.nix file: %w", err)
 		}
 
 		templatesPath, err := filepath.Abs(templatesPath)
@@ -109,10 +98,8 @@ var updateCmd = &cobra.Command{
 
 		latestChanges, err := updateVersions(
 			nixPath,
-			nixPrefetchPath,
 			token,
 			versionsPath,
-			vendorHashPath,
 			templatesPath,
 			minVersion,
 			owner,
@@ -146,10 +133,8 @@ var updateCmd = &cobra.Command{
 
 func updateVersions(
 	nixPath string,
-	nixPrefetchPath string,
 	token string,
 	versionsPath string,
-	vendorHashPath string,
 	templatesPath string,
 	minVersion *semver.Version,
 	owner string,
@@ -160,34 +145,56 @@ func updateVersions(
 		return nil, fmt.Errorf("unable to read versions: %w", err)
 	}
 
-	var newVersions []semver.Version
+	var newVersions []*semver.Version
 	err = withRepoReleases(token, owner, repo, minVersion, func(version *semver.Version, release *github.RepositoryRelease) error {
-		if _, ok := versions.Releases[*version]; ok {
-			log.Printf("Version %s found in file\n", version)
-			return nil
+		if release, ok := versions.Releases[*version]; ok {
+			if release.VendorHash != "" {
+				return nil
+			}
+			log.Printf("versionHash for %s release is empty\n", version)
 		}
 
-		log.Printf("Computing hashes for %s\n", version)
+		log.Printf("Computing hash for %s release\n", version)
 		hash, err := computeHash(nixPath, release.GetTagName(), owner, repo)
 		if err != nil {
 			return fmt.Errorf("unable to compute hash: %w", err)
 		}
 
-		log.Printf("Computed hash: %s\n", hash)
-		vendorHash, err := computeVendorHash(nixPrefetchPath, vendorHashPath, version, hash)
-		if err != nil {
-			return fmt.Errorf("unable to compute vendor hash: %w", err)
-		}
-
-		log.Printf("Computed vendor hash: %s\n", vendorHash)
-		versions.Releases[*version] = Release{Hash: hash, VendorHash: vendorHash}
-		newVersions = append(newVersions, *version)
+		log.Printf("Computed hash for %s release: %s\n", version, hash)
+		versions.Releases[*version] = Release{Hash: hash, VendorHash: ""}
+		newVersions = append(newVersions, version)
 		return nil
 	})
 	if err != nil {
 		return nil, err
 	}
 
+	if len(newVersions) > 0 {
+		log.Println("Writing versions.json with new versions to compute vendor hashes")
+		content, err := json.MarshalIndent(versions, "", "  ")
+		if err != nil {
+			return nil, fmt.Errorf("unable to marshal versions: %w", err)
+		}
+		if err := os.WriteFile(versionsPath, content, 0644); err != nil {
+			return nil, fmt.Errorf("unable to write file: %w", err)
+		}
+
+		for _, version := range newVersions {
+			log.Printf("Computing vendorHash for %s release\n", version)
+			vendorHash, err := computeVendorHash(nixPath, version)
+			if err != nil {
+				return nil, fmt.Errorf("unable to compute vendor hash for %s: %w", version, err)
+			}
+
+			log.Printf("Computed vendorHash for %s release: %s\n", version, vendorHash)
+			release := versions.Releases[*version]
+			release.VendorHash = vendorHash
+			versions.Releases[*version] = release
+		}
+	}
+
+	// Always update aliases and write the file, even if no new versions,
+	// to ensure aliases are correct.
 	versions.Aliases = make(map[Alias]semver.Version)
 	for version := range versions.Releases {
 		alias := Alias{*semver.New(version.Major(), version.Minor(), 0, "", "")}
@@ -196,13 +203,12 @@ func updateVersions(
 		}
 	}
 
+	log.Println("Writing final versions.json")
 	content, err := json.MarshalIndent(versions, "", "  ")
 	if err != nil {
 		return nil, fmt.Errorf("unable to marshal versions: %w", err)
 	}
-
-	err = os.WriteFile(versionsPath, content, 0644)
-	if err != nil {
+	if err := os.WriteFile(versionsPath, content, 0644); err != nil {
 		return nil, fmt.Errorf("unable to write file: %w", err)
 	}
 
@@ -374,38 +380,30 @@ func computeHash(nixPath string, tagName string, owner string, repo string) (str
 	return result.Hash, nil
 }
 
-func computeVendorHash(
-	nixPrefetchPath string,
-	vendorHashFile string,
-	version *semver.Version,
-	hash string,
-) (string, error) {
+func computeVendorHash(nixPath string, version *semver.Version) (string, error) {
 	cmd := exec.Command(
-		nixPrefetchPath,
-		"--option",
-		"extra-experimental-features",
-		"flakes",
-		"--file",
-		vendorHashFile,
-		"--argstr",
-		"version",
-		version.String(),
-		"--argstr",
-		"hash",
-		hash,
+		nixPath, "build",
+		"--extra-experimental-features", "nix-command flakes",
+		"--no-link",
+		fmt.Sprintf(".#\"terraform-%s\"", version.String()),
 	)
-	cmd.Stderr = log.Writer()
-	output, err := cmd.Output()
-	if err != nil {
-		return "", err
+
+	output, err := cmd.CombinedOutput()
+	if err == nil {
+		return "", fmt.Errorf("nix build succeeded unexpectedly for version %s with an empty vendor hash", version.String())
 	}
 
-	return strings.TrimRight(string(output), "\n"), nil
+	re := regexp.MustCompile(`got:\s+(sha256-[a-zA-Z0-9+/=]+)`)
+	matches := re.FindStringSubmatch(string(output))
+
+	if len(matches) < 2 {
+		return "", fmt.Errorf("could not find vendor hash in nix build output for version %s: %s", version.String(), string(output))
+	}
+
+	return matches[1], nil
 }
 
 func init() {
-	updateCmd.Flags().
-		StringVarP(&vendorHashPath, "vendor-hash", "", "vendor-hash.nix", "Nix file required to compute vendorHash")
 	updateCmd.Flags().
 		StringVarP(&versionsPath, "versions", "", "versions.json", "The file to be updated")
 	updateCmd.Flags().
