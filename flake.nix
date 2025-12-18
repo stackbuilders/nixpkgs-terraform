@@ -20,7 +20,7 @@
     let
       forAllSystems = nixpkgs.lib.genAttrs (import systems);
 
-      terraformVersions = builtins.fromJSON (builtins.readFile ./versions.json);
+      terraformVersions = builtins.fromJSON (builtins.readFile ./terraform.json);
 
       terraformReleases = forAllSystems (
         system:
