@@ -49,6 +49,26 @@
         ];
       };
 
+  mkOpenTofu =
+    { system ? builtins.currentSystem
+    , version
+    , hash
+    , vendorHash
+    ,
+    }:
+    let
+      pkgs = inputs.nixpkgs.legacyPackages.${system};
+    in
+    pkgs.opentofu.overrideAttrs {
+      inherit version vendorHash;
+      src = pkgs.fetchFromGitHub {
+        inherit hash;
+        owner = "opentofu";
+        repo = "opentofu";
+        tag = "v${version}";
+      };
+    };
+
   mkReleases =
     { system
     , releases

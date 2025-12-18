@@ -5,10 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"maps"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/Masterminds/semver/v3"
@@ -38,11 +40,6 @@ type Alias struct {
 	semver.Version
 }
 
-type LastestChanges struct {
-	versions    []*semver.Version
-	latestAlias *Alias
-}
-
 func (a Alias) MarshalText() ([]byte, error) {
 	return fmt.Appendf(nil, "%d.%d", a.Major(), a.Minor()), nil
 }
@@ -56,6 +53,11 @@ func (a Alias) GreaterThan(b *Alias) bool {
 
 func (a Alias) String() string {
 	return fmt.Sprintf("%d.%d", a.Major(), a.Minor())
+}
+
+type Changes struct {
+	newVersions []*semver.Version
+	aliases     []Alias
 }
 
 var updateCmd = &cobra.Command{
@@ -96,11 +98,10 @@ var updateCmd = &cobra.Command{
 			return fmt.Errorf("invalid min-version: %w", err)
 		}
 
-		latestChanges, err := updateVersions(
+		changes, err := updateVersions(
 			nixPath,
 			token,
 			versionsPath,
-			templatesPath,
 			minVersion,
 			owner,
 			repo,
@@ -109,19 +110,27 @@ var updateCmd = &cobra.Command{
 			return fmt.Errorf("unable to update versions: %w", err)
 		}
 		var messages []string
-		if len(latestChanges.versions) > 0 {
+		if len(changes.newVersions) > 0 {
 			var formattedVersions []string
-			for _, newVersion := range latestChanges.versions {
+			for _, newVersion := range changes.newVersions {
 				formattedVersions = append(formattedVersions, newVersion.String())
 			}
 			versions := strings.Join(formattedVersions, ", ")
 			messages = append(messages, fmt.Sprintf("Add Terraform version(s) %s", versions))
 		}
-		if latestChanges.latestAlias != nil {
-			messages = append(
-				messages,
-				fmt.Sprintf("Update templates to use version %s", latestChanges.latestAlias),
-			)
+
+		if templatesPath != "" {
+			latestAlias, err := getLatestAlias(changes.aliases)
+			if err != nil {
+				return err
+			}
+
+			err = updateTemplatesVersions(templatesPath, latestAlias)
+			if err != nil {
+				return err
+			}
+
+			messages = append(messages, fmt.Sprintf("Update template to use version %s", latestAlias))
 		}
 
 		if len(messages) > 0 {
@@ -135,11 +144,10 @@ func updateVersions(
 	nixPath string,
 	token string,
 	versionsPath string,
-	templatesPath string,
 	minVersion *semver.Version,
 	owner string,
 	repo string,
-) (*LastestChanges, error) {
+) (*Changes, error) {
 	versions, err := readVersions(versionsPath)
 	if err != nil {
 		return nil, fmt.Errorf("unable to read versions: %w", err)
@@ -212,14 +220,9 @@ func updateVersions(
 		return nil, fmt.Errorf("unable to write file: %w", err)
 	}
 
-	latestAlias, err := updateTemplatesVersions(versions, templatesPath)
-	if err != nil {
-		return nil, fmt.Errorf("unable to update templates versions: %w", err)
-	}
-
-	return &LastestChanges{
-		versions:    newVersions,
-		latestAlias: latestAlias,
+	return &Changes{
+		newVersions: newVersions,
+		aliases:     slices.Collect(maps.Keys(versions.Aliases)),
 	}, nil
 }
 
@@ -237,29 +240,20 @@ func getLatestAlias(aliases []Alias) (*Alias, error) {
 	return latestAlias, nil
 }
 
-func updateTemplatesVersions(versions *Versions, templatesPath string) (*Alias, error) {
-	var aliases []Alias
-	for alias := range versions.Aliases {
-		aliases = append(aliases, alias)
-	}
-
-	latestAlias, err := getLatestAlias(aliases)
+func updateTemplatesVersions(templatesPath string, latestAlias *Alias) error {
+	files, err := filepath.Glob(fmt.Sprintf("%s/*/flake.nix", templatesPath))
 	if err != nil {
-		return nil, fmt.Errorf("unable to get latest version: %w", err)
+		return fmt.Errorf("unable to find flake.nix files: %w", err)
 	}
 
-	files, err := filepath.Glob(fmt.Sprintf("%s/**/flake.nix", templatesPath))
-	if err != nil {
-		return nil, fmt.Errorf("unable to find flake.nix files: %w", err)
-	}
-
-	updated := false
 	re := regexp.MustCompile(`"(\d+\.\d+(\.\d+)?)"`)
 	for _, file := range files {
 		content, err := os.ReadFile(file)
 		if err != nil {
-			return nil, fmt.Errorf("unable to read file %s: %w", file, err)
+			log.Printf("Unable to read file %s\n", file)
+			continue
 		}
+
 		updatedContent := re.ReplaceAllString(
 			string(content),
 			fmt.Sprintf(`"%s"`, latestAlias),
@@ -271,17 +265,12 @@ func updateTemplatesVersions(versions *Versions, templatesPath string) (*Alias, 
 
 		err = os.WriteFile(file, []byte(updatedContent), 0644)
 		if err != nil {
-			return nil, fmt.Errorf("unable to write file %s: %w", file, err)
+			return fmt.Errorf("unable to write file %s: %w", file, err)
 		}
 		log.Printf("Updated %s to version %s\n", file, latestAlias)
-		updated = true
 	}
 
-	if updated {
-		return latestAlias, nil
-	}
-
-	return nil, nil
+	return nil
 }
 
 func readVersions(versionsPath string) (*Versions, error) {
@@ -385,7 +374,7 @@ func computeVendorHash(nixPath string, version *semver.Version) (string, error) 
 		nixPath, "build",
 		"--extra-experimental-features", "nix-command flakes",
 		"--no-link",
-		fmt.Sprintf(".#\"terraform-%s\"", version.String()),
+		fmt.Sprintf(".#\"%s-%s\"", repo, version.String()),
 	)
 
 	output, err := cmd.CombinedOutput()
@@ -405,9 +394,9 @@ func computeVendorHash(nixPath string, version *semver.Version) (string, error) 
 
 func init() {
 	updateCmd.Flags().
-		StringVarP(&versionsPath, "versions", "", "versions.json", "The file to be updated")
+		StringVarP(&versionsPath, "versions", "", "terraform.json", "The file to be updated")
 	updateCmd.Flags().
-		StringVarP(&templatesPath, "templates-dir", "", "templates", "Directory containing templates to update versions")
+		StringVarP(&templatesPath, "templates-dir", "", "", "Directory containing templates to update versions")
 	updateCmd.Flags().
 		StringVarP(&minVersionStr, "min-version", "", "1.0.0", "Min release version")
 	updateCmd.Flags().
