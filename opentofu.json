@@ -1,0 +1,11 @@
+{
+  "releases": {
+    "1.11.1": {
+      "hash": "sha256-2mtSRszdHeHDKpIu+w/Y/P8NfoSPzPBkgQ9YgKSwrls=",
+      "vendorHash": "sha256-aPBP7mZ4NuPAYAOW20cQ6bWQUqk9mfiaeFUS/RQyW4I="
+    }
+  },
+  "aliases": {
+    "1.11": "1.11.1"
+  }
+}
