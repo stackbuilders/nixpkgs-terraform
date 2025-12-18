@@ -1,6 +1,6 @@
 module github.com/stackbuilders/nixpkgs-terraform/cli
 
-go 1.22.1
+go 1.23
 
 require (
 	github.com/Masterminds/semver/v3 v3.2.1
