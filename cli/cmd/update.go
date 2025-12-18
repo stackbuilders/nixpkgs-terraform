@@ -374,7 +374,7 @@ func computeVendorHash(nixPath string, version *semver.Version) (string, error) 
 		nixPath, "build",
 		"--extra-experimental-features", "nix-command flakes",
 		"--no-link",
-		fmt.Sprintf(".#\"terraform-%s\"", version.String()),
+		fmt.Sprintf(".#\"%s-%s\"", repo, version.String()),
 	)
 
 	output, err := cmd.CombinedOutput()
@@ -394,9 +394,9 @@ func computeVendorHash(nixPath string, version *semver.Version) (string, error) 
 
 func init() {
 	updateCmd.Flags().
-		StringVarP(&versionsPath, "versions", "", "versions.json", "The file to be updated")
+		StringVarP(&versionsPath, "versions", "", "terraform.json", "The file to be updated")
 	updateCmd.Flags().
-		StringVarP(&templatesPath, "templates-dir", "", "templates", "Directory containing templates to update versions")
+		StringVarP(&templatesPath, "templates-dir", "", "", "Directory containing templates to update versions")
 	updateCmd.Flags().
 		StringVarP(&minVersionStr, "min-version", "", "1.0.0", "Min release version")
 	updateCmd.Flags().
