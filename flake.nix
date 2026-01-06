@@ -82,10 +82,13 @@
             terraform-versions =
               builtins.warn
                 "\"terraform-versions\" packages are deprecated; use the prefixed \"terraform-\" packages instead"
-                self.packages.${prev.system};
+                self.packages.${prev.stdenv.hostPlatform.system};
           }
           // self.overlays.terraform final prev;
-        terraform = final: prev: terraformReleases.${prev.system} // terraformAliases.${prev.system};
+        terraform =
+          final: prev:
+          terraformReleases.${prev.stdenv.hostPlatform.system}
+          // terraformAliases.${prev.stdenv.hostPlatform.system};
       };
 
       lib = import ./lib { inherit inputs; };
