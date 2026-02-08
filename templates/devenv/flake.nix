@@ -6,11 +6,6 @@
     systems.url = "github:nix-systems/default";
   };
 
-  nixConfig = {
-    extra-substituters = "https://nixpkgs-terraform.cachix.org";
-    extra-trusted-public-keys = "nixpkgs-terraform.cachix.org-1:8Sit092rIdAVENA3ZVeH9hzSiqI/jng6JiCrQ1Dmusw=";
-  };
-
   outputs = inputs@{ self, devenv, nixpkgs-terraform, nixpkgs, systems }:
     let
       forEachSystem = nixpkgs.lib.genAttrs (import systems);
