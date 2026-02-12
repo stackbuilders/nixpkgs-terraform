@@ -62,7 +62,7 @@ jobs:
           #   test: nix develop --accept-flake-config --impure -c terraform --version
           - name: devenv
             # test: nix develop --accept-flake-config --impure -c terraform --version
-            test: nix develop -c terraform --version
+            test: nix develop --impure -c terraform --version
           # - name: nixpkgs-terraform-providers-bin
           #   test: nix develop --accept-flake-config --impure -c terraform --version
           # - name: terranix
