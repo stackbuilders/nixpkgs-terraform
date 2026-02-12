@@ -77,6 +77,7 @@ jobs:
         with:
           name: nixpkgs-terraform
           extraPullNames: devenv
+      - run: cat ~/.config/nix/nix.conf
       - name: Replace inputs on templates
         run: sed -i 's/github:stackbuilders\/nixpkgs-terraform/github:stackbuilders\/nixpkgs-terraform\/${{ github.sha }}/g' templates/*/flake.nix
       - name: Create a temporary directory
