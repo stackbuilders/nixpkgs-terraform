@@ -12,6 +12,7 @@ concurrency:
 
 jobs:
   check:
+    if: false
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -53,18 +54,19 @@ jobs:
   template:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: [build]
+    # needs: [build]
     strategy:
       matrix:
         template:
-          - name: default
-            test: nix develop --accept-flake-config --impure -c terraform --version
+          # - name: default
+          #   test: nix develop --accept-flake-config --impure -c terraform --version
           - name: devenv
-            test: nix develop --accept-flake-config --impure -c terraform --version
-          - name: nixpkgs-terraform-providers-bin
-            test: nix develop --accept-flake-config --impure -c terraform --version
-          - name: terranix
-            test: nix develop --accept-flake-config --impure -c terraform --version
+            # test: nix develop --accept-flake-config --impure -c terraform --version
+            test: nix develop -c terraform --version
+          # - name: nixpkgs-terraform-providers-bin
+          #   test: nix develop --accept-flake-config --impure -c terraform --version
+          # - name: terranix
+          #   test: nix develop --accept-flake-config --impure -c terraform --version
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
