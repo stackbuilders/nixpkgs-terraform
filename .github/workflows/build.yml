@@ -58,14 +58,10 @@ jobs:
     strategy:
       matrix:
         template:
-          # - name: default
-          #   test: nix develop --accept-flake-config --impure -c terraform --version
-          - name: devenv
-            test: nix develop --accept-flake-config --impure -c terraform --version
-          # - name: nixpkgs-terraform-providers-bin
-          #   test: nix develop --accept-flake-config --impure -c terraform --version
-          # - name: terranix
-          #   test: nix develop --accept-flake-config --impure -c terraform --version
+          - default
+          - devenv
+          - nixpkgs-terraform-providers-bin
+          - terranix
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -82,7 +78,7 @@ jobs:
         run: echo "tmpdir=$(mktemp -d)" >> "$GITHUB_OUTPUT"
         id: mktemp
       - name: Scaffold a new project
-        run: nix flake init -t ${{ github.workspace }}#${{ matrix.template.name }}
+        run: nix flake init -t ${{ github.workspace }}#${{ matrix.template }}
         working-directory: ${{ steps.mktemp.outputs.tmpdir }}
       # INFO: Compare the results of nix.conf before and after passing accept-flake-config to nix develop
       - name: Install dependencies
@@ -90,6 +86,6 @@ jobs:
         working-directory: ${{ steps.mktemp.outputs.tmpdir }}
       - run: cat ~/.config/nix/nix.conf
       - name: Run smoke test
-        run: ${{ matrix.template.test }}
+        run: nix develop --accept-flake-config --impure -c terraform --version
         working-directory: ${{ steps.mktemp.outputs.tmpdir }}
       - run: cat ~/.config/nix/nix.conf
