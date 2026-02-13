@@ -61,8 +61,7 @@ jobs:
           # - name: default
           #   test: nix develop --accept-flake-config --impure -c terraform --version
           - name: devenv
-            # test: nix develop --accept-flake-config --impure -c terraform --version
-            test: nix develop --impure -c terraform --version
+            test: nix develop --accept-flake-config --impure -c terraform --version
           # - name: nixpkgs-terraform-providers-bin
           #   test: nix develop --accept-flake-config --impure -c terraform --version
           # - name: terranix
@@ -85,11 +84,12 @@ jobs:
       - name: Scaffold a new project
         run: nix flake init -t ${{ github.workspace }}#${{ matrix.template.name }}
         working-directory: ${{ steps.mktemp.outputs.tmpdir }}
-      - run: cat ~/.config/nix/nix.conf
-      - run: nix develop --accept-flake-config --impure -c true
-        working-directory: ${{ steps.mktemp.outputs.tmpdir }}
       # INFO: Compare the results of nix.conf before and after passing accept-flake-config to nix develop
+      - name: Install dependencies
+        run: nix develop --accept-flake-config --impure -c true
+        working-directory: ${{ steps.mktemp.outputs.tmpdir }}
       - run: cat ~/.config/nix/nix.conf
-      - name: Run test
+      - name: Run smoke test
         run: ${{ matrix.template.test }}
         working-directory: ${{ steps.mktemp.outputs.tmpdir }}
+      - run: cat ~/.config/nix/nix.conf
