@@ -80,12 +80,9 @@ jobs:
       - name: Scaffold a new project
         run: nix flake init -t ${{ github.workspace }}#${{ matrix.template }}
         working-directory: ${{ steps.mktemp.outputs.tmpdir }}
-      # INFO: Compare the results of nix.conf before and after passing accept-flake-config to nix develop
       - name: Install dependencies
         run: nix develop --accept-flake-config --impure -c true
         working-directory: ${{ steps.mktemp.outputs.tmpdir }}
-      - run: cat ~/.config/nix/nix.conf
       - name: Run smoke test
         run: nix develop --accept-flake-config --impure -c terraform --version
         working-directory: ${{ steps.mktemp.outputs.tmpdir }}
-      - run: cat ~/.config/nix/nix.conf
