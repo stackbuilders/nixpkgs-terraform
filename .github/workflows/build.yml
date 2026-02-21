@@ -12,7 +12,6 @@ concurrency:
 
 jobs:
   check:
-    if: false
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -53,15 +52,15 @@ jobs:
 
   template:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-    # needs: [build]
+    timeout-minutes: 5
+    needs: [build]
     strategy:
       matrix:
         template:
-          # - default
+          - default
           - devenv
-          # - nixpkgs-terraform-providers-bin
-          # - terranix
+          - nixpkgs-terraform-providers-bin
+          - terranix
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
