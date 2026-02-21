@@ -13,6 +13,7 @@ concurrency:
 jobs:
   check:
     runs-on: ubuntu-latest
+    timeout-minutes: 2
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -21,13 +22,14 @@ jobs:
         with:
           name: devenv
       - name: Install devenv
-        run: nix profile add github:cachix/devenv/latest
+        run: nix profile add nixpkgs#devenv
       - name: Run tests
         run: devenv test
 
   build:
     name: "build (system: ${{ matrix.runner.system }})"
     runs-on: ${{ matrix.runner.os }}
+    timeout-minutes: 10
     strategy:
       matrix:
         runner:
@@ -52,19 +54,15 @@ jobs:
 
   template:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
     needs: [build]
     strategy:
       matrix:
         template:
-          - name: default
-            test: nix develop --accept-flake-config --impure -c terraform --version
-          - name: devenv
-            test: nix develop --accept-flake-config --impure -c terraform --version
-          - name: nixpkgs-terraform-providers-bin
-            test: nix develop --accept-flake-config --impure -c terraform --version
-          - name: terranix
-            test: nix develop --accept-flake-config --impure -c terraform --version
+          - default
+          - devenv
+          - nixpkgs-terraform-providers-bin
+          - terranix
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -81,8 +79,11 @@ jobs:
         run: echo "tmpdir=$(mktemp -d)" >> "$GITHUB_OUTPUT"
         id: mktemp
       - name: Scaffold a new project
-        run: nix flake init -t ${{ github.workspace }}#${{ matrix.template.name }}
+        run: nix flake init -t ${{ github.workspace }}#${{ matrix.template }}
         working-directory: ${{ steps.mktemp.outputs.tmpdir }}
-      - name: Run test
-        run: ${{ matrix.template.test }}
+      - name: Install dependencies
+        run: nix develop --accept-flake-config --impure -c true
+        working-directory: ${{ steps.mktemp.outputs.tmpdir }}
+      - name: Run smoke test
+        run: nix develop --accept-flake-config --impure -c terraform --version
         working-directory: ${{ steps.mktemp.outputs.tmpdir }}
