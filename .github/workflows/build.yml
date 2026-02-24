@@ -19,7 +19,7 @@ jobs:
         uses: actions/checkout@v6
       - name: Install Nix
         uses: cachix/install-nix-action@v31
-      - name: Setup binary cache
+      - name: Setup Cachix
         uses: cachix/cachix-action@v16
         with:
           name: devenv
@@ -45,7 +45,7 @@ jobs:
         uses: actions/checkout@v6
       - name: Install Nix
         uses: cachix/install-nix-action@v31
-      - name: Setup binary cache
+      - name: Setup Cachix
         uses: cachix/cachix-action@v16
         with:
           name: nixpkgs-terraform
@@ -70,7 +70,7 @@ jobs:
         uses: actions/checkout@v6
       - name: Install Nix
         uses: cachix/install-nix-action@v31
-      - name: Setup binary cache
+      - name: Setup Cachix
         uses: cachix/cachix-action@v16
         with:
           name: nixpkgs-terraform
