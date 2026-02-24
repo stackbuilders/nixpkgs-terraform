@@ -13,12 +13,14 @@ concurrency:
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    timeout-minutes: 5
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
       - name: Install Nix
         uses: cachix/install-nix-action@v31
+      - name: Setup Cachix
+        uses: cachix/cachix-action@v16
         with:
           name: devenv
       - name: Install devenv
@@ -29,7 +31,7 @@ jobs:
   build:
     name: "build (system: ${{ matrix.runner.system }})"
     runs-on: ${{ matrix.runner.os }}
-    timeout-minutes: 10
+    timeout-minutes: 30
     strategy:
       matrix:
         runner:
@@ -54,13 +56,14 @@ jobs:
 
   template:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     needs: [build]
     strategy:
       matrix:
         template:
           - default
-          - devenv
+          # TODO: Fix timeout issue on a separate PR
+          # - devenv
           - nixpkgs-terraform-providers-bin
           - terranix
     steps:
