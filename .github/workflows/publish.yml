@@ -33,10 +33,22 @@ jobs:
   # the "lastModified" issue. https://flakehub.com/docs/faq#err-last-modified
   flakestry:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        version:
+          - v5.21.0
+          - v5.20.0
+          - v5.19.0
+          - v5.18.0
+          - v5.17.0
+          - v5.16.0
+          - v5.15.0
+          - v5.14.0
+      fail-fast: true
     steps:
       - name: Publish flake
         uses: flakestry/flakestry-publish@main
         with:
-          version: v5.22.0
-          ref: v5.22.0
+          version: ${{ matrix.version }}
+          ref: ${{ matrix.version }}
           # version: ${{ github.ref_name }}
