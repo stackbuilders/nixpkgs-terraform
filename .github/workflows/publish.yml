@@ -1,8 +1,8 @@
 name: Publish
 
-on:
-  release:
-    types: [released]
+on: push
+  # release:
+  #   types: [released]
 
 concurrency:
   group: publish
@@ -14,6 +14,7 @@ permissions:
 
 jobs:
   flakehub:
+    if: false
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -34,6 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Publish flake
-        uses: stackbuilders/flakestry-publish@update_install_nix_action
+        uses: flakestry/flakestry-publish@main
         with:
-          version: ${{ github.ref_name }}
+          version: v5.22.0
+          # version: ${{ github.ref_name }}
