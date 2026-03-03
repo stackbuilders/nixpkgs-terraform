@@ -38,4 +38,5 @@ jobs:
         uses: flakestry/flakestry-publish@main
         with:
           version: v5.22.0
+          ref: v5.22.0
           # version: ${{ github.ref_name }}
