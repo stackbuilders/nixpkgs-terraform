@@ -41,7 +41,7 @@ jobs:
         id: update
         run: |
           commit_message=$(cli/cli update)
-          if [[ -n "$commit_message" ]] && ! [[ "$commit_message" =~ ^chore: ]]; then
+          if [[ -n "$commit_message" ]] && ! [[ "$commit_message" =~ ^feat: ]]; then
             echo "Unexpected commit message format from cli/cli update; aborting"
             exit 1
           fi
