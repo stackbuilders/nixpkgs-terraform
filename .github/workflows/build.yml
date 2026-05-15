@@ -24,7 +24,7 @@ jobs:
         with:
           name: devenv
       - name: Install devenv
-        run: nix profile add nixpkgs#devenv
+        run: nix profile add --accept-flake-config nixpkgs#devenv
       - name: Run tests
         run: devenv test
 
