@@ -15,23 +15,27 @@ permissions:
 jobs:
   flakehub:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: ${{ github.ref_name }}
       - name: Install Nix
-        uses: cachix/install-nix-action@v31
+        uses: cachix/install-nix-action@8aa03977d8d733052d78f4e008a241fd1dbf36b3 # v31.10.6
       - name: Publish flake
-        uses: DeterminateSystems/flakehub-push@v6
+        uses: DeterminateSystems/flakehub-push@71f57208810a5d299fc6545350981de98fdbc860 # v6
         with:
           tag: ${{ github.ref_name }}
           visibility: public
 
   flakestry:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
     steps:
       - name: Publish flake
-        uses: flakestry/flakestry-publish@main
+        uses: flakestry/flakestry-publish@08cfeb3dc22bf4e2df64ba84e8dae19918e44e0b # main 2026-01-10
         with:
           version: ${{ github.ref_name }}
