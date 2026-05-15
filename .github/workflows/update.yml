@@ -10,28 +10,30 @@ concurrency:
   group: update
   cancel-in-progress: true
 
+permissions: {}
+
 jobs:
   update:
     runs-on: macos-latest
+    timeout-minutes: 30
     permissions:
       contents: write
-      id-token: write
       pull-requests: write
     steps:
       - name: Create GH App token
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         id: app-token
         with:
           app-id: ${{ vars.GH_APP_ID }}
           private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: main
       - name: Install Nix
-        uses: cachix/install-nix-action@v31
+        uses: cachix/install-nix-action@8aa03977d8d733052d78f4e008a241fd1dbf36b3 # v31.10.6
       - name: Install devenv
-        run: nix profile add --accept-flake-config github:cachix/devenv/latest
+        run: nix profile add --accept-flake-config github:cachix/devenv/v1.8
       - name: Compile cli
         run: devenv shell -- go build .
         working-directory: cli
@@ -39,12 +41,16 @@ jobs:
         id: update
         run: |
           commit_message=$(cli/cli update)
+          if [[ -n "$commit_message" ]] && ! [[ "$commit_message" =~ ^chore: ]]; then
+            echo "Unexpected commit message format from cli/cli update; aborting"
+            exit 1
+          fi
           echo "commit_message=$commit_message" >> "$GITHUB_OUTPUT"
         env:
           CLI_GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
       - name: Create pull request
         if: ${{ steps.update.outputs.commit_message }}
-        uses: peter-evans/create-pull-request@v8
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
           commit-message: ${{ steps.update.outputs.commit_message }}
           title: ${{ steps.update.outputs.commit_message }}
@@ -68,9 +74,10 @@ jobs:
   notify:
     if: failure()
     runs-on: ubuntu-latest
+    timeout-minutes: 2
     needs: [update]
     steps:
-      - uses: slackapi/slack-github-action@v2
+      - uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
         with:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
           webhook-type: webhook-trigger
