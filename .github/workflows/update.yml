@@ -31,7 +31,7 @@ jobs:
       - name: Install Nix
         uses: cachix/install-nix-action@v31
       - name: Install devenv
-        run: nix profile add --accept-flake-config github:cachix/devenv/latest
+        run: nix profile add --accept-flake-config nixpkgs#devenv
       - name: Compile cli
         run: devenv shell -- go build .
         working-directory: cli

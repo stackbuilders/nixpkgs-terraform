@@ -33,7 +33,7 @@ jobs:
         with:
           name: devenv
       - name: Install devenv
-        run: nix profile add --accept-flake-config github:cachix/devenv/v1.8
+        run: nix profile add --accept-flake-config nixpkgs#devenv
       - name: Run semantic-release
         run: devenv shell semantic-release
         env:
