@@ -61,8 +61,8 @@ jobs:
             ```
           delete-branch: true
           reviewers: |
-            oscar-izval
-            sestrella
+            davidnbr
+            fm7-1
           token: ${{ steps.app-token.outputs.token }}
 
   notify:
