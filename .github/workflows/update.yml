@@ -2,6 +2,10 @@
 name: Update
 
 on:
+  # TODO: Remove TEST variables
+  push:
+    branches:
+      - fix/update_build_go_version
   workflow_dispatch:
   schedule:
     - cron: "0 0 * * *"
@@ -26,8 +30,9 @@ jobs:
           private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
       - name: Checkout code
         uses: actions/checkout@v6
-        with:
-          ref: main
+        # TODO: Remove TEST variables
+        #with:
+        #  ref: main
       - name: Install Nix
         uses: cachix/install-nix-action@v31
       - name: Install devenv
@@ -43,7 +48,9 @@ jobs:
         env:
           CLI_GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
       - name: Create pull request
-        if: ${{ steps.update.outputs.commit_message }}
+        if: false
+        # TODO: Remove TEST variables
+        #if: ${{ steps.update.outputs.commit_message }}
         uses: peter-evans/create-pull-request@v8
         with:
           commit-message: ${{ steps.update.outputs.commit_message }}
