@@ -196,6 +196,58 @@
       "hash": "sha256-zQgy9sGGsE9VHPWerzTNcGj+JxbaGhflpKisZhpepXE=",
       "vendorHash": "sha256-L6b48ZRoW1ItpJsUV7f4Ce/rB9uUhwE10tfooG1P2rw="
     },
+    "1.14.7": {
+      "hash": "sha256-YNZJlfr4+ccDUxiKyXPwICVOHB6G7SeObExQHvIsIUQ=",
+      "vendorHash": "sha256-45RRqaImkOtuFun2Re2c7kbponyjpQA8xG8FfF3K9Ag="
+    },
+    "1.14.8": {
+      "hash": "sha256-gKHLwigKc1OTr1Tomz+1p22B/zz4ZMn3TY5qxq82G3Q=",
+      "vendorHash": "sha256-45RRqaImkOtuFun2Re2c7kbponyjpQA8xG8FfF3K9Ag="
+    },
+    "1.14.9": {
+      "hash": "sha256-OvKc+71DxbYgdOs06RkM4doF4OTkY0NI/LR0Wgpr7tA=",
+      "vendorHash": "sha256-Ajjh8k2lOKf+BGIk3Vyp8H2unljeOMUN0vXwGjs7ZHc="
+    },
+    "1.15.0": {
+      "hash": "sha256-cKgZFCPLusXXSjcff/PmKGIdSm3wRY1DpduXBRrgcDc=",
+      "vendorHash": "sha256-Gv6V5aXqTuQoG1StbD/7Ln2QrLpMsW6fbUJUkyZMkvk="
+    },
+    "1.15.1": {
+      "hash": "sha256-36NXsvAyFYPpRW9mg/Y+MIstCNXNpSHzBQ17qB7Y6xw=",
+      "vendorHash": "sha256-Gv6V5aXqTuQoG1StbD/7Ln2QrLpMsW6fbUJUkyZMkvk="
+    },
+    "1.15.2": {
+      "hash": "sha256-jwmyZJHGfi2oO8FBebPKBQdXt61w02H6zbbqSXxMhMM=",
+      "vendorHash": "sha256-Gv6V5aXqTuQoG1StbD/7Ln2QrLpMsW6fbUJUkyZMkvk="
+    },
+    "1.15.3": {
+      "hash": "sha256-TyPatVcWgRbvUb9nlZ1gQXR2k8AUUubJlAAOhC9QYIc=",
+      "vendorHash": "sha256-aGkIsUxKHRgz8vxNO8RhXS0CH78Q14zSVANLrBGdhWw="
+    },
+    "1.15.4": {
+      "hash": "sha256-yZj/i/Fkd70y5dzQ7LoHVB8GfY0aaJ7LwmQrmR4DaKI=",
+      "vendorHash": "sha256-aGkIsUxKHRgz8vxNO8RhXS0CH78Q14zSVANLrBGdhWw="
+    },
+    "1.15.5": {
+      "hash": "sha256-U3A+Zwe+oj107z635uxzt4y06hvbv9sfokknYdFIglE=",
+      "vendorHash": "sha256-3y9+KCmvskJ24X4F6gSLglmsl4hUlvzBb/ep4kcbS8A="
+    },
+    "1.15.6": {
+      "hash": "sha256-FH5s0uyRESytv/1xloU3HXuH2ApjBC3FfEqFqIgBgFs=",
+      "vendorHash": "sha256-3y9+KCmvskJ24X4F6gSLglmsl4hUlvzBb/ep4kcbS8A="
+    },
+    "1.15.7": {
+      "hash": "sha256-FF3LEovWjEDrKp6e6opRfCt8c4wghva3mjN97vCxq3E=",
+      "vendorHash": "sha256-3y9+KCmvskJ24X4F6gSLglmsl4hUlvzBb/ep4kcbS8A="
+    },
+    "1.15.8": {
+      "hash": "sha256-FeXebcNl/npEkEyMvwzeMYTEsl9t8Iz+4lBHd/HzQHQ=",
+      "vendorHash": "sha256-l5n5PS2buGPvmx/U8vQeKk6BlZdJQQEujJxlPMTdg0k="
+    },
+    "1.15.9": {
+      "hash": "sha256-3awEA6qML/WM9OFzdlp1eFUTxbcIFP7ZnFU4AQN0PQ8=",
+      "vendorHash": "sha256-V7UHC9r0HzrjCxBiiczUUP4+jiJXmw82UCmY7lJoExs="
+    },
     "1.2.0": {
       "hash": "sha256-5um+zS7MVL59SlxchjXdlhBGNdacbQgvg7BRAWnW5XU=",
       "vendorHash": "sha256-6x1cv+DKXH2yyMjIA6JY5EkTmWbwH4LBammXKtw2EZo="
@@ -464,7 +516,8 @@
     "1.11": "1.11.4",
     "1.12": "1.12.2",
     "1.13": "1.13.5",
-    "1.14": "1.14.6",
+    "1.14": "1.14.9",
+    "1.15": "1.15.9",
     "1.2": "1.2.9",
     "1.3": "1.3.10",
     "1.4": "1.4.7",
