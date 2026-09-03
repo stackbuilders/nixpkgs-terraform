@@ -236,10 +236,6 @@
       "hash": "sha256-3awEA6qML/WM9OFzdlp1eFUTxbcIFP7ZnFU4AQN0PQ8=",
       "vendorHash": "sha256-V7UHC9r0HzrjCxBiiczUUP4+jiJXmw82UCmY7lJoExs="
     },
-    "1.16.0": {
-      "hash": "sha256-zVBnNDxQcN5mmqWBZQjeGXZDmWXNS4xrnimVc7TBgNc=",
-      "vendorHash": ""
-    },
     "1.2.0": {
       "hash": "sha256-5um+zS7MVL59SlxchjXdlhBGNdacbQgvg7BRAWnW5XU=",
       "vendorHash": "sha256-6x1cv+DKXH2yyMjIA6JY5EkTmWbwH4LBammXKtw2EZo="
