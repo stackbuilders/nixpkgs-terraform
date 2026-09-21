@@ -23,7 +23,7 @@ jobs:
       - name: Install Nix
         uses: cachix/install-nix-action@v31
       - name: Publish flake
-        uses: DeterminateSystems/flakehub-push@v6
+        uses: DeterminateSystems/flakehub-push@v7
         with:
           tag: ${{ github.ref_name }}
           visibility: public
