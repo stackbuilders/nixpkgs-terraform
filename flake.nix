@@ -12,11 +12,11 @@
   };
 
   outputs =
-    inputs@{ self
+    { self
     , nixpkgs
     , systems
     , ...
-    }:
+    }@inputs:
     let
       forAllSystems = nixpkgs.lib.genAttrs (import systems);
 
@@ -73,7 +73,22 @@
         // deprecatedAliases.${system}
       );
 
-      checks = terraformAliases;
+      checks =
+        let
+          # Limit the number of packages the CI builds to avoid timeout errors
+          latestAliases = nixpkgs.lib.take 2 (
+            builtins.sort (a: b: builtins.compareVersions a b >= 0) (
+              builtins.attrNames terraformVersions.aliases
+            )
+          );
+        in
+        forAllSystems (
+          system:
+          nixpkgs.lib.genAttrs' latestAliases (cycle: {
+            name = "terraform-${cycle}";
+            value = terraformAliases.${system}."terraform-${cycle}";
+          })
+        );
 
       overlays = {
         default =
