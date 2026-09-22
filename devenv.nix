@@ -2,6 +2,7 @@
 
 {
   packages = [
+    pkgs.git
     pkgs.semantic-release
   ];
 
