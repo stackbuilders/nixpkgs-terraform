@@ -36,7 +36,6 @@ jobs:
       matrix:
         runner:
           - { system: aarch64-darwin, os: macos-latest }
-          - { system: x86_64-darwin, os: macos-15-intel }
           - { system: x86_64-linux, os: ubuntu-latest }
       fail-fast: false
     needs: [check]
@@ -66,6 +65,7 @@ jobs:
           # - devenv
           - nixpkgs-terraform-providers-bin
           - terranix
+      fail-fast: false
     steps:
       - name: Checkout code
         uses: actions/checkout@v7

@@ -8,17 +8,20 @@
     nixpkgs-24_05.url = "github:nixos/nixpkgs/nixos-24.05-small";
     # INFO: Channel used for building versions from 1.9 onwards
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
-    systems.url = "github:nix-systems/default";
   };
 
   outputs =
     { self
     , nixpkgs
-    , systems
     , ...
     }@inputs:
     let
-      forAllSystems = nixpkgs.lib.genAttrs (import systems);
+      # INFO: x86_64-darwin is not supported since nixpkgs 26.11
+      forAllSystems = nixpkgs.lib.genAttrs [
+        "aarch64-darwin"
+        "aarch64-linux"
+        "x86_64-linux"
+      ];
 
       terraformVersions = builtins.fromJSON (builtins.readFile ./versions.json);
 
