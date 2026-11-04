@@ -80,8 +80,10 @@ nixConfig = {
 Currently, the binary cache supports the following systems:
 
 - aarch64-darwin
-- x86_64-darwin
 - x86_64-linux
+
+> [!WARNING]
+> `x86_64-darwin` is no longer supported because nixpkgs 26.11 dropped it.
 
 ## Quick Start (without a flake)
 
