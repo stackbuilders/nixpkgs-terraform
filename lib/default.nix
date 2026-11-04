@@ -28,11 +28,18 @@
             inherit system;
             config.allowUnfree = false;
           };
+
+      # nixpkgs-unstable no longer provides mkTerraform, so use a vendored copy
+      mkTerraform =
+        if builtins.compareVersions version "1.9.0" >= 0 then
+          (pkgs.callPackage ./terraform.nix { }).mkTerraform
+        else
+          pkgs.mkTerraform;
     in
 
     pkgs.lib.warnIf (builtins.compareVersions version "1.6.0" >= 0)
       "allowUnfree is enabled to build version ${version}"
-      pkgs.mkTerraform
+      mkTerraform
       {
         inherit version hash vendorHash;
         patches =
