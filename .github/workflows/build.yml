@@ -65,6 +65,7 @@ jobs:
           # - devenv
           - nixpkgs-terraform-providers-bin
           - terranix
+      fail-fast: false
     steps:
       - name: Checkout code
         uses: actions/checkout@v7

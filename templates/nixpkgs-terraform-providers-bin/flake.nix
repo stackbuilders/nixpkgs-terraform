@@ -28,8 +28,8 @@
           default = pkgs.mkShell {
             buildInputs = [
               (terraform.withPlugins (p: [
-                p.null
-                p.random
+                p.hashicorp_null
+                p.hashicorp_random
                 terraform-providers-bin.providers.hashicorp.nomad
               ]))
             ];
