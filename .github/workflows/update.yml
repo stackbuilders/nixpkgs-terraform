@@ -29,7 +29,7 @@ jobs:
         with:
           ref: main
       - name: Install Nix
-        uses: cachix/install-nix-action@v31
+        uses: cachix/install-nix-action@v32
       - name: Install devenv
         run: nix profile add --accept-flake-config nixpkgs#devenv
       - name: Compile cli
